@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Facebook, Icon, Popover } from "@freelii/ui";
+import { Avatar, User, Icon, Popover } from "@freelii/ui";
 import { cn, noop } from "@freelii/utils";
 import { Gift, LogOut } from "lucide-react";
 // import { signOut, useSession } from "next-auth/react";
@@ -40,7 +40,7 @@ export default function UserDropdown() {
           <UserOption
             as={Link}
             label="Account"
-            icon={Facebook}
+            icon={User}
             href="/account/settings"
             onClick={() => setOpenPopover(false)}
           />

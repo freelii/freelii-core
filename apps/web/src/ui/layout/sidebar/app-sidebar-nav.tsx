@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, GlobePointer, GreekTemple, InvoiceDollar, User, useRouterStuff } from "@freelii/ui";
+import { CreditCard, GlobePointer, GreekTemple, InvoiceDollar, User, useRouterStuff, Users6 } from "@freelii/ui";
 import {
 //   Books2,
 //   CircleInfo,
@@ -48,9 +48,14 @@ const NAV_AREAS: SidebarNavAreas<{
         items: [
           {
             name: "Home",
-            icon: User,
+            icon: GreekTemple,
             href: `/${slug}`,
             exact: true,
+          },
+          {
+            name: "Sub-Accounts",
+            icon: Users6,
+            href: `/${slug}/accounts${queryString}`,
           },
           {
             name: "Transactions",
@@ -63,63 +68,12 @@ const NAV_AREAS: SidebarNavAreas<{
             href: `/${slug}/payments${queryString}`,
           },
           {
-            name: "Accounts",
-            icon: GreekTemple,
-            href: `/${slug}/accounts${queryString}`,
-          },
-          {
             name: "Settings",
             icon: Gear,
             href: `/${slug}/settings`,
           },
         ],
-      },
-      ...(programs?.length
-        ? [
-            {
-              name: "Programs",
-              items: [
-                {
-                  name: "Affiliate",
-                  icon: Facebook,
-                  href: `/${slug}/programs/${programs[0].id}`,
-                  items: [
-                    {
-                      name: "Overview",
-                      href: `/${slug}/programs/${programs[0].id}`,
-                      exact: true,
-                    },
-                    {
-                      name: "Partners",
-                      href: `/${slug}/programs/${programs[0].id}/partners`,
-                    },
-                    {
-                      name: "Sales",
-                      href: `/${slug}/programs/${programs[0].id}/sales`,
-                    },
-                    {
-                      name: "Payouts",
-                      href: `/${slug}/programs/${programs[0].id}/payouts`,
-                    },
-                    {
-                      name: "Branding",
-                      href: `/${slug}/programs/${programs[0].id}/branding`,
-                    },
-                    {
-                      name: "Resources",
-                      href: `/${slug}/programs/${programs[0].id}/resources`,
-                    },
-                    {
-                      name: "Configuration",
-                      href: `/${slug}/programs/${programs[0].id}/settings`,
-                    },
-                  ],
-                },
-              ],
-            },
-          ]
-        : []),
-    ],
+      }],
   }),
 
   // Workspace settings
@@ -131,25 +85,9 @@ const NAV_AREAS: SidebarNavAreas<{
         name: "Workspace",
         items: [
           {
-            name: "General",
-            icon: Facebook,
-            href: `/${slug}/settings`,
-            exact: true,
-          },
-          {
             name: "Billing",
-            icon: Facebook,
+            icon: InvoiceDollar,
             href: `/${slug}/settings/billing`,
-          },
-          {
-            name: "Domains",
-            icon: Facebook,
-            href: `/${slug}/settings/domains`,
-          },
-          {
-            name: "Library",
-            icon: Facebook,
-            href: `/${slug}/settings/library`,
           },
           {
             name: "People",
@@ -278,6 +216,7 @@ const programs = [{ id: "1" }];
         <>
           {/* TODO <UserSurveyButton /> */}
           {/* <Usage /> */}
+          <span className="text-xs text-muted-foreground p-4">© 2025 Freelii, LLC. All rights reserved.</span>
         </>
       }
     />

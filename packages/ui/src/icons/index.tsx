@@ -20,5 +20,8 @@ export * from "./twitter";
 export * from "./unsplash";
 export * from "./youtube";
 
+export * from "./loading-spinner";
+export * from "./three-dots";
+
 
 export type Icon = LucideIcon | ComponentType<SVGProps<SVGSVGElement>>;

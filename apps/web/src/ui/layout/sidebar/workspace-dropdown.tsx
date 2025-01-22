@@ -62,7 +62,7 @@ export function WorkspaceDropdown() {
     if (slug && workspaces && selectedWorkspace) {
       return {
         ...selectedWorkspace,
-        image:          `${DICEBEAR_AVATAR_URL}${selectedWorkspace.name}`,
+        image: `${DICEBEAR_AVATAR_URL}${selectedWorkspace.name}`,
       };
 
       // return personal account selector if there's no workspace or error (user doesn't have access to workspace)
