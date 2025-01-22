@@ -1,0 +1,7 @@
+{
+  "extends": ["@repo/eslint-config/react-internal.js"],
+  "rules": {
+    "@typescript-eslint/consistent-type-imports": "warn",
+    "@typescript-eslint/no-empty-function": "warn"
+  }
+} 

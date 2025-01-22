@@ -1,0 +1,10 @@
+{
+    "extends": "../../packages/typescript-config/react-library.json",
+    "include": ["."],
+    "exclude": ["dist", "build", "node_modules"],
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext"
+    }
+}
+  
