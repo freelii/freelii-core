@@ -91,24 +91,24 @@ export function WorkspaceDropdown() {
   return (
     <div>
       <Popover
-        content={
-          <WorkspaceList
-            selected={selected}
-            workspaces={workspaces}
-            setOpenPopover={setOpenPopover}
-          />
-        }
-        align="start"
-        openPopover={openPopover}
-        setOpenPopover={setOpenPopover}
-      >
+      content={
+        <WorkspaceList
+          selected={selected}
+          workspaces={workspaces}
+          setOpenPopover={setOpenPopover}
+        />
+      }
+      align="start"
+      openPopover={openPopover}
+      setOpenPopover={setOpenPopover}
+    >
         <button
           onClick={() => setOpenPopover(!openPopover)}
           className={cn(
             "flex w-full items-center justify-between rounded-lg p-1.5 text-left text-sm transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80 data-[state=open]:bg-neutral-200/80",
             "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
           )}
-        >
+          >
           <div className="flex min-w-0 items-center gap-x-2.5 pr-2">
             <BlurImage
               src={selected.image}
@@ -117,17 +117,17 @@ export function WorkspaceDropdown() {
               height={28}
               alt={selected.id || selected.name}
               className="h-7 w-7 flex-none shrink-0 overflow-hidden rounded-full"
-            />
+              />
             <div className={cn(key ? "hidden" : "block", "min-w-0 sm:block")}>
               <div className="truncate text-sm font-medium leading-5 text-neutral-900">
                 {selected.name}
               </div>
               {selected.slug !== "/" && (
                 <div
-                  className={cn(
-                    "truncate text-xs capitalize leading-tight",
-                    getPlanColor(selected.plan),
-                  )}
+                className={cn(
+                  "truncate text-xs capitalize leading-tight",
+                  getPlanColor(selected.plan),
+                )}
                 >
                   {selected.plan}
                 </div>
@@ -137,7 +137,7 @@ export function WorkspaceDropdown() {
           <ChevronsUpDown
             className="size-4 shrink-0 text-gray-400"
             aria-hidden="true"
-          />
+            />
         </button>
       </Popover>
     </div>

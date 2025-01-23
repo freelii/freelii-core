@@ -1,4 +1,4 @@
-import { AnimatedSizeContainer, ClientOnly, Icon } from "@freelii/ui";
+import { AnimatedSizeContainer, Button, ClientOnly, Icon } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronLeft } from "lucide-react";

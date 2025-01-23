@@ -63,9 +63,9 @@ const NAV_AREAS: SidebarNavAreas<{
             href: `/${slug}/transactions${queryString}`,
           },
           {
-            name: "Payments",
+            name: "Payouts",
             icon: InvoiceDollar,
-            href: `/${slug}/payments${queryString}`,
+            href: `/${slug}/payouts${queryString}`,
           },
           {
             name: "Settings",
