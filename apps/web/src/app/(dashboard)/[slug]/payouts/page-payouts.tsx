@@ -15,7 +15,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2 } from "lucide-react"
+import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload } from "lucide-react"
 import { Button, IconMenu, Input, Popover, ThreeDots } from "@freelii/ui"
 import { Checkbox } from "@freelii/ui"
 import {
@@ -26,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import UserDropdown from "@/ui/layout/sidebar/user-dropdown"
 import { PaymentDetails } from "./payment-details"
 import { cn } from "@freelii/utils"
 
@@ -131,7 +130,7 @@ export const columns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: "progress",
-    header: "Progress",
+    header: "Payment frequency",
     cell: ({ row }) => {
       const progress = row.getValue("progress") as Payment["progress"]
       return <div className="">{progress}</div>
@@ -153,7 +152,7 @@ export const columns: ColumnDef<Payment>[] = [
             <div className="w-full md:w-52">
               <div className="grid gap-px p-2">
                 <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-gray-500">
-                  Import Links
+                  Import from CSV
                 </p>
                 <ImportOption
                   onClick={() => {
@@ -239,7 +238,10 @@ export const columns: ColumnDef<Payment>[] = [
           }
         >
           <button
-            onClick={() => setOpenPopover(!openPopover)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setOpenPopover(!openPopover)
+            }}
             className="w-auto px-1.5"
           >
             <ThreeDots className="h-5 w-5 text-gray-500" />
@@ -298,14 +300,18 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
         <div className="flex gap-2">
           <Button
             variant="outline"
+            className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
             onClick={() => {/* TODO: Import handler */}}
           >
-            Import Payments
+            Import from CSV
+            <Upload className="size-4 ml-1" />
           </Button>
-          <Button
+            <Button
+            variant="outline"
+            className="text-xs font-medium p-2 text-neutral-200 bg-black hover:bg-neutral-900 hover:text-white"
             onClick={() => {/* TODO: Schedule handler */}}
           >
-            Schedule Payment
+            New Payment
           </Button>
         </div>
       </div>
@@ -321,7 +327,7 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead key={header.id} className="text-xs font-medium p-1">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -345,12 +351,15 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
                       selectedPayment?.id === row.original.id && "bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
                       selectedPayment?.id === row.original.id && "rounded-full"
                     )}
-                    onClick={() => setSelectedPayment(
-                      selectedPayment?.id === row.original.id ? null : row.original
-                    )}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setSelectedPayment(
+                        selectedPayment?.id === row.original.id ? null : row.original
+                      )
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="font-normal text-xs p-1">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

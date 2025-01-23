@@ -118,7 +118,7 @@ export function SidebarNav<T extends Record<any, any>>({
                           {name}
                         </div>
                       )}
-                      {items.map((item) => (
+                      {items?.map((item) => (
                         <NavItem key={item.name} item={item} />
                       ))}
                     </div>

@@ -191,7 +191,7 @@ export default async function TaskPage() {
   const tasks = await getTasks()
 
   return (
-    <PageContent title="Schedule payments" description="Manage your upcoming payments and disbursements">
+    <PageContent title="Payouts" description="Manage your upcoming payments and disbursements">
       <MaxWidthWrapper>
         <PayoutsTable payments={payments} />
       </MaxWidthWrapper>

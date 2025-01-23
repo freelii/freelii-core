@@ -45,6 +45,7 @@ const NAV_AREAS: SidebarNavAreas<{
     direction: "left",
     content: [
       {
+        name: "Main",
         items: [
           {
             name: "Home",
@@ -74,6 +75,30 @@ const NAV_AREAS: SidebarNavAreas<{
           },
         ],
       }],
+  }),
+  // Payments
+  payments: ({ slug }) => ({
+    title: "Payments",
+    backHref: `/${slug}`,
+    content: [
+      {
+        name: "Payouts",
+        items: [
+        
+          {
+            name: "Scheduled payments",
+            icon: InvoiceDollar,
+            href: `/${slug}/payouts`,
+          },
+          {
+            name: "Disbursements",
+            icon: InvoiceDollar,
+            href: `/${slug}/payouts/disbursements`,
+          },
+
+        ],
+      },
+    ],
   }),
 
   // Workspace settings
@@ -193,6 +218,8 @@ const programs = [{ id: "1" }];
       ? "userSettings"
       : pathname.startsWith(`/${slug}/settings`)
         ? "workspaceSettings"
+        : pathname.startsWith(`/${slug}/payouts`)
+        ? "payments"
         : "default";
   }, [slug, pathname]);
 
