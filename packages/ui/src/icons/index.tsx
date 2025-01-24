@@ -9,6 +9,7 @@ export { default as ExpandingArrow } from "./expanding-arrow";
 
 // Brand icons
 export * from "./facebook";
+export * from "./x-logo";
 export * from "./github";
 export * from "./google";
 export * from "./linkedin";

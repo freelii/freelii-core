@@ -145,8 +145,10 @@ export function SidebarNav<T extends Record<any, any>>({
           })}
         </div>
       </nav>
-      {bottom && (
-        <div className="relative flex flex-col justify-end">{bottom}</div>
+      {!!bottom && (
+        <div className="relative flex flex-col justify-end">
+          {bottom}
+        </div>
       )}
     </ClientOnly>
   );
@@ -166,7 +168,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
     const hrefWithoutQuery = href.split("?")[0];
     return exact
       ? pathname === hrefWithoutQuery
-      : pathname.startsWith(hrefWithoutQuery);
+      : pathname.startsWith(hrefWithoutQuery ?? "");
   }, [pathname, href, exact]);
 
   return (

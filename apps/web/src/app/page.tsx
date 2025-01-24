@@ -1,50 +1,51 @@
-import Link from "next/link";
+"use client"
+import { Globe } from "./_components/globe";
+import { WaitlistSignup } from "./_components/waitlist-signup"
 
-import { LatestPost } from "@/app/_components/post";
-import { api, HydrateClient } from "@/trpc/server";
+const backgroundStyle = `
+  .bg-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(to right, rgba(50,50,50,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(50,50,50,0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 1;
+  }
 
-export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+  .content {
+    position: relative;
+    z-index: 2;
+  }
+`
 
+
+
+export default function Home() {
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-          </div>
-
+      <main
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        background: "radial-gradient(circle at center, #4abbe8, #FFFFFF)",
+      }}
+    >
+      <style jsx global>
+        {backgroundStyle}
+      </style>
+      <div className="bg-pattern"></div>
+      <div className="content w-full relative">
+        <div className="absolute inset-0 z-0 opacity-30">
+          <Globe />
         </div>
-      </main>
-    </HydrateClient>
+        <div className="relative z-10">
+          <WaitlistSignup />
+        </div>
+      </div>
+    </main>
   );
 }
+

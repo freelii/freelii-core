@@ -1,6 +1,7 @@
 import { Button } from "@freelii/ui"
-import { Building2, ClipboardCopy } from "lucide-react"
+import { Building2, ClipboardCopy, Clock, CheckCircle2 } from "lucide-react"
 import { Payment } from "./page-payouts"
+import { Badge } from "@freelii/ui"
 
 interface PaymentDetailsProps {
   payment: Payment
@@ -10,8 +11,21 @@ export function PaymentDetails({ payment }: PaymentDetailsProps) {
   return (
     <div className="transition-opacity duration-200 delay-150 opacity-100">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold">{payment.recipient}</h3>
-        <p className="text-sm text-gray-500">{payment.recipient_email}</p>
+        <div className="flex items-center gap-2">
+          <h3 className="text-xl font-semibold">{payment.recipient.name}</h3>
+          {payment.recipient.isVerified ? (
+            <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+              <CheckCircle2 className="h-3 w-3" />
+              <span className="text-xs">Verified</span>
+            </Badge>
+          ) : (
+            <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
+              <Clock className="h-3 w-3" />
+              <span className="text-xs">Pending</span>
+            </Badge>
+          )}
+        </div>
+        <p className="text-sm text-gray-500">{payment.recipient.email}</p>
       </div>
 
       <div className="space-y-4">
@@ -19,7 +33,7 @@ export function PaymentDetails({ payment }: PaymentDetailsProps) {
           <label className="text-sm font-medium text-gray-500">Payment link</label>
           <div className="mt-1 flex items-center gap-2 rounded-md border border-gray-200 p-2">
             <code className="text-sm">../pay/{payment.id}</code>
-            <Button variant="ghost" size="sm" className="ml-auto">
+            <Button variant="ghost" className="ml-auto">
               <ClipboardCopy className="h-4 w-4" />
             </Button>
           </div>

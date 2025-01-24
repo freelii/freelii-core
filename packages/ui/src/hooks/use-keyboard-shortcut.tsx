@@ -86,7 +86,7 @@ export function useKeyboardShortcut(
       ).slice(-1)[0];
 
       // Check if this is the top listener
-      if (topListener.id !== id) return;
+      if (topListener?.id !== id) return;
 
       e.preventDefault();
       callback(e);

@@ -23,6 +23,7 @@ export const buttonVariants = cva(
           "border-red-500 bg-red-500 text-white hover:bg-red-600 hover:ring-4 hover:ring-red-100",
         "danger-outline":
           "border-transparent bg-white text-red-500 hover:bg-red-600 hover:text-white",
+        ghost: "bg-transparent text-gray-900 hover:bg-gray-50",
       },
     },
     defaultVariants: {

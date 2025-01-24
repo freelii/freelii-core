@@ -6,15 +6,13 @@ import { AppSidebarNav } from "@/ui/layout/sidebar/app-sidebar-nav";
 // import { ReferButton } from "@/ui/layout/sidebar/refer-button";
 // import Toolbar from "@/ui/layout/toolbar/toolbar";
 import { constructMetadata } from "@freelii/utils";
-import { Footer } from "@freelii/ui";
 
 export const dynamic = "force-static";
 export const metadata = constructMetadata();
 
 export default async function Layout({ children }: { children: ReactNode }) {
   return (
-    <>
-      <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen w-full bg-white">
         <MainNav
           sidebar={AppSidebarNav}
           toolContent={
@@ -24,11 +22,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
             </>
           }
           // newsContent={<NewsRSC />}
-        >
-          {children}
+          >
+            {children}
         </MainNav>
-      </div>
       {/* <Toolbar show={["onboarding"]} /> */}
-    </>
+      </div>
   );
 }

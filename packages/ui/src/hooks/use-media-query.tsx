@@ -18,7 +18,10 @@ function getDimensions() {
   return { width: window.innerWidth, height: window.innerHeight };
 }
 
-export function useMediaQuery() {
+
+
+export function useMediaQuery(query?: string) {
+  const [matches, setMatches] = useState<boolean>(false);
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop" | null>(
     getDevice(),
   );
@@ -45,6 +48,26 @@ export function useMediaQuery() {
     };
   }, []);
 
+
+    useEffect(() => {
+        const mediaQueryList = window.matchMedia(String(query));
+
+        const handleChange = (event: MediaQueryListEvent) => {
+            setMatches(event.matches);
+        };
+
+        // Initial check
+        setMatches(mediaQueryList.matches);
+
+        // Add listener for changes
+        mediaQueryList.addEventListener("change", handleChange);
+
+        // Clean up listener on unmount
+        return () => {
+            mediaQueryList.removeEventListener("change", handleChange);
+        };
+    }, [query]);
+
   return {
     device,
     width: dimensions?.width,
@@ -52,5 +75,6 @@ export function useMediaQuery() {
     isMobile: device === "mobile",
     isTablet: device === "tablet",
     isDesktop: device === "desktop",
+    matches,
   };
 }

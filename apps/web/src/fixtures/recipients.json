@@ -1,0 +1,290 @@
+[
+  {
+    "name": "Crisanto Reyes",
+    "email": "crisanto@example.com", 
+    "id": 1,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_1",
+      "name": "Crisanto Reyes",
+      "accountNumber": "1234567890",
+      "routingNumber": "021000021",
+      "bankName": "Chase Bank",
+      "bankAddress": "270 Park Avenue",
+      "bankCity": "New York",
+      "bankState": "NY",
+      "bankZip": "10017",
+      "currency": {
+        "shortName": "USD"
+      }
+    }
+  },
+  {
+    "name": "Maria Santos",
+    "email": "maria.santos@example.com",
+    "id": 2,
+    "isVerified": false
+  },
+  {
+    "name": "Juan dela Cruz",
+    "email": "juan.dc@example.com",
+    "id": 3,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_3",
+      "name": "Juan dela Cruz",
+      "accountNumber": "9876543210",
+      "routingNumber": "121000358",
+      "bankName": "Bank of America",
+      "bankAddress": "100 Federal Street",
+      "bankCity": "Boston",
+      "bankState": "MA",
+      "bankZip": "02110",
+      "currency": {
+        "shortName": "USD"
+      }
+    }
+  },
+  {
+    "name": "Ana Gonzales",
+    "email": "ana.g@example.com",
+    "id": 4,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_4",
+      "name": "Ana Gonzales",
+      "accountNumber": "5432167890",
+      "routingNumber": "026009593",
+      "bankName": "Citibank",
+      "bankAddress": "388 Greenwich Street",
+      "bankCity": "New York",
+      "bankState": "NY",
+      "bankZip": "10013",
+      "currency": {
+        "shortName": "USD"
+      }
+    }
+  },
+  {
+    "name": "Ramon Magsaysay",
+    "email": "ramon.m@example.com",
+    "id": 5,
+    "isVerified": false
+  },
+  {
+    "name": "Isabella Cruz",
+    "email": "bella.cruz@example.com",
+    "id": 6,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_6",
+      "name": "Isabella Cruz",
+      "accountNumber": "7890123456",
+      "routingNumber": "031201360",
+      "bankName": "Deutsche Bank",
+      "bankAddress": "60 Wall Street",
+      "bankCity": "New York",
+      "bankState": "NY",
+      "bankZip": "10005",
+      "currency": {
+        "shortName": "EUR"
+      }
+    }
+  },
+  {
+    "name": "Gabriel Pascual",
+    "email": "g.pascual@example.com",
+    "id": 7,
+    "isVerified": false
+  },
+  {
+    "name": "Sofia Rodriguez",
+    "email": "sofia.r@example.com",
+    "id": 8,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_8",
+      "name": "Sofia Rodriguez",
+      "accountNumber": "3456789012",
+      "routingNumber": "021000089",
+      "bankName": "HSBC",
+      "bankAddress": "452 Fifth Avenue",
+      "bankCity": "New York",
+      "bankState": "NY",
+      "bankZip": "10018",
+      "currency": {
+        "shortName": "GBP"
+      }
+    }
+  },
+  {
+    "name": "Lucas Torres",
+    "email": "l.torres@example.com",
+    "id": 9,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_9",
+      "name": "Lucas Torres",
+      "accountNumber": "2345678901",
+      "routingNumber": "322271627",
+      "bankName": "Wells Fargo",
+      "bankAddress": "420 Montgomery Street",
+      "bankCity": "San Francisco",
+      "bankState": "CA",
+      "bankZip": "94104",
+      "currency": {
+        "shortName": "USD"
+      }
+    }
+  },
+  {
+    "name": "Emma Garcia",
+    "email": "emma.g@example.com",
+    "id": 10,
+    "isVerified": false
+  },
+  {
+    "name": "Oliver Santos",
+    "email": "oliver.s@example.com",
+    "id": 11,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_11",
+      "name": "Oliver Santos",
+      "accountNumber": "8901234567",
+      "routingNumber": "021000021",
+      "bankName": "JPMorgan Chase",
+      "bankAddress": "383 Madison Avenue",
+      "bankCity": "New York",
+      "bankState": "NY",
+      "bankZip": "10179",
+      "currency": {
+        "shortName": "USD"
+      }
+    }
+  },
+  {
+    "name": "Mia Fernandez",
+    "email": "mia.f@example.com",
+    "id": 12,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_12",
+      "name": "Mia Fernandez",
+      "accountNumber": "4567890123",
+      "routingNumber": "063000047",
+      "bankName": "Bank of Montreal",
+      "bankAddress": "100 King Street West",
+      "bankCity": "Toronto",
+      "bankState": "ON",
+      "bankZip": "M5X 1A1",
+      "currency": {
+        "shortName": "CAD"
+      }
+    }
+  },
+  {
+    "name": "Liam Ramos",
+    "email": "l.ramos@example.com",
+    "id": 13,
+    "isVerified": false
+  },
+  {
+    "name": "Ava Martinez",
+    "email": "ava.m@example.com",
+    "id": 14,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_14",
+      "name": "Ava Martinez",
+      "accountNumber": "6789012345",
+      "routingNumber": "021000021",
+      "bankName": "Santander",
+      "bankAddress": "75 State Street",
+      "bankCity": "Boston",
+      "bankState": "MA",
+      "bankZip": "02109",
+      "currency": {
+        "shortName": "EUR"
+      }
+    }
+  },
+  {
+    "name": "Noah Reyes",
+    "email": "noah.r@example.com",
+    "id": 15,
+    "isVerified": false
+  },
+  {
+    "name": "Sophia Luna",
+    "email": "s.luna@example.com",
+    "id": 16,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_16",
+      "name": "Sophia Luna",
+      "accountNumber": "0123456789",
+      "routingNumber": "021000021",
+      "bankName": "BDO Unibank",
+      "bankAddress": "BDO Corporate Center",
+      "bankCity": "Makati",
+      "bankState": "NCR",
+      "bankZip": "1200",
+      "currency": {
+        "shortName": "PHP"
+      }
+    }
+  },
+  {
+    "name": "Ethan Bautista",
+    "email": "e.bautista@example.com",
+    "id": 17,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_17",
+      "name": "Ethan Bautista",
+      "accountNumber": "1357924680",
+      "routingNumber": "021000021",
+      "bankName": "BPI",
+      "bankAddress": "BPI Head Office",
+      "bankCity": "Makati",
+      "bankState": "NCR",
+      "bankZip": "1226",
+      "currency": {
+        "shortName": "PHP"
+      }
+    }
+  },
+  {
+    "name": "Isabella Santos",
+    "email": "i.santos@example.com",
+    "id": 18,
+    "isVerified": false
+  },
+  {
+    "name": "Mason Cruz",
+    "email": "mason.c@example.com",
+    "id": 19,
+    "isVerified": true,
+    "bankingDetails": {
+      "id": "bd_19",
+      "name": "Mason Cruz",
+      "accountNumber": "2468013579",
+      "routingNumber": "021000021",
+      "bankName": "Metrobank",
+      "bankAddress": "Metrobank Plaza",
+      "bankCity": "Makati",
+      "bankState": "NCR",
+      "bankZip": "1200",
+      "currency": {
+        "shortName": "PHP"
+      }
+    }
+  },
+  {
+    "name": "Olivia Mendoza",
+    "email": "o.mendoza@example.com",
+    "id": 20,
+    "isVerified": false
+  }
+]

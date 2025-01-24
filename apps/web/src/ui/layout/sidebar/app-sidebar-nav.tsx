@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, GlobePointer, GreekTemple, InvoiceDollar, User, useRouterStuff, Users6 } from "@freelii/ui";
+import { Calendar6, ConnectedDots, ConnectedDots4, CreditCard, GlobePointer, GreekTemple, InvoiceDollar, User, useRouterStuff, Users6 } from "@freelii/ui";
 import {
 //   Books2,
 //   CircleInfo,
@@ -55,18 +55,23 @@ const NAV_AREAS: SidebarNavAreas<{
           },
           {
             name: "Sub-Accounts",
-            icon: Users6,
+            icon: ConnectedDots,
             href: `/${slug}/accounts${queryString}`,
-          },
-          {
-            name: "Transactions",
-            icon: CreditCard,
-            href: `/${slug}/transactions${queryString}`,
           },
           {
             name: "Payouts",
             icon: InvoiceDollar,
             href: `/${slug}/payouts${queryString}`,
+          },
+          {
+            name: "Recipients",
+            icon: Users6,
+            href: `/${slug}/recipients${queryString}`,
+          },
+          {
+            name: "Transactions",
+            icon: CreditCard,
+            href: `/${slug}/transactions${queryString}`,
           },
           {
             name: "Settings",
@@ -87,7 +92,7 @@ const NAV_AREAS: SidebarNavAreas<{
         
           {
             name: "Scheduled payments",
-            icon: InvoiceDollar,
+            icon: Calendar6,
             href: `/${slug}/payouts`,
           },
           {
@@ -165,7 +170,7 @@ const NAV_AREAS: SidebarNavAreas<{
   }),
 
   // User settings
-  userSettings: ({ session, slug }) => ({
+  userSettings: ({ slug }) => ({
     title: "Settings",
     backHref: `/${slug}`,
     content: [
@@ -183,15 +188,6 @@ const NAV_AREAS: SidebarNavAreas<{
             icon: Facebook,
             href: "/account/settings/security",
           },
-          ...(session?.user?.["referralLinkId"]
-            ? [
-                {
-                  name: "Referrals",
-                  icon: Facebook,
-                  href: "/account/settings/referrals",
-                },
-              ]
-            : []),
         ],
       },
     ],

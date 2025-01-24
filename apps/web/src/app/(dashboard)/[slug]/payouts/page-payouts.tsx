@@ -1,6 +1,6 @@
 "use client"
 
-import * as React from "react"
+import React, { useEffect, useRef } from "react"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import {
@@ -15,8 +15,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload } from "lucide-react"
-import { Button, IconMenu, Input, Popover, ThreeDots } from "@freelii/ui"
+import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2 } from "lucide-react"
+import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots } from "@freelii/ui"
 import { Checkbox } from "@freelii/ui"
 import {
   Table,
@@ -27,9 +27,41 @@ import {
   TableRow,
 } from "@freelii/ui/table"
 import { PaymentDetails } from "./payment-details"
-import { cn } from "@freelii/utils"
+import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG } from "@freelii/utils"
+import Link from "next/link"
+import Image from "next/image"
+import { useFixtures } from "@/fixtures/useFixtures"
 
 dayjs.extend(relativeTime)
+
+export type Currency = {
+  id: string
+  name: string
+  symbol: string
+  flag: string
+}
+
+export type BankingDetails = {
+  id: number
+  name: string
+  address: string
+  city: string
+  state: string
+  zip: string
+  country: string
+}
+
+export type Recipient = {
+  id: string
+  isVerified: boolean
+  name: string
+  email: string
+  notes?: string
+  locationId?: number
+  location?: Location
+  currencyId?: string
+  currency?: Currency
+}
 
 export type Payment = {
   id: string
@@ -37,9 +69,9 @@ export type Payment = {
   currency: string
   label: string
   nextPayment: Date
-  recipient: string
+  recipient?: Recipient
+  recipientId?: number
   progress: string
-  recipient_email: string
   notes?: string
 }
 
@@ -68,6 +100,7 @@ export const columns: ColumnDef<Payment>[] = [
     id: "select",
     header: ({ table }) => (
       <Checkbox
+        onClick={(e) => e.stopPropagation()}
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() ? "indeterminate" : false)
@@ -78,6 +111,7 @@ export const columns: ColumnDef<Payment>[] = [
     ),
     cell: ({ row }) => (
       <Checkbox
+        onClick={(e) => e.stopPropagation()}
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
@@ -105,7 +139,29 @@ export const columns: ColumnDef<Payment>[] = [
   {
     accessorKey: "recipient",
     header: "Recipient",
-    cell: ({ row }) => <div>{row.getValue("recipient")}</div>,
+    cell: ({ row }) =>{
+      const recipient = row.original.recipient
+      if(!recipient) {
+        return <div className="text-xs text-gray-500">No recipient</div>
+      }
+      return (
+        <div className="flex items-center gap-2">
+          <div>{recipient.name}</div>
+          <div className="text-xs text-gray-500">{recipient.email}</div>
+          {recipient.isVerified ? (
+            <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
+              <CheckCircle2 className="h-3 w-3" />
+              <span className="text-xs">Verified</span>
+            </Badge>
+          ) : (
+            <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
+              <Clock className="h-3 w-3" />
+              <span className="text-xs">Pending</span>
+            </Badge>
+          )}
+        </div>
+      )
+    },
   },
   {
     accessorKey: "amount",
@@ -115,15 +171,20 @@ export const columns: ColumnDef<Payment>[] = [
       const currency = row.original.currency
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(amount)
+
+      const currencyInfo = CURRENCIES[currency] 
 
       return (
         <div className="flex items-center justify-end gap-2">
           <div className="font-medium">{formatted}</div>
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-            {currency}
-          </span>
+          {currencyInfo && (<Badge className="flex items-center gap-1 rounded-full bg-gradient-to-br border-none from-gray-200 to-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">
+            <div className="size-4">
+              <Image src={currencyInfo.flag} alt={currencyInfo.name} className="size-4" width={16} height={16} />  
+            </div>
+            <div className="text-xs font-bold text-gray-600">{currencyInfo.symbol}</div>
+          </Badge>)}
         </div>
       )
     },
@@ -252,7 +313,9 @@ export const columns: ColumnDef<Payment>[] = [
   },
 ]
 
-export default function DataTableDemo({payments}: {payments: Payment[]}) {
+export default function PayoutsTable() {
+  const { getPayouts } = useFixtures()
+  const [payments, setPayments] = React.useState<Payment[]>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -280,8 +343,14 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
       rowSelection,
     },
   })
+  const detailsRef = useRef<HTMLDivElement>(null)
+  
+  useEffect(() => {
+    console.log('fetching payments')
+    getPayouts().then(setPayments)
+  }, [setPayments])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedPayment) {
       // hide progress column
       console.log(table.getAllColumns().map(column => column.id))
@@ -294,8 +363,21 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
     }
   }, [selectedPayment])
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (detailsRef.current && !detailsRef.current.contains(event.target as Node)) {
+        setSelectedPayment(null)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       <div className="mb-4 flex items-center justify-between">
         <div className="flex gap-2">
           <Button
@@ -309,9 +391,11 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
             <Button
             variant="outline"
             className="text-xs font-medium p-2 text-neutral-200 bg-black hover:bg-neutral-900 hover:text-white"
-            onClick={() => {/* TODO: Schedule handler */}}
+            onClick={noop}
           >
-            New Payment
+            <Link href={`payouts/new`}>
+              New Payment
+            </Link>
           </Button>
         </div>
       </div>
@@ -328,12 +412,12 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
                   {headerGroup.headers.map((header) => {
                     return (
                       <TableHead key={header.id} className="text-xs font-medium p-1">
-                        {header.isPlaceholder
+                        <>{header.isPlaceholder
                           ? null
                           : flexRender(
                               header.column.columnDef.header,
                               header.getContext()
-                            )}
+                            )}</>
                       </TableHead>
                     )
                   })}
@@ -360,10 +444,7 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="font-normal text-xs p-1">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                        <>{flexRender(cell.column.columnDef.cell, cell.getContext())}</>
                       </TableCell>
                     ))}
                   </TableRow>
@@ -372,9 +453,32 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="h-96 text-center"
                   >
-                    No results.
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="rounded-full bg-gray-100 p-3">
+                        <ArrowsOppositeDirectionY className="h-6 w-6 text-gray-400" />
+                      </div>
+                      <h3 className="font-medium text-gray-900">No payments yet</h3>
+                      <p className="text-sm text-gray-500">Get started by creating your first payment or importing existing ones.</p>
+                      <div className="mt-4 flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="text-xs font-medium p-2"
+                          onClick={() => {/* TODO: Import handler */}}
+                        >
+                          Import payments
+                          <Upload className="ml-2 h-4 w-4" />
+                        </Button>
+                        <Button
+                          className="text-xs font-medium bg-black text-white hover:bg-neutral-900 p-2"
+                        >
+                          <Link href="payouts/new">
+                            Create payment
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -382,19 +486,22 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
           </Table>
         </div>
 
-        <div className={cn(
-          "w-1/3", 
-          "rounded-lg", 
-          "border border-gray-200",
-          "p-6",
-          "mt-10",
-          "relative",
-          "transition-all duration-300 ease-in-out",
-          "shadow-lg",
-          selectedPayment 
-            ? 'opacity-100 translate-x-0' 
-            : 'opacity-0 -translate-x-full w-0 p-0 border-0'
-        )}>
+        <div 
+          ref={detailsRef}
+          className={cn(
+            "w-1/3", 
+            "rounded-lg", 
+            "border border-gray-200",
+            "p-6",
+            "mt-10",
+            "relative",
+            "transition-all duration-300 ease-in-out",
+            "shadow-lg",
+            selectedPayment 
+              ? 'opacity-100 translate-x-0' 
+              : 'opacity-0 -translate-x-full w-0 p-0 border-0'
+          )}
+        >
           {selectedPayment && <PaymentDetails payment={selectedPayment} />}
         </div>
       </div>
@@ -421,6 +528,42 @@ export default function DataTableDemo({payments}: {payments: Payment[]}) {
           </Button>
         </div>
       </div>
+
+      {/* Floating Actions Bar */}
+      {Object.keys(rowSelection).length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4 bg-white rounded-full shadow-2xl border border-gray-200 z-50 shadow-gray-500/20">
+          <div className="text-sm">
+            <span className="font-medium">{Object.keys(rowSelection).length} payments selected</span>
+            <span className="mx-2 text-gray-400">·</span>
+            <span className="text-gray-600">
+              {new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+              }).format(
+                table.getSelectedRowModel().rows.reduce(
+                  (total, row) => total + parseFloat(row.original.amount),
+                  0
+                )
+              )}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              className="text-xs p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={() => table.resetRowSelection()}
+            >
+              Cancel payments
+            </Button>
+            <Button
+              className="group text-xs p-2 pr-6 bg-transparent text-black hover:bg-gray-100 flex items-center gap-2"
+            >
+              Process {Object.keys(rowSelection).length} payments
+              <ExpandingArrow className="size-3" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
