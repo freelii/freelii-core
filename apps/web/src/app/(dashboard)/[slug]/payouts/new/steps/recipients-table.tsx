@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
+import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG, DICEBEAR_SOLID_AVATAR_URL, pluralize } from "@freelii/utils"
 import Link from "next/link"
 import Image from "next/image"
 import { useFixtures } from "@/fixtures/useFixtures"
@@ -58,7 +58,7 @@ export type BankingDetails = {
 }
 
 export type Recipient = {
-  id: string
+  id: number
   isVerified: boolean
   name: string
   email: string
@@ -91,14 +91,16 @@ export const columns: ColumnDef<Recipient>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
+        className="translate-y-[2px]"
       />
     ),
     cell: ({ row }) => (
       <Checkbox
-        onClick={(e) => e.stopPropagation()}
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
+        onClick={(e) => e.stopPropagation()}
+        className="translate-y-[2px]"
       />
     ),
     enableSorting: false,
@@ -311,20 +313,31 @@ type RecipientsTableProps = {
 }
 
 export default function RecipientsTable({ mode = 'default' }: RecipientsTableProps) {
-  const { getRecipients } = useFixtures()
+  const { getRecipients, subAccounts } = useFixtures()
   const [recipients, setRecipients] = React.useState<Recipient[]>([])
   const [loading, setLoading] = React.useState(true)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [rowSelection, setRowSelection] = React.useState<Record<string, boolean>>({})
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null)
   const detailsCardRef = useRef<HTMLDivElement>(null)
   const [recipientTypeFilter, setRecipientTypeFilter] = React.useState<string | null>(null)
   const [showAddNew, setShowAddNew] = React.useState(false)
   const addNewCardRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
-  const hasSelectedRecipients = mode === 'payout' && Object.keys(rowSelection).length > 0
+  const [selectedRecipients, setSelectedRecipients] = React.useState<Recipient[]>([])
+  const hasSelectedRecipients = mode === 'payout' && selectedRecipients.length > 0
+
+  // Update selectedRecipients when rowSelection changes
+  useEffect(() => {
+    const selected = recipients.filter((recipient) => {
+      const id = recipient.id.toString()
+      return rowSelection[id]
+    })
+    console.log(rowSelection,selected)
+    setSelectedRecipients(selected)
+  }, [recipients, rowSelection])
 
   const filteredRecipients = React.useMemo(() => {
     let filtered = recipients
@@ -348,6 +361,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
   const table = useReactTable({
     data: filteredRecipients,
     columns,
+    getRowId: (row) => row.id.toString(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -362,24 +376,25 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
       columnVisibility,
       rowSelection,
     },
+    enableRowSelection: true,
   })
 
   useEffect(() => {
     getRecipients().then((recipients) => {
       const recipientsWithMappedCurrencies = recipients.map(recipient => {
         if (recipient.bankingDetails) {
-          const currencyCode = recipient.bankingDetails.currency.shortName
+          const currencyCode = recipient.bankingDetails?.currency?.currencyCode
           return {
             ...recipient,
             bankingDetails: {
               ...recipient.bankingDetails,
-              currency: CURRENCIES[currencyCode]
+              currency: currencyCode ? CURRENCIES[currencyCode as keyof typeof CURRENCIES] : undefined
             }
           }
         }
         return recipient
       })
-      setRecipients(recipientsWithMappedCurrencies)
+      setRecipients(recipientsWithMappedCurrencies as Recipient[])
       setLoading(false)
     })
   }, [])
@@ -422,14 +437,10 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
     }
   }, [showAddNew])
 
-  const selectedRecipients = React.useMemo(() => {
-    return recipients.filter((recipient) => rowSelection[recipient.id])
-  }, [recipients, rowSelection])
-
   return (
     <div className="w-full relative space-y-6">
       {/* Floating Actions Bar - only shown in default mode */}
-      {mode === 'default' && Object.keys(rowSelection).length > 0 && (
+      {mode === 'default' && selectedRecipients.length > 0 && (
         <div 
           className={cn(
             "absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4",
@@ -438,7 +449,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
           )}
         >
           <div className="text-sm">
-            <span className="font-medium">{Object.keys(rowSelection).length} recipients selected</span>
+            <span className="font-medium">{selectedRecipients.length} recipients selected</span>
             <span className="mx-2 text-gray-400">·</span>
           </div>
           <div className="flex items-center gap-2">
@@ -641,9 +652,9 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
             <div className="p-6 bg-white rounded-lg border border-gray-200">
               <div className="space-y-6">
                 <div>
-                  <p className="font-medium text-lg">Payment Details</p>
+                  <h3 className="font-medium text-lg">Payment Details</h3>
                   <p className="text-sm text-gray-500 mt-2">
-                    Configure the payment details for {selectedRecipients.length} selected recipients
+                    Configure the payment details for {selectedRecipients.length} selected {pluralize(selectedRecipients.length, 'recipient')}
                   </p>
                   <div className="flex items-center gap-2 mt-3">
                     <div className="flex -space-x-2">
@@ -659,17 +670,21 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                         />
                       ))}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className={cn(
+                      "text-sm text-gray-600 text-xs",
+                      selectedRecipients.length > 2 && "px-2"
+                    )}>
                       {selectedRecipients.slice(0, 3).map((recipient, index) => (
                         <span key={recipient.id}>
                           {index > 0 && index === Math.min(selectedRecipients.length, 3) - 1 && selectedRecipients.length <= 3 && " and "}
-                          {index > 0 && index < Math.min(selectedRecipients.length, 3) - 1 && ", "}
+                          {index > 0 && index < Math.min(selectedRecipients.length, 4) - 1 && ", "}
                           {recipient.name}
                         </span>
                       ))}
                       {selectedRecipients.length > 3 && ` and ${selectedRecipients.length - 3} more`}
                     </div>
                   </div>
+
                 </div>
 
                 <div className="space-y-4">
@@ -687,24 +702,56 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="payment-method">Payment Method</Label>
+                    <Label htmlFor="payment-method">Origin Account</Label>
                     <Select>
                       <SelectTrigger id="payment-method" className="w-full">
-                        <SelectValue placeholder="Select payment method" />
+                        <SelectValue placeholder="Select origin account" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="bank-transfer">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="size-4" />
-                            Bank Transfer
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="card">
-                          <div className="flex items-center gap-2">
-                            <CreditCard className="size-4" />
-                            Credit Card
-                          </div>
-                        </SelectItem>
+                      <SelectContent className="bg-white p-0">
+                        {subAccounts.map((subAccount) => (
+                          <SelectItem key={subAccount.id} value={subAccount.id} className="w-full">
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium">{subAccount.name}</span>
+                                <span className="text-xs text-gray-500">
+                                  {subAccount.accountNumber}
+                                </span>
+                              </div>
+
+                              <div className="flex items-start justify-between gap-3 ">
+                                <Badge 
+                                  className={cn(
+                                    "flex items-center gap-1 m-0.5",
+                                    subAccount.status === 'active' 
+                                      ? "bg-green-50 text-green-700 border-green-200" 
+                                      : "bg-gray-50 text-gray-600 border-gray-200"
+                                  )}
+                                >
+                                  <span className="size-1.5 rounded-full bg-current" />
+                                  <span className="text-[10px] capitalize">{subAccount.status}</span>
+                                </Badge>
+
+                                <div className="flex flex-col items-end ">
+                                  <div className="flex items-center gap-1">
+                                    {subAccount.currency && CURRENCIES[subAccount.currency] && (
+                                      <Image
+                                        src={CURRENCIES[subAccount.currency]?.flag ?? ''}
+                                        alt={CURRENCIES[subAccount.currency]?.name ?? ''}
+                                        width={12}
+                                        height={12}
+                                        className="rounded-full object-cover size-3"
+                                      />
+                                    )}
+                                    <span className="text-sm font-medium">
+                                      {CURRENCIES[subAccount.currency]?.symbol}{subAccount.balance.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-gray-500">Available balance</span>
+                                </div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

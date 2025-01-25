@@ -16,7 +16,7 @@
       "bankState": "NY",
       "bankZip": "10017",
       "currency": {
-        "shortName": "USD"
+        "currencyCode": "USD"
       }
     }
   },
@@ -44,7 +44,7 @@
       "bankState": "MA",
       "bankZip": "02110",
       "currency": {
-        "shortName": "USD"
+        "currencyCode": "USD"
       }
     }
   },
@@ -65,7 +65,7 @@
       "bankState": "NY",
       "bankZip": "10013",
       "currency": {
-        "shortName": "USD"
+        "currencyCode": "USD"
       }
     }
   },
@@ -93,7 +93,7 @@
       "bankState": "NY",
       "bankZip": "10005",
       "currency": {
-        "shortName": "EUR"
+        "currencyCode": "EUR"
       }
     }
   },
@@ -121,7 +121,7 @@
       "bankState": "NY",
       "bankZip": "10018",
       "currency": {
-        "shortName": "GBP"
+        "currencyCode": "GBP"
       }
     }
   },
@@ -142,7 +142,7 @@
       "bankState": "CA",
       "bankZip": "94104",
       "currency": {
-        "shortName": "USD"
+        "currencyCode": "USD"
       }
     }
   },
@@ -170,7 +170,7 @@
       "bankState": "NY",
       "bankZip": "10179",
       "currency": {
-        "shortName": "USD"
+        "currencyCode": "USD"
       }
     }
   },
@@ -191,7 +191,7 @@
       "bankState": "ON",
       "bankZip": "M5X 1A1",
       "currency": {
-        "shortName": "CAD"
+        "currencyCode": "CAD"
       }
     }
   },
@@ -219,7 +219,7 @@
       "bankState": "MA",
       "bankZip": "02109",
       "currency": {
-        "shortName": "EUR"
+        "currencyCode": "EUR"
       }
     }
   },
@@ -247,7 +247,7 @@
       "bankState": "NCR",
       "bankZip": "1200",
       "currency": {
-        "shortName": "PHP"
+        "currencyCode": "PHP"
       }
     }
   },
@@ -268,7 +268,7 @@
       "bankState": "NCR",
       "bankZip": "1226",
       "currency": {
-        "shortName": "PHP"
+        "currencyCode": "PHP"
       }
     }
   },
@@ -296,7 +296,7 @@
       "bankState": "NCR",
       "bankZip": "1200",
       "currency": {
-        "shortName": "PHP"
+        "currencyCode": "PHP"
       }
     }
   },
@@ -324,7 +324,7 @@
       "bankState": "NY",
       "bankZip": "10017",
       "currency": {
-        "shortName": "USD"
+        "currencyCode": "USD"
       }
     }
   },
@@ -345,7 +345,7 @@
       "bankState": "",
       "bankZip": "EC2V 7HH",
       "currency": {
-        "shortName": "GBP"
+        "currencyCode": "GBP"
       }
     }
   },
@@ -366,7 +366,7 @@
       "bankState": "",
       "bankZip": "018982",
       "currency": {
-        "shortName": "SGD"
+        "currencyCode": "SGD"
       }
     }
   },
@@ -387,7 +387,7 @@
       "bankState": "",
       "bankZip": "60325",
       "currency": {
-        "shortName": "EUR"
+        "currencyCode": "EUR"
       }
     }
   },
@@ -408,7 +408,7 @@
       "bankState": "",
       "bankZip": "100-8388",
       "currency": {
-        "shortName": "JPY"
+        "currencyCode": "JPY"
       }
     }
   },
@@ -429,7 +429,7 @@
       "bankState": "ON",
       "bankZip": "M5J 2J5",
       "currency": {
-        "shortName": "CAD"
+        "currencyCode": "CAD"
       }
     }
   },
@@ -450,7 +450,7 @@
       "bankState": "NSW",
       "bankZip": "2000",
       "currency": {
-        "shortName": "AUD"
+        "currencyCode": "AUD"
       }
     }
   },
@@ -471,7 +471,7 @@
       "bankState": "",
       "bankZip": "105 71",
       "currency": {
-        "shortName": "SEK"
+        "currencyCode": "SEK"
       }
     }
   }

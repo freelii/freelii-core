@@ -35,6 +35,7 @@ import { useFixtures } from "@/fixtures/useFixtures"
 dayjs.extend(relativeTime)
 
 export type Currency = {
+  currencyCode: string
   id: string
   name: string
   symbol: string
@@ -49,6 +50,7 @@ export type BankingDetails = {
   state: string
   zip: string
   country: string
+  currency?: Currency
 }
 
 export type Recipient = {
@@ -60,7 +62,7 @@ export type Recipient = {
   locationId?: number
   location?: Location
   currencyId?: string
-  currency?: Currency
+  bankingDetails?: BankingDetails
   recipientType?: "personal" | "business"
 }
 

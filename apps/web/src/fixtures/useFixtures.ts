@@ -3,6 +3,17 @@ import { Recipient, Payout, Currency } from "@/app/(dashboard)/[slug]/payouts/pa
 import dayjs from "dayjs";
 import { useState, useEffect, useCallback } from "react"
 
+export interface SubAccount {
+  id: string;
+  name: string;
+  accountNumber: string;
+  balance: number;
+  currency: string;
+  createdAt: string; // ISO Date string format
+  status: 'active' | 'inactive';
+  type: 'operational' | 'budget' | 'savings';
+}
+
 const getRandomFutureDate = () => {
   const minHours = 6;
   const maxDays = 7;
@@ -19,6 +30,7 @@ const getRandomFutureDate = () => {
 export const useFixtures = () => {
   const [recipients, setRecipients] = useState<Map<number, Recipient>>(new Map(require('./recipients.json').map((recipient: any) => [Number(recipient.id), recipient])))
   const [payouts, setPayouts] = useState<Payout[]>(require('./payments.json'))
+  const [subAccounts, setSubAccounts] = useState<SubAccount[]>(require('./accounts.json'))
   
   const getPayouts = useCallback(async () => {
     await new Promise((resolve) => setTimeout(resolve, 400))
@@ -76,6 +88,7 @@ export const useFixtures = () => {
   return {
     recipients,
     getPayouts,
-    getRecipients
+    getRecipients,
+    subAccounts
   }
 }
