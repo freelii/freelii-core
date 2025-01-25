@@ -15,8 +15,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, CreditCard, UserPlus, Link2, Copy, Search } from "lucide-react"
-import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots } from "@freelii/ui"
+import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, CreditCard, UserPlus, Link2, Copy, Search, DollarSign } from "lucide-react"
+import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots, Card, Label, Textarea, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@freelii/ui"
 import { Checkbox } from "@freelii/ui"
 import {
   Table,
@@ -320,6 +320,7 @@ export default function RecipientsTable() {
   const [showAddNew, setShowAddNew] = React.useState(false)
   const addNewCardRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const hasSelectedRecipients = Object.keys(rowSelection).length > 0
 
   const filteredRecipients = React.useMemo(() => {
     let filtered = recipients
@@ -418,7 +419,7 @@ export default function RecipientsTable() {
   }, [showAddNew])
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative space-y-6">
       <div className="mb-4 flex items-center gap-4">
         <div className="relative w-64">
           <Input
@@ -487,234 +488,193 @@ export default function RecipientsTable() {
         </div>
       </div>
 
-      <div className="flex gap-6">
-        <div className={cn(
-          "flex-1 transition-all duration-300 ease-in-out",
-          showAddNew && "w-2/3",
-          !showAddNew && !selectedRecipient && "w-full"
-        )}>
-          <Table className="border-none relative">
-            <TableHeader className="border-none">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-xs font-medium p-1">
-                      <>{header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}</>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody className="border-none">
-              {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <TableRow key={`skeleton-${index}`}>
-                    <TableCell className="p-1 w-[40px]">
-                      <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-                    </TableCell>
-                    <TableCell className="p-1">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                          <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-                        </div>
-                        <div className="h-3 w-40 bg-gray-200 rounded animate-pulse" />
-                      </div>
-                    </TableCell>
-                    <TableCell className="p-1">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-                          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-                          <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
-                        </div>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className={cn(
-                      "cursor-pointer hover:bg-gray-50 relative",
-                      selectedRecipient?.id === row.original.id && "bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
-                      selectedRecipient?.id === row.original.id && "rounded-full"
-                    )}
-                    onClick={() => {
-                      setSelectedRecipient(
-                        selectedRecipient?.id === row.original.id ? null : row.original
-                      )
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="font-normal text-xs p-1">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
+      <div className={cn(
+        "grid gap-6 transition-all duration-300",
+        hasSelectedRecipients ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
+      )}>
+        <div className="space-y-4">
+          <div className="rounded-lg border border-gray-200">
+            <Table className="border-none relative">
+              <TableHeader className="border-none">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="text-xs font-medium p-1">
+                        <>{header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}</>
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-96 text-center"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="rounded-full bg-gray-100 p-3">
-                        <Building2 className="h-6 w-6 text-gray-400" />
+                ))}
+              </TableHeader>
+              <TableBody className="border-none">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <TableRow key={`skeleton-${index}`}>
+                      <TableCell className="p-1 w-[40px]">
+                        <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+                      </TableCell>
+                      <TableCell className="p-1">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                          </div>
+                          <div className="h-3 w-40 bg-gray-200 rounded animate-pulse" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-1">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+                            <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      className={cn(
+                        "cursor-pointer hover:bg-gray-50 relative",
+                        selectedRecipient?.id === row.original.id && "bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
+                        selectedRecipient?.id === row.original.id && "rounded-full"
+                      )}
+                      onClick={() => {
+                        setSelectedRecipient(
+                          selectedRecipient?.id === row.original.id ? null : row.original
+                        )
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id} className="font-normal text-xs p-1">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="h-96 text-center"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="rounded-full bg-gray-100 p-3">
+                          <Building2 className="h-6 w-6 text-gray-400" />
+                        </div>
+                        <h3 className="font-medium text-gray-900">No recipients yet</h3>
+                        <p className="text-sm text-gray-500">Get started by adding your first recipient.</p>
+                        <Button
+                          className="mt-4 text-xs font-medium bg-black text-white hover:bg-neutral-900"
+                        >
+                          <Link href="recipients/new">
+                            Add recipient
+                          </Link>
+                        </Button>
                       </div>
-                      <h3 className="font-medium text-gray-900">No recipients yet</h3>
-                      <p className="text-sm text-gray-500">Get started by adding your first recipient.</p>
-                      <Button
-                        className="mt-4 text-xs font-medium bg-black text-white hover:bg-neutral-900"
-                      >
-                        <Link href="recipients/new">
-                          Add recipient
-                        </Link>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
 
-        {(showAddNew || selectedRecipient) && (
-          <div 
-            ref={selectedRecipient ? detailsCardRef : addNewCardRef}
-            className={cn(
-              "w-1/3",
-              "rounded-lg",
-              "border border-gray-200",
-              "p-6",
-              "mt-10",
-              "relative",
-              "transition-all duration-300 ease-in-out",
-              "shadow-lg",
-              (showAddNew || selectedRecipient)
-                ? 'opacity-100 translate-x-0'
-                : 'opacity-0 -translate-x-full w-0 p-0 border-0'
-            )}
-          >
-            {selectedRecipient ? (
-              <RecipientDetails recipient={selectedRecipient} />
-            ) : showAddNew ? (
-              <div className="flex flex-col gap-8">
-                <div className="flex flex-col items-center justify-center text-center gap-3">
-                  <div className="rounded-full bg-gray-100 p-4">
-                    <UserPlus className="h-6 w-6 text-gray-400" />
-                  </div>
-                  <h3 className="font-medium text-gray-900">Add a new recipient</h3>
-                  <p className="text-sm text-gray-500">
-                    Create a new recipient to start sending payments. You'll need their email and banking details.
+        {hasSelectedRecipients && (
+          <div className="animate-in slide-in-from-right duration-300">
+            <Card className="p-6">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-medium text-lg">Payment Details</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Configure the payment details for {Object.keys(rowSelection).length} selected recipients
                   </p>
-                  <Button
-                    className="mt-2 text-xs font-medium bg-black text-white hover:bg-neutral-900 p-2"
-                  >
-                    <Link href="recipients/new">
-                      Add manually
-                    </Link>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="amount">Amount per recipient</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500" />
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="0.00"
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="payment-method">Payment Method</Label>
+                    <Select>
+                      <SelectTrigger id="payment-method" className="w-full">
+                        <SelectValue placeholder="Select payment method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="bank-transfer">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="size-4" />
+                            Bank Transfer
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="card">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="size-4" />
+                            Credit Card
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Payment Notes (optional)</Label>
+                    <Textarea
+                      id="notes"
+                      placeholder="Add any notes about this payment..."
+                      className="resize-none"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Amount per recipient</span>
+                      <span className="font-medium">$0.00</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Number of recipients</span>
+                      <span className="font-medium">{Object.keys(rowSelection).length}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span>Total amount</span>
+                      <span>$0.00</span>
+                    </div>
+                  </div>
+
+                  <Button className="w-full mt-6">
+                    Continue to Review
                   </Button>
                 </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200" />
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="bg-white px-2 text-gray-500">or</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col items-center justify-center text-center gap-2">
-                    <div className="rounded-full bg-gray-100 p-4">
-                      <Link2 className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <h3 className="font-medium text-gray-900">Share invite link</h3>
-                    <p className="text-sm text-gray-500">
-                      Send this link to your recipient and they can provide their details directly.
-                    </p>
-                  </div>
-                  
-                  <div className="mt-2">
-                    <div className="flex gap-2">
-                      <Input
-                        readOnly
-                        value="https://app.freelii.com/invite/abc123"
-                        className="text-sm text-gray-500 bg-gray-50"
-                      />
-                      <Button
-                        variant="outline"
-                        className="shrink-0"
-                        onClick={() => {
-                          navigator.clipboard.writeText("https://app.freelii.com/invite/abc123")
-                        }}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="mt-2 text-xs text-gray-500">
-                      This link expires in 7 days
-                    </p>
-                  </div>
-                </div>
               </div>
-            ) : null}
+            </Card>
           </div>
         )}
-      </div>
-
-      {/* Floating Actions Bar */}
-      {Object.keys(rowSelection).length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4 bg-white rounded-full shadow-2xl border border-gray-200 z-50 shadow-gray-500/20">
-          <div className="text-sm">
-            <span className="font-medium">{Object.keys(rowSelection).length} recipients selected</span>
-            <span className="mx-2 text-gray-400">·</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              className="group p-2 pr-4 bg-transparent hover:bg-gray-100 text-xs text-black flex items-center gap-2"
-            >
-              Add to new payout
-              <ExpandingArrow className="-translate-x-2 size-3 group-hover:translate-x-0 transition-all duration-300 ease-in-out" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
       </div>
     </div>
   )

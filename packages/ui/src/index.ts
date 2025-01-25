@@ -37,3 +37,4 @@ export * from "./label";
 export * from "./toggle-group";
 export * from "./toggle";
 export * from "./hover-card";
+export * from "./textarea";
