@@ -588,10 +588,10 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50">
+          <Button variant="danger" className="p-2 text-xs">
             Remove Recipient
           </Button>
-          <Button size="sm" className="ml-auto">
+          <Button  className="ml-auto">
             Edit Details
           </Button>
         </div>

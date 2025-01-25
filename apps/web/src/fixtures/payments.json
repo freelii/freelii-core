@@ -1,127 +1,64 @@
 [
     {
       "id": "m5gr84i9",
-      "amount": 316,
+      "amount": 1250,
       "currency": "PHP",
       "nextPayment": "2024-03-20",
-      "recipientId": 1,
+      "recipients": [{ "id": 1 }, { "id": 2 }],
       "label": "Payment",
       "progress": "One time payment"
     },
     {
       "id": "3u1reuv4",
-      "amount": 242,
+      "amount": 2100,
       "currency": "PHP",
       "nextPayment": "2024-03-21",
-      "recipientId": 2,
+      "recipients": [{ "id": 3 }, { "id": 4 }, { "id": 5 }],
       "label": "Salary",
       "progress": "Monthly payment"
     },
     {
       "id": "derv1ws0",
-      "amount": 837,
+      "amount": 3500,
       "currency": "PHP",
       "nextPayment": "2024-03-27",
-      "recipientId": 3,
+      "recipients": [{ "id": 6 }],
       "label": "Salary",
       "progress": "Monthly payment"
     },
     {
       "id": "5kma53ae",
-      "amount": 874,
+      "amount": 4800,
       "currency": "PHP",
       "nextPayment": "2024-03-20",
-      "recipientId": 4,
+      "recipients": [{ "id": 7 }, { "id": 8 }, { "id": 9 }, { "id": 10 }],
       "label": "Insurance",
       "progress": "4 out of 6"
     },
     {
       "id": "bhqecj4p",
-      "amount": 721,
+      "amount": 2750,
       "currency": "PHP",
       "nextPayment": "2024-03-20",
-      "recipientId": 5,
+      "recipients": [{ "id": 11 }, { "id": 12 }],
       "label": "Inventory restocking",
       "progress": "One time payment"
     },
     {
       "id": "adedev",
-      "amount": 500,
+      "amount": 3300,
       "currency": "PHP",
       "nextPayment": "2024-03-20",
-      "recipientId": 6,
+      "recipients": [{ "id": 13 }, { "id": 14 }, { "id": 15 }],
       "label": "Contract payment",
       "progress": "Every 2 weeks"
     },
     {
       "id": "434343",
-      "amount": 1500,
+      "amount": 7500,
       "currency": "PHP",
       "nextPayment": "2024-03-20",
-      "recipientId": 7,
-      "label": "Contract payment",
-      "progress": "Every 2 weeks"
-    },
-    {
-      "id": "m5gr84i9",
-      "amount": 316,
-      "currency": "PHP",
-      "nextPayment": "2024-03-20",
-      "recipientId": 8,
-      "label": "Payment",
-      "progress": "One time payment"
-    },
-    {
-      "id": "3u1reuv4",
-      "amount": 242,
-      "currency": "PHP",
-      "nextPayment": "2024-03-21",
-      "recipientId": 9,
-      "label": "Salary",
-      "progress": "Monthly payment"
-    },
-    {
-      "id": "derv1ws0",
-      "amount": 837,
-      "currency": "PHP",
-      "nextPayment": "2024-03-27",
-      "recipientId": 10,
-      "label": "Salary",
-      "progress": "Monthly payment"
-    },
-    {
-      "id": "5kma53ae",
-      "amount": 874,
-      "currency": "PHP",
-      "nextPayment": "2024-03-20",
-      "recipientId": 11,
-      "label": "Insurance",
-      "progress": "4 out of 6"
-    },
-    {
-      "id": "bhqecj4p",
-      "amount": 721,
-      "currency": "PHP",
-      "nextPayment": "2024-03-20",
-      "recipientId": 12,
-      "label": "Inventory restocking",
-      "progress": "One time payment"
-    },
-    {
-      "id": "adedev",
-      "amount": 500,
-      "currency": "PHP",
-      "nextPayment": "2024-03-20",
-      "recipientId": 13,
-      "label": "Contract payment",
-      "progress": "Every 2 weeks"
-    },
-    {
-      "id": "434343",
-      "amount": 1500,
-      "currency": "PHP",
-      "nextPayment": "2024-03-20",
-      "recipientId": 14,
+      "recipients": [{ "id": 16 }, { "id": 17 }, { "id": 18 }, { "id": 19 }, { "id": 20 }],
       "label": "Contract payment",
       "progress": "Every 2 weeks"
     }
