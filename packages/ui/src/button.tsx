@@ -5,11 +5,11 @@ import { cn } from "@freelii/utils";
 import { VariantProps, cva } from "class-variance-authority";
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center text-xs p-2 justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "text-xs font-medium p-2 text-neutral-200 bg-black hover:bg-neutral-900 hover:text-white",
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         primary:
           "border-black bg-black text-white hover:bg-gray-800 hover:ring-4 hover:ring-gray-200",

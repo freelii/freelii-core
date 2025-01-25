@@ -34,3 +34,6 @@ export * from './select';
 export * from "./social-icon";
 export * from "./alert";
 export * from "./label";
+export * from "./toggle-group";
+export * from "./toggle";
+export * from "./hover-card";

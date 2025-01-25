@@ -3,5 +3,8 @@ export const GOOGLE_FAVICON_URL =
 
   export const DICEBEAR_AVATAR_URL =
   "https://api.dicebear.com/7.x/initials/svg?backgroundType=gradientLinear&fontFamily=Helvetica&fontSize=40&seed=";
+  
+  export const DICEBEAR_SOLID_AVATAR_URL =
+  "https://api.dicebear.com/7.x/initials/svg?backgroundType=solid&fontFamily=Helvetica&fontSize=40&seed=";
 
   export const PAGINATION_LIMIT = 100;

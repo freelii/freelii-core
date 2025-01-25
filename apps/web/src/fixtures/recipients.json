@@ -4,6 +4,7 @@
     "email": "crisanto@example.com", 
     "id": 1,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_1",
       "name": "Crisanto Reyes",
@@ -23,13 +24,15 @@
     "name": "Maria Santos",
     "email": "maria.santos@example.com",
     "id": 2,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Juan dela Cruz",
     "email": "juan.dc@example.com",
     "id": 3,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_3",
       "name": "Juan dela Cruz",
@@ -50,6 +53,7 @@
     "email": "ana.g@example.com",
     "id": 4,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_4",
       "name": "Ana Gonzales",
@@ -69,13 +73,15 @@
     "name": "Ramon Magsaysay",
     "email": "ramon.m@example.com",
     "id": 5,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Isabella Cruz",
     "email": "bella.cruz@example.com",
     "id": 6,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_6",
       "name": "Isabella Cruz",
@@ -95,13 +101,15 @@
     "name": "Gabriel Pascual",
     "email": "g.pascual@example.com",
     "id": 7,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Sofia Rodriguez",
     "email": "sofia.r@example.com",
     "id": 8,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_8",
       "name": "Sofia Rodriguez",
@@ -122,6 +130,7 @@
     "email": "l.torres@example.com",
     "id": 9,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_9",
       "name": "Lucas Torres",
@@ -141,13 +150,15 @@
     "name": "Emma Garcia",
     "email": "emma.g@example.com",
     "id": 10,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Oliver Santos",
     "email": "oliver.s@example.com",
     "id": 11,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_11",
       "name": "Oliver Santos",
@@ -168,6 +179,7 @@
     "email": "mia.f@example.com",
     "id": 12,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_12",
       "name": "Mia Fernandez",
@@ -187,13 +199,15 @@
     "name": "Liam Ramos",
     "email": "l.ramos@example.com",
     "id": 13,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Ava Martinez",
     "email": "ava.m@example.com",
     "id": 14,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_14",
       "name": "Ava Martinez",
@@ -213,13 +227,15 @@
     "name": "Noah Reyes",
     "email": "noah.r@example.com",
     "id": 15,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Sophia Luna",
     "email": "s.luna@example.com",
     "id": 16,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_16",
       "name": "Sophia Luna",
@@ -240,6 +256,7 @@
     "email": "e.bautista@example.com",
     "id": 17,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_17",
       "name": "Ethan Bautista",
@@ -259,13 +276,15 @@
     "name": "Isabella Santos",
     "email": "i.santos@example.com",
     "id": 18,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
   },
   {
     "name": "Mason Cruz",
     "email": "mason.c@example.com",
     "id": 19,
     "isVerified": true,
+    "recipientType": "personal",
     "bankingDetails": {
       "id": "bd_19",
       "name": "Mason Cruz",
@@ -285,6 +304,175 @@
     "name": "Olivia Mendoza",
     "email": "o.mendoza@example.com",
     "id": 20,
-    "isVerified": false
+    "isVerified": false,
+    "recipientType": "personal"
+  },
+  {
+    "name": "Global Solutions Corp",
+    "email": "accounts@globalsolutions.com",
+    "id": 21,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_21",
+      "name": "Global Solutions Corp",
+      "accountNumber": "9876543210",
+      "routingNumber": "021000021",
+      "bankName": "Chase Bank",
+      "bankAddress": "270 Park Avenue",
+      "bankCity": "New York",
+      "bankState": "NY",
+      "bankZip": "10017",
+      "currency": {
+        "shortName": "USD"
+      }
+    }
+  },
+  {
+    "name": "Tech Innovators Ltd",
+    "email": "finance@techinnovators.com",
+    "id": 22,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_22",
+      "name": "Tech Innovators Ltd",
+      "accountNumber": "8765432109",
+      "routingNumber": "021000021",
+      "bankName": "HSBC",
+      "bankAddress": "452 Fifth Avenue",
+      "bankCity": "London",
+      "bankState": "",
+      "bankZip": "EC2V 7HH",
+      "currency": {
+        "shortName": "GBP"
+      }
+    }
+  },
+  {
+    "name": "Digital Services Asia Pte",
+    "email": "payments@digitalservices.asia",
+    "id": 23,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_23",
+      "name": "Digital Services Asia Pte",
+      "accountNumber": "7654321098",
+      "routingNumber": "021000021",
+      "bankName": "DBS Bank",
+      "bankAddress": "12 Marina Boulevard",
+      "bankCity": "Singapore",
+      "bankState": "",
+      "bankZip": "018982",
+      "currency": {
+        "shortName": "SGD"
+      }
+    }
+  },
+  {
+    "name": "European Ventures GmbH",
+    "email": "accounting@euventures.de",
+    "id": 24,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_24",
+      "name": "European Ventures GmbH",
+      "accountNumber": "6543210987",
+      "routingNumber": "021000021",
+      "bankName": "Deutsche Bank",
+      "bankAddress": "Taunusanlage 12",
+      "bankCity": "Frankfurt",
+      "bankState": "",
+      "bankZip": "60325",
+      "currency": {
+        "shortName": "EUR"
+      }
+    }
+  },
+  {
+    "name": "Pacific Trading Co",
+    "email": "finance@pacifictrading.jp",
+    "id": 25,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_25",
+      "name": "Pacific Trading Co",
+      "accountNumber": "5432109876",
+      "routingNumber": "021000021",
+      "bankName": "MUFG Bank",
+      "bankAddress": "2-7-1 Marunouchi",
+      "bankCity": "Tokyo",
+      "bankState": "",
+      "bankZip": "100-8388",
+      "currency": {
+        "shortName": "JPY"
+      }
+    }
+  },
+  {
+    "name": "Canadian Solutions Inc",
+    "email": "payments@canadiansolutions.ca",
+    "id": 26,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_26",
+      "name": "Canadian Solutions Inc",
+      "accountNumber": "4321098765",
+      "routingNumber": "021000021",
+      "bankName": "Royal Bank of Canada",
+      "bankAddress": "200 Bay Street",
+      "bankCity": "Toronto",
+      "bankState": "ON",
+      "bankZip": "M5J 2J5",
+      "currency": {
+        "shortName": "CAD"
+      }
+    }
+  },
+  {
+    "name": "Australian Tech Pty Ltd",
+    "email": "accounts@austech.com.au",
+    "id": 27,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_27",
+      "name": "Australian Tech Pty Ltd",
+      "accountNumber": "3210987654",
+      "routingNumber": "021000021",
+      "bankName": "Commonwealth Bank",
+      "bankAddress": "201 Sussex Street",
+      "bankCity": "Sydney",
+      "bankState": "NSW",
+      "bankZip": "2000",
+      "currency": {
+        "shortName": "AUD"
+      }
+    }
+  },
+  {
+    "name": "Nordic Innovations AB",
+    "email": "finance@nordicinnovations.se",
+    "id": 28,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_28",
+      "name": "Nordic Innovations AB",
+      "accountNumber": "2109876543",
+      "routingNumber": "021000021",
+      "bankName": "Nordea Bank",
+      "bankAddress": "Smålandsgatan 17",
+      "bankCity": "Stockholm",
+      "bankState": "",
+      "bankZip": "105 71",
+      "currency": {
+        "shortName": "SEK"
+      }
+    }
   }
 ]

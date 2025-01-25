@@ -15,7 +15,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, CreditCard, UserPlus, Link2, Copy } from "lucide-react"
+import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, CreditCard, UserPlus, Link2, Copy, Search } from "lucide-react"
 import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots } from "@freelii/ui"
 import { Checkbox } from "@freelii/ui"
 import {
@@ -30,6 +30,12 @@ import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG } from "@fre
 import Link from "next/link"
 import Image from "next/image"
 import { useFixtures } from "@/fixtures/useFixtures"
+import { ToggleGroup, ToggleGroupItem } from "@freelii/ui"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@freelii/ui"
 
 dayjs.extend(relativeTime)
 
@@ -58,6 +64,7 @@ export type Recipient = {
   email: string
   notes?: string
   bankingDetails?: BankingDetails
+  recipientType: string
 }
 
 export type Payment = {
@@ -107,19 +114,115 @@ export const columns: ColumnDef<Recipient>[] = [
           <div className="flex items-center gap-2">
             <div>{recipient.name}</div>
             {recipient.isVerified ? (
-              <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-                <CheckCircle2 className="h-3 w-3" />
-                <span className="text-xs">Verified</span>
-              </Badge>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100 cursor-help">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span className="text-xs">Verified</span>
+                  </Badge>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80 bg-white shadow-lg border border-gray-200 z-50">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full bg-green-50 p-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-700" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">Verified Recipient</h4>
+                        <p className="text-xs text-gray-500">This recipient has completed all verification steps</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 mt-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <CheckCircle2 className="h-3 w-3 text-green-700" />
+                        <span>Email verified</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <CheckCircle2 className="h-3 w-3 text-green-700" />
+                        <span>Identity verified</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <CheckCircle2 className="h-3 w-3 text-green-700" />
+                        <span>Banking details verified</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">
+                        Verified on {new Date().toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             ) : (
-              <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
-                <Clock className="h-3 w-3" />
-                <span className="text-xs">Pending</span>
-              </Badge>
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 cursor-help">
+                    <Clock className="h-3 w-3" />
+                    <span className="text-xs">Pending</span>
+                  </Badge>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80 bg-white shadow-lg border border-gray-200 z-50">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="rounded-full bg-gray-50 p-2">
+                        <Clock className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium">Verification Pending</h4>
+                        <p className="text-xs text-gray-500">This recipient needs to complete verification</p>
+                      </div>
+                    </div>
+                    <div className="space-y-2 mt-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <Clock className="h-3 w-3 text-gray-400" />
+                        <span>Email verification required</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <Clock className="h-3 w-3 text-gray-400" />
+                        <span>Identity verification required</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <Clock className="h-3 w-3 text-gray-400" />
+                        <span>Banking details needed</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <p className="text-xs text-gray-500">
+                        Added on {new Date().toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             )}
           </div>
           <div className="text-xs text-gray-500">{recipient.email}</div>
         </div>
+      )
+    },
+  },
+  {
+    accessorKey: "recipientType",
+    header: "Type",
+    cell: ({ row }) => {
+      const type = row.original.recipientType
+      return (
+        <Badge 
+          className={cn(
+            "flex items-center gap-1",
+            type === 'business' 
+              ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+              : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+          )}
+        >
+          {type === 'business' ? (
+            <Building2 className="h-3 w-3" />
+          ) : (
+            <UserPlus className="h-3 w-3" />
+          )}
+          <span className="text-xs capitalize">{type}</span>
+        </Badge>
       )
     },
   },
@@ -145,14 +248,14 @@ export const columns: ColumnDef<Recipient>[] = [
               {bankingDetails.bankName}
             </div>
             <div className="text-xs text-gray-500 flex items-center gap-1">
-              <Image
-                src={bankingDetails.currency.flag}
-                alt={bankingDetails.currency.name}
+             {bankingDetails?.currency && <Image
+                src={bankingDetails?.currency?.flag}
+                alt={bankingDetails?.currency?.name}
                 width={16}
                 height={16}
                 className="rounded-full object-cover w-4 h-4 border-2 border-gray-200"
-              />
-              {bankingDetails.currency.name}
+              />}
+              {bankingDetails?.currency?.name}
             </div>
           </div>
         </div>
@@ -213,9 +316,32 @@ export default function RecipientsTable() {
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null)
   const detailsCardRef = useRef<HTMLDivElement>(null)
+  const [recipientTypeFilter, setRecipientTypeFilter] = React.useState<string | null>(null)
+  const [showAddNew, setShowAddNew] = React.useState(false)
+  const addNewCardRef = useRef<HTMLDivElement>(null)
+  const [searchQuery, setSearchQuery] = React.useState("")
+
+  const filteredRecipients = React.useMemo(() => {
+    let filtered = recipients
+    
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(recipient => 
+        recipient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        recipient.email.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+    
+    // Filter by recipient type
+    if (recipientTypeFilter) {
+      filtered = filtered.filter(recipient => recipient.recipientType === recipientTypeFilter)
+    }
+    
+    return filtered
+  }, [recipients, recipientTypeFilter, searchQuery])
 
   const table = useReactTable({
-    data: recipients,
+    data: filteredRecipients,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -272,10 +398,101 @@ export default function RecipientsTable() {
     }
   }, [selectedRecipient])
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        addNewCardRef.current && 
+        !addNewCardRef.current.contains(event.target as Node) &&
+        !(event.target as Element).closest('button')?.contains(document.querySelector('[data-add-new-button]'))
+      ) {
+        setShowAddNew(false)
+      }
+    }
+
+    if (showAddNew) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+      }
+    }
+  }, [showAddNew])
+
   return (
     <div className="w-full relative">
+      <div className="mb-4 flex items-center gap-4">
+        <div className="relative w-64">
+          <Input
+            placeholder="Search recipients..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full text-sm pl-8"
+          />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        </div>
+
+        <div className="flex items-center justify-between flex-1">
+          <ToggleGroup 
+            type="single" 
+            value={recipientTypeFilter || ''} 
+            onValueChange={(value) => setRecipientTypeFilter(value || null)}
+          >
+            <ToggleGroupItem 
+              value="" 
+              aria-label="Show all recipients"
+              className={cn(
+                "text-xs px-3 py-1",
+                !recipientTypeFilter && "bg-gray-100"
+              )}
+            >
+              All
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="business" 
+              aria-label="Show business recipients"
+              className={cn(
+                "text-xs px-3 py-1 gap-1",
+                recipientTypeFilter === 'business' && "bg-blue-50 text-blue-700"
+              )}
+            >
+              <Building2 className="h-3 w-3" />
+              Business
+            </ToggleGroupItem>
+            <ToggleGroupItem 
+              value="personal" 
+              aria-label="Show personal recipients"
+              className={cn(
+                "text-xs px-3 py-1 gap-1",
+                recipientTypeFilter === 'personal' && "bg-purple-50 text-purple-700"
+              )}
+            >
+              <UserPlus className="h-3 w-3" />
+              Personal
+            </ToggleGroupItem>
+          </ToggleGroup>
+
+          <Button
+            data-add-new-button
+            onClick={() => {
+              setShowAddNew(prev => !prev)
+              setSelectedRecipient(null)
+            }}
+            className={cn(
+              "text-xs px-3 py-1 gap-1",
+              showAddNew && "bg-gray-100"
+            )}
+          >
+            <UserPlus className="h-3 w-3" />
+            Add New
+          </Button>
+        </div>
+      </div>
+
       <div className="flex gap-6">
-        <div className="flex-1 transition-all duration-300 ease-in-out">
+        <div className={cn(
+          "flex-1 transition-all duration-300 ease-in-out",
+          showAddNew && "w-2/3",
+          !showAddNew && !selectedRecipient && "w-full"
+        )}>
           <Table className="border-none relative">
             <TableHeader className="border-none">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -373,9 +590,9 @@ export default function RecipientsTable() {
           </Table>
         </div>
 
-        {selectedRecipient ? (
+        {(showAddNew || selectedRecipient) && (
           <div 
-            ref={detailsCardRef}
+            ref={selectedRecipient ? detailsCardRef : addNewCardRef}
             className={cn(
               "w-1/3",
               "rounded-lg",
@@ -385,77 +602,76 @@ export default function RecipientsTable() {
               "relative",
               "transition-all duration-300 ease-in-out",
               "shadow-lg",
-              selectedRecipient
+              (showAddNew || selectedRecipient)
                 ? 'opacity-100 translate-x-0'
                 : 'opacity-0 -translate-x-full w-0 p-0 border-0'
             )}
           >
-            <RecipientDetails recipient={selectedRecipient} />
-          </div>
-        ) : (
-          <div className="w-1/3 rounded-lg border border-gray-200 p-6 mt-10">
-            <div className="flex flex-col gap-8">
-              <div className="flex flex-col items-center justify-center text-center gap-3">
-                <div className="rounded-full bg-gray-100 p-4">
-                  <UserPlus className="h-6 w-6 text-gray-400" />
-                </div>
-                <h3 className="font-medium text-gray-900">Add a new recipient</h3>
-                <p className="text-sm text-gray-500">
-                  Create a new recipient to start sending payments. You'll need their email and banking details.
-                </p>
-                <Button
-                  className="mt-2 text-xs font-medium bg-black text-white hover:bg-neutral-900 p-2"
-                >
-                  <Link href="recipients/new">
-                    Add manually
-                  </Link>
-                </Button>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-2 text-gray-500">or</span>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col items-center justify-center text-center gap-2">
+            {selectedRecipient ? (
+              <RecipientDetails recipient={selectedRecipient} />
+            ) : showAddNew ? (
+              <div className="flex flex-col gap-8">
+                <div className="flex flex-col items-center justify-center text-center gap-3">
                   <div className="rounded-full bg-gray-100 p-4">
-                    <Link2 className="h-6 w-6 text-gray-400" />
+                    <UserPlus className="h-6 w-6 text-gray-400" />
                   </div>
-                  <h3 className="font-medium text-gray-900">Share invite link</h3>
+                  <h3 className="font-medium text-gray-900">Add a new recipient</h3>
                   <p className="text-sm text-gray-500">
-                    Send this link to your recipient and they can provide their details directly.
+                    Create a new recipient to start sending payments. You'll need their email and banking details.
                   </p>
+                  <Button
+                    className="mt-2 text-xs font-medium bg-black text-white hover:bg-neutral-900 p-2"
+                  >
+                    <Link href="recipients/new">
+                      Add manually
+                    </Link>
+                  </Button>
                 </div>
-                
-                <div className="mt-2">
-                  <div className="flex gap-2">
-                    <Input
-                      readOnly
-                      value="https://app.freelii.com/invite/abc123"
-                      className="text-sm text-gray-500 bg-gray-50"
-                    />
-                    <Button
-                      variant="outline"
-                      className="shrink-0"
-                      onClick={() => {
-                        navigator.clipboard.writeText("https://app.freelii.com/invite/abc123")
-                        // TODO: Add toast notification
-                      }}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200" />
                   </div>
-                  <p className="mt-2 text-xs text-gray-500">
-                    This link expires in 7 days
-                  </p>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-2 text-gray-500">or</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col items-center justify-center text-center gap-2">
+                    <div className="rounded-full bg-gray-100 p-4">
+                      <Link2 className="h-6 w-6 text-gray-400" />
+                    </div>
+                    <h3 className="font-medium text-gray-900">Share invite link</h3>
+                    <p className="text-sm text-gray-500">
+                      Send this link to your recipient and they can provide their details directly.
+                    </p>
+                  </div>
+                  
+                  <div className="mt-2">
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value="https://app.freelii.com/invite/abc123"
+                        className="text-sm text-gray-500 bg-gray-50"
+                      />
+                      <Button
+                        variant="outline"
+                        className="shrink-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText("https://app.freelii.com/invite/abc123")
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      This link expires in 7 days
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : null}
           </div>
         )}
       </div>
@@ -544,13 +760,13 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full">
                   <Image
-                    src={recipient.bankingDetails.currency.flag}
-                    alt={recipient.bankingDetails.currency.name}
+                    src={recipient.bankingDetails?.currency?.flag}
+                    alt={recipient.bankingDetails?.currency?.name}
                     width={16}
                     height={16}
                     className="rounded-full object-cover w-4 h-4"
                   />
-                  <span className="text-xs text-gray-600">{recipient.bankingDetails.currency.name}</span>
+                  <span className="text-xs text-gray-600">{recipient.bankingDetails?.currency?.name}</span>
                 </div>
               </div>
 

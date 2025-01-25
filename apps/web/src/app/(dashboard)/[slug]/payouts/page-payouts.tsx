@@ -61,6 +61,7 @@ export type Recipient = {
   location?: Location
   currencyId?: string
   currency?: Currency
+  recipientType?: "personal" | "business"
 }
 
 export type Payout = {
@@ -137,7 +138,7 @@ export const columns: ColumnDef<Payout>[] = [
   },
   {
     accessorKey: "amount",
-    header: () => <div className="text-right">Amount</div>,
+    header: () => <div className="text-left">Amount</div>,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"))
       const currency = row.original.currency
@@ -153,7 +154,13 @@ export const columns: ColumnDef<Payout>[] = [
           <div className="font-medium">{formatted}</div>
           {currencyInfo && (<Badge className="flex items-center gap-1 rounded-full bg-gradient-to-br border-none from-gray-200 to-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">
             <div className="size-4">
-              <Image src={currencyInfo.flag} alt={currencyInfo.name} className="size-4" width={16} height={16} />  
+              <Image 
+                src={currencyInfo.flag} 
+                alt={currencyInfo.name} 
+                className="size-4 rounded-full overflow-hidden" 
+                width={16} 
+                height={16} 
+              />  
             </div>
           </Badge>)}
         </div>
