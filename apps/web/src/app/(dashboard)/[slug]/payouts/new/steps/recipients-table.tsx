@@ -328,6 +328,8 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
   const [searchQuery, setSearchQuery] = React.useState("")
   const [selectedRecipients, setSelectedRecipients] = React.useState<Recipient[]>([])
   const hasSelectedRecipients = mode === 'payout' && selectedRecipients.length > 0
+  const [amount, setAmount] = React.useState<number>(0)
+  const [paymentMode, setPaymentMode] = React.useState<'per-recipient' | 'split'>('per-recipient')
 
   // Update selectedRecipients when rowSelection changes
   useEffect(() => {
@@ -438,7 +440,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
   }, [showAddNew])
 
   return (
-    <div className="w-full relative space-y-6">
+    <div className="w-full relative space-y-6 pb-10">
       {/* Floating Actions Bar - only shown in default mode */}
       {mode === 'default' && selectedRecipients.length > 0 && (
         <div 
@@ -689,7 +691,30 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="amount">Amount per recipient</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="amount">Amount</Label>
+                      <ToggleGroup 
+                        type="single" 
+                        value={paymentMode} 
+                        onValueChange={(value) => setPaymentMode(value as 'per-recipient' | 'split')}
+                        className="border rounded-md"
+                      >
+                        <ToggleGroupItem 
+                          value="per-recipient" 
+                          aria-label="Per recipient"
+                          className="text-xs px-3 py-1"
+                        >
+                          Per recipient
+                        </ToggleGroupItem>
+                        <ToggleGroupItem 
+                          value="split" 
+                          aria-label="Split amount"
+                          className="text-xs px-3 py-1"
+                        >
+                          Split amount
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500" />
                       <Input
@@ -697,8 +722,15 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                         type="number"
                         placeholder="0.00"
                         className="pl-10"
+                        value={amount || ''}
+                        onChange={(e) => setAmount(Number(e.target.value))}
                       />
                     </div>
+                    <p className="text-xs text-gray-500">
+                      {paymentMode === 'per-recipient' 
+                        ? 'Each recipient will receive this amount' 
+                        : 'This amount will be split equally between all recipients'}
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -770,20 +802,32 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                 <div className="pt-4 border-t border-gray-100">
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Amount per recipient</span>
-                      <span className="font-medium">$0.00</span>
+                      <span className="text-gray-600">
+                        {paymentMode === 'per-recipient' ? 'Amount per recipient' : 'Total amount'}
+                      </span>
+                      <span className="font-medium">${amount.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Number of recipients</span>
                       <span className="font-medium">{selectedRecipients.length}</span>
                     </div>
-                    <div className="flex justify-between text-sm font-medium">
-                      <span>Total amount</span>
-                      <span>$0.00</span>
-                    </div>
+                    {paymentMode === 'per-recipient' ? (
+                      <div className="flex justify-between text-sm font-medium">
+                        <span>Total amount</span>
+                        <span>${(amount * selectedRecipients.length).toFixed(2)}</span>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between text-sm font-medium">
+                        <span>Amount per recipient</span>
+                        <span>${selectedRecipients.length ? (amount / selectedRecipients.length).toFixed(2) : '0.00'}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <Button className="w-full mt-6 group">
+                  <Button 
+                    className="w-full mt-6 group"
+                    disabled={!amount || !selectedRecipients.length}
+                  >
                     Continue to Review
                     <ExpandingArrow className="size-3 transition-all duration-300 ease-in-out" />
                   </Button>

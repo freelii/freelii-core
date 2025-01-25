@@ -77,9 +77,8 @@ function ConfirmationForm({ onBack, onConfirm }: StepProps) {
 const stepIds = {
   recipient: 1,
   banking: 2,
-  additional: 3,
-  schedule: 4,
-  confirm: 5,
+  schedule: 3,
+  confirm: 4,
 }
 
 export default function NewPaymentPage() {
@@ -87,9 +86,8 @@ export default function NewPaymentPage() {
   const router = useRouter()
   
   const steps = [
-    { id: stepIds.recipient, name: 'Recipient' },
-    { id: stepIds.banking, name: 'Banking Details' },
-    { id: stepIds.additional, name: 'Additional Info' },
+    { id: stepIds.recipient, name: 'Setup new payment' },
+    { id: stepIds.banking, name: 'Review details' },
     { id: stepIds.schedule, name: 'Schedule' },
     { id: stepIds.confirm, name: 'Confirm' },
   ]
@@ -106,18 +104,18 @@ export default function NewPaymentPage() {
         {step === stepIds.banking && (
           <BankingForm 
             onBack={() => setStep(stepIds.recipient)} 
-            onNext={() => setStep(stepIds.additional)} 
-          />
-        )}
-        {step === stepIds.additional && (
-          <AdditionalInfoForm 
-            onBack={() => setStep(stepIds.banking)} 
             onNext={() => setStep(stepIds.schedule)} 
           />
         )}
         {step === stepIds.schedule && (
           <SchedulingForm 
-            onBack={() => setStep(stepIds.additional)} 
+            onBack={() => setStep(stepIds.banking)} 
+            onNext={() => setStep(stepIds.confirm)} 
+          />
+        )}
+        {step === stepIds.confirm && (
+          <ConfirmationForm 
+            onBack={() => setStep(stepIds.banking)} 
             onNext={() => setStep(stepIds.confirm)} 
           />
         )}
