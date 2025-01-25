@@ -16,7 +16,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, CreditCard, UserPlus, Link2, Copy, Search, DollarSign } from "lucide-react"
-import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots, Card, Label, Textarea, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@freelii/ui"
+import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots, Card, Label, Textarea, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, BlurImage } from "@freelii/ui"
 import { Checkbox } from "@freelii/ui"
 import {
   Table,
@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG } from "@freelii/utils"
+import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import Link from "next/link"
 import Image from "next/image"
 import { useFixtures } from "@/fixtures/useFixtures"
@@ -306,7 +306,11 @@ export const columns: ColumnDef<Recipient>[] = [
   },
 ]
 
-export default function RecipientsTable() {
+type RecipientsTableProps = {
+  mode?: 'default' | 'payout'
+}
+
+export default function RecipientsTable({ mode = 'default' }: RecipientsTableProps) {
   const { getRecipients } = useFixtures()
   const [recipients, setRecipients] = React.useState<Recipient[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -320,7 +324,7 @@ export default function RecipientsTable() {
   const [showAddNew, setShowAddNew] = React.useState(false)
   const addNewCardRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
-  const hasSelectedRecipients = Object.keys(rowSelection).length > 0
+  const hasSelectedRecipients = mode === 'payout' && Object.keys(rowSelection).length > 0
 
   const filteredRecipients = React.useMemo(() => {
     let filtered = recipients
@@ -418,82 +422,110 @@ export default function RecipientsTable() {
     }
   }, [showAddNew])
 
+  const selectedRecipients = React.useMemo(() => {
+    return recipients.filter((recipient) => rowSelection[recipient.id])
+  }, [recipients, rowSelection])
+
   return (
     <div className="w-full relative space-y-6">
-      <div className="mb-4 flex items-center gap-4">
-        <div className="relative w-64">
-          <Input
-            placeholder="Search recipients..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full text-sm pl-8"
-          />
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      {/* Floating Actions Bar - only shown in default mode */}
+      {mode === 'default' && Object.keys(rowSelection).length > 0 && (
+        <div 
+          className={cn(
+            "absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4",
+            "bg-white rounded-full shadow-2xl border border-gray-200 z-50 shadow-gray-500/20",
+            "animate-in fade-in slide-in-from-top-4 duration-300",
+          )}
+        >
+          <div className="text-sm">
+            <span className="font-medium">{Object.keys(rowSelection).length} recipients selected</span>
+            <span className="mx-2 text-gray-400">·</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              className="group p-2 pr-4 bg-transparent hover:bg-gray-100 text-xs text-black flex items-center gap-2"
+            >
+              Add to new payout
+              <ExpandingArrow className="-translate-x-2 size-3 group-hover:translate-x-0 transition-all duration-300 ease-in-out" />
+            </Button>
+          </div>
         </div>
-
-        <div className="flex items-center justify-between flex-1">
-          <ToggleGroup 
-            type="single" 
-            value={recipientTypeFilter || ''} 
-            onValueChange={(value) => setRecipientTypeFilter(value || null)}
-          >
-            <ToggleGroupItem 
-              value="" 
-              aria-label="Show all recipients"
-              className={cn(
-                "text-xs px-3 py-1",
-                !recipientTypeFilter && "bg-gray-100"
-              )}
-            >
-              All
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="business" 
-              aria-label="Show business recipients"
-              className={cn(
-                "text-xs px-3 py-1 gap-1",
-                recipientTypeFilter === 'business' && "bg-blue-50 text-blue-700"
-              )}
-            >
-              <Building2 className="h-3 w-3" />
-              Business
-            </ToggleGroupItem>
-            <ToggleGroupItem 
-              value="personal" 
-              aria-label="Show personal recipients"
-              className={cn(
-                "text-xs px-3 py-1 gap-1",
-                recipientTypeFilter === 'personal' && "bg-purple-50 text-purple-700"
-              )}
-            >
-              <UserPlus className="h-3 w-3" />
-              Personal
-            </ToggleGroupItem>
-          </ToggleGroup>
-
-          <Button
-            data-add-new-button
-            onClick={() => {
-              setShowAddNew(prev => !prev)
-              setSelectedRecipient(null)
-            }}
-            className={cn(
-              "text-xs px-3 py-1 gap-1",
-              showAddNew && "bg-gray-100"
-            )}
-          >
-            <UserPlus className="h-3 w-3" />
-            Add New
-          </Button>
-        </div>
-      </div>
+      )}
 
       <div className={cn(
         "grid gap-6 transition-all duration-300",
-        hasSelectedRecipients ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
+        (hasSelectedRecipients || selectedRecipient) ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
       )}>
         <div className="space-y-4">
-          <div className="rounded-lg border border-gray-200">
+          <div className="mb-4 flex items-center gap-4">
+            <div className="relative w-64">
+              <Input
+                placeholder="Search recipients..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-sm pl-8"
+              />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </div>
+
+            <div className="flex items-center justify-between flex-1">
+              <ToggleGroup 
+                type="single" 
+                value={recipientTypeFilter || ''} 
+                onValueChange={(value) => setRecipientTypeFilter(value || null)}
+              >
+                <ToggleGroupItem 
+                  value="" 
+                  aria-label="Show all recipients"
+                  className={cn(
+                    "text-xs px-3 py-1",
+                    !recipientTypeFilter && "bg-gray-100"
+                  )}
+                >
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="business" 
+                  aria-label="Show business recipients"
+                  className={cn(
+                    "text-xs px-3 py-1 gap-1",
+                    recipientTypeFilter === 'business' && "bg-blue-50 text-blue-700"
+                  )}
+                >
+                  <Building2 className="h-3 w-3" />
+                  Business
+                </ToggleGroupItem>
+                <ToggleGroupItem 
+                  value="personal" 
+                  aria-label="Show personal recipients"
+                  className={cn(
+                    "text-xs px-3 py-1 gap-1",
+                    recipientTypeFilter === 'personal' && "bg-purple-50 text-purple-700"
+                  )}
+                >
+                  <UserPlus className="h-3 w-3" />
+                  Personal
+                </ToggleGroupItem>
+              </ToggleGroup>
+
+              <Button
+                data-add-new-button
+                onClick={() => {
+                  setShowAddNew(prev => !prev)
+                  setSelectedRecipient(null)
+                }}
+                className={cn(
+                  "text-xs px-3 py-1 gap-1",
+                  showAddNew && "bg-gray-100"
+                )}
+              >
+                <UserPlus className="h-3 w-3" />
+                Add New
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-lg">
             <Table className="border-none relative">
               <TableHeader className="border-none">
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -574,7 +606,7 @@ export default function RecipientsTable() {
                         <div className="rounded-full bg-gray-100 p-3">
                           <Building2 className="h-6 w-6 text-gray-400" />
                         </div>
-                        <h3 className="font-medium text-gray-900">No recipients yet</h3>
+                        <p className="font-medium text-gray-900">No recipients yet</p>
                         <p className="text-sm text-gray-500">Get started by adding your first recipient.</p>
                         <Button
                           className="mt-4 text-xs font-medium bg-black text-white hover:bg-neutral-900"
@@ -592,15 +624,52 @@ export default function RecipientsTable() {
           </div>
         </div>
 
-        {hasSelectedRecipients && (
+        {/* Right side card - either recipient details or payout form */}
+        {mode === 'default' && selectedRecipient && (
+          <div 
+            ref={detailsCardRef}
+            className="animate-in slide-in-from-right duration-300"
+          >
+            <div className="p-6 bg-white rounded-lg border border-gray-200">
+              <RecipientDetails recipient={selectedRecipient} />
+            </div>
+          </div>
+        )}
+
+        {mode === 'payout' && hasSelectedRecipients && (
           <div className="animate-in slide-in-from-right duration-300">
-            <Card className="p-6">
+            <div className="p-6 bg-white rounded-lg border border-gray-200">
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-medium text-lg">Payment Details</h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Configure the payment details for {Object.keys(rowSelection).length} selected recipients
+                  <p className="font-medium text-lg">Payment Details</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Configure the payment details for {selectedRecipients.length} selected recipients
                   </p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <div className="flex -space-x-2">
+                      {selectedRecipients.slice(0, 3).map((recipient, index) => (
+                        <BlurImage 
+                          key={recipient.id}
+                          src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
+                          width={12}
+                          height={12}
+                          alt={recipient.name}
+                          className="size-6 shrink-0 overflow-hidden rounded-full border-2 border-white"
+                          style={{ zIndex: 3 - index }}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {selectedRecipients.slice(0, 3).map((recipient, index) => (
+                        <span key={recipient.id}>
+                          {index > 0 && index === Math.min(selectedRecipients.length, 3) - 1 && selectedRecipients.length <= 3 && " and "}
+                          {index > 0 && index < Math.min(selectedRecipients.length, 3) - 1 && ", "}
+                          {recipient.name}
+                        </span>
+                      ))}
+                      {selectedRecipients.length > 3 && ` and ${selectedRecipients.length - 3} more`}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -659,7 +728,7 @@ export default function RecipientsTable() {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Number of recipients</span>
-                      <span className="font-medium">{Object.keys(rowSelection).length}</span>
+                      <span className="font-medium">{selectedRecipients.length}</span>
                     </div>
                     <div className="flex justify-between text-sm font-medium">
                       <span>Total amount</span>
@@ -667,12 +736,13 @@ export default function RecipientsTable() {
                     </div>
                   </div>
 
-                  <Button className="w-full mt-6">
+                  <Button className="w-full mt-6 group">
                     Continue to Review
+                    <ExpandingArrow className="size-3 transition-all duration-300 ease-in-out" />
                   </Button>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         )}
       </div>
@@ -689,7 +759,7 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
     <div className="transition-opacity duration-200 delay-150 opacity-100">
       <div className="mb-6">
         <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold">{recipient.name}</h3>
+          <p className="text-base font-semibold">{recipient.name}</p>
           {recipient.isVerified ? (
             <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
               <CheckCircle2 className="h-3 w-3" />

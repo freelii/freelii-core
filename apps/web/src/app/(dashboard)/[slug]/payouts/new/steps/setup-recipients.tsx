@@ -3,6 +3,6 @@ import RecipientsTable from "./recipients-table"
 
 export default function SetupRecipients() {
     return (
-        <RecipientsTable />
+        <RecipientsTable mode="payout" />
     )
 }
