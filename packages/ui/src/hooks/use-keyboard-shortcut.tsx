@@ -23,7 +23,7 @@ export const KeyboardShortcutContext = createContext<{
   setListeners: Dispatch<SetStateAction<KeyboardShortcutListener[]>>;
 }>({
   listeners: [] as KeyboardShortcutListener[],
-  setListeners: () => {},
+  setListeners: () => { },
 });
 
 export function KeyboardShortcutProvider({
@@ -35,7 +35,7 @@ export function KeyboardShortcutProvider({
 
   return (
     <KeyboardShortcutContext.Provider value={{ listeners, setListeners }}>
-      {children}
+      <div>{children}</div>
     </KeyboardShortcutContext.Provider>
   );
 }

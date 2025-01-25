@@ -1,9 +1,10 @@
-import { AnimatedSizeContainer, Button, ClientOnly, Icon } from "@freelii/ui";
+import { AnimatedSizeContainer, ClientOnly, Icon } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "node_modules/@freelii/ui/src/logo";
 import {
   PropsWithChildren,
   ReactNode,
@@ -12,7 +13,6 @@ import {
   useState,
 } from "react";
 import UserDropdown from "./user-dropdown";
-import { Logo } from "node_modules/@freelii/ui/src/logo";
 
 export type NavItemCommon = {
   name: string;
@@ -165,6 +165,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
   const pathname = usePathname();
 
   const isActive = useMemo(() => {
+
     const hrefWithoutQuery = href.split("?")[0];
     return exact
       ? pathname === hrefWithoutQuery
@@ -182,8 +183,8 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
           "group flex items-center gap-2.5 rounded-md p-2 text-sm leading-none text-neutral-600 transition-[background-color,color,font-weight] duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80",
           "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
           isActive &&
-            !items &&
-            "bg-blue-100/50 font-medium text-blue-600 hover:bg-blue-100/80 active:bg-blue-100",
+          !items &&
+          "bg-blue-100/50 font-medium text-blue-600 hover:bg-blue-100/80 active:bg-blue-100",
         )}
       >
         {Icon && (
@@ -244,9 +245,9 @@ export function Area({
         visible
           ? "opacity-1 relative"
           : cn(
-              "pointer-events-none absolute opacity-0",
-              direction === "left" ? "-translate-x-full" : "translate-x-full",
-            ),
+            "pointer-events-none absolute opacity-0",
+            direction === "left" ? "-translate-x-full" : "translate-x-full",
+          ),
       )}
       aria-hidden={!visible ? true : undefined}
       {...{ inert: !visible ? false : undefined }}

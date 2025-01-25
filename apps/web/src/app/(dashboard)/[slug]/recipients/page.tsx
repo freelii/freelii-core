@@ -4,7 +4,7 @@ import RecipientsTable from "../payouts/new/steps/recipients-table";
 
 export default function RecipientsPage() {
   return (
-    <PageContent title="Recipients" description="View and manage trusted recipients">
+    <PageContent title="Recipients" >
       <MaxWidthWrapper>
         <RecipientsTable />
       </MaxWidthWrapper>

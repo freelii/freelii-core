@@ -1,19 +1,17 @@
-import { Metadata } from "next"
 import { PageContent } from "@/ui/layout/page-content"
 import { MaxWidthWrapper } from "@freelii/ui"
-import PayoutsTable, { Payment } from "./page-payouts"
-import dayjs from "dayjs"
-import { useFixtures } from "@/fixtures/useFixtures"
+import { Metadata } from "next"
+import PayoutsTable from "./page-payouts"
 
 export const metadata: Metadata = {
-  title: "Tasks",
-  description: "A task and issue tracker build using Tanstack Table.",
+  title: "Payouts",
+  description: "Overview of all payouts",
 }
 
-export default function TaskPage() {
+export default function PayoutsPage() {
 
   return (
-    <PageContent title="Payouts" description="Manage your upcoming payments and disbursements">
+    <PageContent title="Account Payouts" description="Overview of all payouts">
       <MaxWidthWrapper>
         <PayoutsTable />
       </MaxWidthWrapper>

@@ -1,9 +1,12 @@
-import { useFixtures } from "@/fixtures/useFixtures"
 import RecipientsTable from "./recipients-table"
-import { Button } from "@freelii/ui"
 
-export default function SetupRecipients() {
+interface SetupRecipientsProps {
+    onNext: () => void
+    onBack: () => void
+}
+
+export default function SetupRecipients({ onNext, onBack }: SetupRecipientsProps) {
     return (
-        <RecipientsTable mode="payout" />
+        <RecipientsTable mode="payout" onNext={onNext} onBack={onBack} />
     )
 }

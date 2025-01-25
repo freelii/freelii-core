@@ -12,7 +12,6 @@ type User = {
 };
 
 export function getUserAvatarUrl(user?: User | null) {
-    console.log('user?.image', user?.image)
   if (user?.image) return user.image;
 
   return `https://avatar.vercel.sh/${encodeURIComponent(user?.id ?? user?.email ?? user?.name ?? "freelii")}`;

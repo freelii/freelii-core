@@ -1,23 +1,12 @@
 "use client"
 
-import React, { useEffect, useRef } from "react"
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
+import { useFixtures } from "@/fixtures/useFixtures"
+import { FlagIcon } from "@/ui/shared/flag-icon"
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, CreditCard, UserPlus, Link2, Copy, Search, DollarSign } from "lucide-react"
-import { ArrowsOppositeDirectionY, Badge, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots, Card, Label, Textarea, Select, SelectTrigger, SelectValue, SelectContent, SelectItem, BlurImage } from "@freelii/ui"
-import { Checkbox } from "@freelii/ui"
+  Badge, BlurImage, Button, Checkbox, ExpandingArrow, HoverCard,
+  HoverCardContent,
+  HoverCardTrigger, IconMenu, Input, Label, Popover, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Textarea, ThreeDots, ToggleGroup, ToggleGroupItem
+} from "@freelii/ui"
 import {
   Table,
   TableBody,
@@ -26,16 +15,24 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, CURRENCIES, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG, DICEBEAR_SOLID_AVATAR_URL, pluralize } from "@freelii/utils"
-import Link from "next/link"
-import Image from "next/image"
-import { useFixtures } from "@/fixtures/useFixtures"
-import { ToggleGroup, ToggleGroupItem } from "@freelii/ui"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, pluralize } from "@freelii/utils"
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@freelii/ui"
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table"
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { Building2, CheckCircle2, ClipboardCopy, Clock, CreditCard, Search, UserPlus } from "lucide-react"
+import Link from "next/link"
+import React, { useEffect, useRef } from "react"
 
 dayjs.extend(relativeTime)
 
@@ -210,10 +207,10 @@ export const columns: ColumnDef<Recipient>[] = [
     cell: ({ row }) => {
       const type = row.original.recipientType
       return (
-        <Badge 
+        <Badge
           className={cn(
             "flex items-center gap-1",
-            type === 'business' 
+            type === 'business'
               ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
               : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
           )}
@@ -242,6 +239,8 @@ export const columns: ColumnDef<Recipient>[] = [
         )
       }
 
+      console.log(bankingDetails)
+
       return (
         <div className="flex items-center gap-2">
           <div className="flex flex-col">
@@ -250,13 +249,12 @@ export const columns: ColumnDef<Recipient>[] = [
               {bankingDetails.bankName}
             </div>
             <div className="text-xs text-gray-500 flex items-center gap-1">
-             {bankingDetails?.currency && <Image
-                src={bankingDetails?.currency?.flag}
-                alt={bankingDetails?.currency?.name}
-                width={16}
-                height={16}
-                className="rounded-full object-cover w-4 h-4 border-2 border-gray-200"
-              />}
+              {bankingDetails?.currency && (
+                <FlagIcon
+                  currencyCode={bankingDetails.currency.shortName}
+                  size={16}
+                />
+              )}
               {bankingDetails?.currency?.name}
             </div>
           </div>
@@ -310,9 +308,11 @@ export const columns: ColumnDef<Recipient>[] = [
 
 type RecipientsTableProps = {
   mode?: 'default' | 'payout'
+  onNext?: () => void
+  onBack?: () => void
 }
 
-export default function RecipientsTable({ mode = 'default' }: RecipientsTableProps) {
+export default function RecipientsTable({ mode = 'default', onNext, onBack }: RecipientsTableProps) {
   const { getRecipients, subAccounts } = useFixtures()
   const [recipients, setRecipients] = React.useState<Recipient[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -323,13 +323,13 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null)
   const detailsCardRef = useRef<HTMLDivElement>(null)
   const [recipientTypeFilter, setRecipientTypeFilter] = React.useState<string | null>(null)
-  const [showAddNew, setShowAddNew] = React.useState(false)
   const addNewCardRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [selectedRecipients, setSelectedRecipients] = React.useState<Recipient[]>([])
   const hasSelectedRecipients = mode === 'payout' && selectedRecipients.length > 0
   const [amount, setAmount] = React.useState<number>(0)
   const [paymentMode, setPaymentMode] = React.useState<'per-recipient' | 'split'>('per-recipient')
+  const [selectedCurrency, setSelectedCurrency] = React.useState<string>("USD")
 
   // Update selectedRecipients when rowSelection changes
   useEffect(() => {
@@ -337,26 +337,26 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
       const id = recipient.id.toString()
       return rowSelection[id]
     })
-    console.log(rowSelection,selected)
+    console.log(rowSelection, selected)
     setSelectedRecipients(selected)
   }, [recipients, rowSelection])
 
   const filteredRecipients = React.useMemo(() => {
     let filtered = recipients
-    
+
     // Filter by search query
     if (searchQuery) {
-      filtered = filtered.filter(recipient => 
+      filtered = filtered.filter(recipient =>
         recipient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         recipient.email.toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
-    
+
     // Filter by recipient type
     if (recipientTypeFilter) {
       filtered = filtered.filter(recipient => recipient.recipientType === recipientTypeFilter)
     }
-    
+
     return filtered
   }, [recipients, recipientTypeFilter, searchQuery])
 
@@ -404,7 +404,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
-        detailsCardRef.current && 
+        detailsCardRef.current &&
         !detailsCardRef.current.contains(event.target as Node) &&
         !(event.target as Element).closest('tr')
       ) {
@@ -420,30 +420,11 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
     }
   }, [selectedRecipient])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        addNewCardRef.current && 
-        !addNewCardRef.current.contains(event.target as Node) &&
-        !(event.target as Element).closest('button')?.contains(document.querySelector('[data-add-new-button]'))
-      ) {
-        setShowAddNew(false)
-      }
-    }
-
-    if (showAddNew) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside)
-      }
-    }
-  }, [showAddNew])
-
   return (
     <div className="w-full relative space-y-6 pb-10">
       {/* Floating Actions Bar - only shown in default mode */}
       {mode === 'default' && selectedRecipients.length > 0 && (
-        <div 
+        <div
           className={cn(
             "absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4",
             "bg-white rounded-full shadow-2xl border border-gray-200 z-50 shadow-gray-500/20",
@@ -467,7 +448,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
 
       <div className={cn(
         "grid gap-6 transition-all duration-300",
-        (hasSelectedRecipients || selectedRecipient) ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
+        (hasSelectedRecipients || selectedRecipient || mode === 'payout') ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
       )}>
         <div className="space-y-4">
           <div className="mb-4 flex items-center gap-4">
@@ -482,13 +463,13 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
             </div>
 
             <div className="flex items-center justify-between flex-1">
-              <ToggleGroup 
-                type="single" 
-                value={recipientTypeFilter || ''} 
+              <ToggleGroup
+                type="single"
+                value={recipientTypeFilter || ''}
                 onValueChange={(value) => setRecipientTypeFilter(value || null)}
               >
-                <ToggleGroupItem 
-                  value="" 
+                <ToggleGroupItem
+                  value=""
                   aria-label="Show all recipients"
                   className={cn(
                     "text-xs px-3 py-1",
@@ -497,8 +478,8 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                 >
                   All
                 </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="business" 
+                <ToggleGroupItem
+                  value="business"
                   aria-label="Show business recipients"
                   className={cn(
                     "text-xs px-3 py-1 gap-1",
@@ -508,8 +489,8 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                   <Building2 className="h-3 w-3" />
                   Business
                 </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="personal" 
+                <ToggleGroupItem
+                  value="personal"
                   aria-label="Show personal recipients"
                   className={cn(
                     "text-xs px-3 py-1 gap-1",
@@ -520,21 +501,6 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                   Personal
                 </ToggleGroupItem>
               </ToggleGroup>
-
-              <Button
-                data-add-new-button
-                onClick={() => {
-                  setShowAddNew(prev => !prev)
-                  setSelectedRecipient(null)
-                }}
-                className={cn(
-                  "text-xs px-3 py-1 gap-1",
-                  showAddNew && "bg-gray-100"
-                )}
-              >
-                <UserPlus className="h-3 w-3" />
-                Add New
-              </Button>
             </div>
           </div>
 
@@ -548,9 +514,9 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                         <>{header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}</>
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}</>
                       </TableHead>
                     ))}
                   </TableRow>
@@ -593,18 +559,19 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                       data-state={row.getIsSelected() && "selected"}
                       className={cn(
                         "cursor-pointer hover:bg-gray-50 relative",
-                        selectedRecipient?.id === row.original.id && "bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
-                        selectedRecipient?.id === row.original.id && "rounded-full"
+                        mode === 'payout' || selectedRecipient?.id === row.original.id && "rounded-full bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
                       )}
                       onClick={() => {
-                        setSelectedRecipient(
-                          selectedRecipient?.id === row.original.id ? null : row.original
-                        )
+                        if (mode === 'default') {
+                          setSelectedRecipient(
+                            selectedRecipient?.id === row.original.id ? null : row.original
+                          )
+                        }
                       }}
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell key={cell.id} className="font-normal text-xs p-1">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
                         </TableCell>
                       ))}
                     </TableRow>
@@ -619,8 +586,8 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                         <div className="rounded-full bg-gray-100 p-3">
                           <Building2 className="h-6 w-6 text-gray-400" />
                         </div>
-                        <p className="font-medium text-gray-900">No recipients yet</p>
-                        <p className="text-sm text-gray-500">Get started by adding your first recipient.</p>
+                        <p className="font-medium text-gray-900">{(searchQuery) ? "No recipients found" : "No recipients yet"}</p>
+                        <p className="text-sm text-gray-500">{(searchQuery) ? "Add a new recipient to get started." : "Get started by adding your first recipient."}</p>
                         <Button
                           className="mt-4 text-xs font-medium bg-black text-white hover:bg-neutral-900"
                         >
@@ -639,7 +606,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
 
         {/* Right side card - either recipient details or payout form */}
         {mode === 'default' && selectedRecipient && (
-          <div 
+          <div
             ref={detailsCardRef}
             className="animate-in slide-in-from-right duration-300"
           >
@@ -649,19 +616,20 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
           </div>
         )}
 
-        {mode === 'payout' && hasSelectedRecipients && (
+        {/* Right side card - with payout form */}
+        {mode === 'payout' && (
           <div className="animate-in slide-in-from-right duration-300">
             <div className="p-6 bg-white rounded-lg border border-gray-200">
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-medium text-lg">Payment Details</h3>
+                  <h3 className="font-medium text-lg">New Payment Details</h3>
                   <p className="text-sm text-gray-500 mt-2">
                     Configure the payment details for {selectedRecipients.length} selected {pluralize(selectedRecipients.length, 'recipient')}
                   </p>
                   <div className="flex items-center gap-2 mt-3">
                     <div className="flex -space-x-2">
                       {selectedRecipients.slice(0, 3).map((recipient, index) => (
-                        <BlurImage 
+                        <BlurImage
                           key={recipient.id}
                           src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
                           width={12}
@@ -691,52 +659,12 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="amount">Amount</Label>
-                      <ToggleGroup 
-                        type="single" 
-                        value={paymentMode} 
-                        onValueChange={(value) => setPaymentMode(value as 'per-recipient' | 'split')}
-                        className="border rounded-md"
-                      >
-                        <ToggleGroupItem 
-                          value="per-recipient" 
-                          aria-label="Per recipient"
-                          className="text-xs px-3 py-1"
-                        >
-                          Per recipient
-                        </ToggleGroupItem>
-                        <ToggleGroupItem 
-                          value="split" 
-                          aria-label="Split amount"
-                          className="text-xs px-3 py-1"
-                        >
-                          Split amount
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    </div>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500" />
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="0.00"
-                        className="pl-10"
-                        value={amount || ''}
-                        onChange={(e) => setAmount(Number(e.target.value))}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      {paymentMode === 'per-recipient' 
-                        ? 'Each recipient will receive this amount' 
-                        : 'This amount will be split equally between all recipients'}
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="payment-method">Origin Account</Label>
-                    <Select>
-                      <SelectTrigger id="payment-method" className="w-full">
+                    <Label htmlFor="currency">Origin Account</Label>
+                    <Select
+                      value={selectedCurrency}
+                      onValueChange={setSelectedCurrency}
+                    >
+                      <SelectTrigger id="payment-method" className="w-full ">
                         <SelectValue placeholder="Select origin account" />
                       </SelectTrigger>
                       <SelectContent className="bg-white p-0">
@@ -751,11 +679,11 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                               </div>
 
                               <div className="flex items-start justify-between gap-3 ">
-                                <Badge 
+                                <Badge
                                   className={cn(
                                     "flex items-center gap-1 m-0.5",
-                                    subAccount.status === 'active' 
-                                      ? "bg-green-50 text-green-700 border-green-200" 
+                                    subAccount.status === 'active'
+                                      ? "bg-green-50 text-green-700 border-green-200"
                                       : "bg-gray-50 text-gray-600 border-gray-200"
                                   )}
                                 >
@@ -766,12 +694,9 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                                 <div className="flex flex-col items-end ">
                                   <div className="flex items-center gap-1">
                                     {subAccount.currency && CURRENCIES[subAccount.currency] && (
-                                      <Image
-                                        src={CURRENCIES[subAccount.currency]?.flag ?? ''}
-                                        alt={CURRENCIES[subAccount.currency]?.name ?? ''}
-                                        width={12}
-                                        height={12}
-                                        className="rounded-full object-cover size-3"
+                                      <FlagIcon
+                                        currencyCode={subAccount.currency}
+                                        size={16}
                                       />
                                     )}
                                     <span className="text-sm font-medium">
@@ -786,6 +711,63 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                         ))}
                       </SelectContent>
                     </Select>
+                    <Separator className="my-10" />
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="amount">Amount</Label>
+                      {selectedRecipients.length > 1 && (
+                        <ToggleGroup
+                          type="single"
+                          value={paymentMode}
+                          onValueChange={(value) => setPaymentMode(value as 'per-recipient' | 'split')}
+                          className="border rounded-md"
+                        >
+                          <ToggleGroupItem
+                            value="per-recipient"
+                            aria-label="Per recipient"
+                            className="text-xs px-3 py-1"
+                          >
+                            Per recipient
+                          </ToggleGroupItem>
+                          <ToggleGroupItem
+                            value="split"
+                            aria-label="Split amount"
+                            className="text-xs px-3 py-1"
+                          >
+                            Split amount
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      )}
+                    </div>
+                    <div className="relative flex-1">
+                      {selectedCurrency && (
+                        <div className="absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-gray-200 pr-4 pl-2 py-2 rounded-l-md">
+                          <FlagIcon
+                            currencyCode={selectedCurrency}
+                            size={16}
+                          />
+                          <span className="text-sm text-gray-500">
+                            {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                          </span>
+                        </div>
+                      )}
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="0.00"
+                        className="pl-16 hover:border-gray-500 focus:border-none"
+                        value={amount || ''}
+                        onChange={(e) => setAmount(Number(e.target.value))}
+                      />
+                    </div>
+
+
+                    {selectedRecipients.length > 1 && (
+                      <p className="text-xs text-gray-500">
+                        {paymentMode === 'per-recipient'
+                          ? 'Each recipient will receive this amount'
+                          : 'This amount will be split equally between all recipients'}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -793,7 +775,7 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
                     <Textarea
                       id="notes"
                       placeholder="Add any notes about this payment..."
-                      className="resize-none"
+                      className="resize-none hover:border-gray-500 focus:border-none"
                       rows={3}
                     />
                   </div>
@@ -801,32 +783,53 @@ export default function RecipientsTable({ mode = 'default' }: RecipientsTablePro
 
                 <div className="pt-4 border-t border-gray-100">
                   <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {paymentMode === 'per-recipient' ? 'Amount per recipient' : 'Total amount'}
-                      </span>
-                      <span className="font-medium">${amount.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Number of recipients</span>
-                      <span className="font-medium">{selectedRecipients.length}</span>
-                    </div>
-                    {paymentMode === 'per-recipient' ? (
-                      <div className="flex justify-between text-sm font-medium">
-                        <span>Total amount</span>
-                        <span>${(amount * selectedRecipients.length).toFixed(2)}</span>
-                      </div>
+                    {selectedRecipients.length > 1 ? (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
+                            {paymentMode === 'per-recipient' ? 'Amount per recipient' : 'Total amount'}
+                          </span>
+                          <span className="font-medium">
+                            {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}{amount.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Number of recipients</span>
+                          <span className="font-medium">{selectedRecipients.length}</span>
+                        </div>
+                        {paymentMode === 'per-recipient' ? (
+                          <div className="flex justify-between text-sm font-medium">
+                            <span>Total amount</span>
+                            <span>
+                              {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                              {(amount * selectedRecipients.length).toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex justify-between text-sm font-medium">
+                            <span>Amount per recipient</span>
+                            <span>
+                              {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                              {selectedRecipients.length ? (amount / selectedRecipients.length).toFixed(2) : '0.00'}
+                            </span>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="flex justify-between text-sm font-medium">
-                        <span>Amount per recipient</span>
-                        <span>${selectedRecipients.length ? (amount / selectedRecipients.length).toFixed(2) : '0.00'}</span>
+                        <span>Amount</span>
+                        <span>
+                          {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                          {amount.toFixed(2)}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  <Button 
+                  <Button
                     className="w-full mt-6 group"
                     disabled={!amount || !selectedRecipients.length}
+                    onClick={onNext}
                   >
                     Continue to Review
                     <ExpandingArrow className="size-3 transition-all duration-300 ease-in-out" />
@@ -880,13 +883,12 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
                   <div className="text-sm font-medium">{recipient.bankingDetails.bankName}</div>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full">
-                  <Image
-                    src={recipient.bankingDetails?.currency?.flag}
-                    alt={recipient.bankingDetails?.currency?.name}
-                    width={16}
-                    height={16}
-                    className="rounded-full object-cover w-4 h-4"
-                  />
+                  {recipient.bankingDetails?.currency && (
+                    <FlagIcon
+                      currencyCode={recipient.bankingDetails.currency.shortName}
+                      size={16}
+                    />
+                  )}
                   <span className="text-xs text-gray-600">{recipient.bankingDetails?.currency?.name}</span>
                 </div>
               </div>
@@ -928,7 +930,7 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
           <Button variant="danger" className="p-2 text-xs">
             Remove Recipient
           </Button>
-          <Button  className="ml-auto">
+          <Button className="ml-auto">
             Edit Details
           </Button>
         </div>

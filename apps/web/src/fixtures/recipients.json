@@ -1,5 +1,173 @@
 [
   {
+    "name": "Shanghai Tech Solutions",
+    "email": "finance@shanghaitech.cn",
+    "id": 21,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_21",
+      "name": "Shanghai Tech Solutions",
+      "accountNumber": "9876543210",
+      "routingNumber": "021000021",
+      "bankName": "Bank of China",
+      "bankAddress": "200 Mid Yincheng Road",
+      "bankCity": "Shanghai",
+      "bankState": "",
+      "bankZip": "200120",
+      "currency": {
+        "currencyCode": "CNY"
+      }
+    }
+  },
+  {
+    "name": "Hong Kong Digital Ltd",
+    "email": "accounts@hkdigital.com",
+    "id": 22,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_22",
+      "name": "Hong Kong Digital Ltd",
+      "accountNumber": "8765432109",
+      "routingNumber": "021000021",
+      "bankName": "HSBC Hong Kong",
+      "bankAddress": "1 Queen's Road Central",
+      "bankCity": "Hong Kong",
+      "bankState": "",
+      "bankZip": "",
+      "currency": {
+        "currencyCode": "HKD"
+      }
+    }
+  },
+  {
+    "name": "Singapore Innovation Hub",
+    "email": "payments@sginnovation.sg",
+    "id": 23,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_23",
+      "name": "Singapore Innovation Hub",
+      "accountNumber": "7654321098",
+      "routingNumber": "021000021",
+      "bankName": "DBS Bank",
+      "bankAddress": "12 Marina Boulevard",
+      "bankCity": "Singapore",
+      "bankState": "",
+      "bankZip": "018982",
+      "currency": {
+        "currencyCode": "SGD"
+      }
+    }
+  },
+  {
+    "name": "Manila Tech Corp",
+    "email": "finance@manilatech.ph",
+    "id": 24,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_24",
+      "name": "Manila Tech Corp",
+      "accountNumber": "6543210987",
+      "routingNumber": "021000021",
+      "bankName": "BDO Unibank",
+      "bankAddress": "BDO Corporate Center",
+      "bankCity": "Makati",
+      "bankState": "NCR",
+      "bankZip": "1200",
+      "currency": {
+        "currencyCode": "PHP"
+      }
+    }
+  },
+  {
+    "name": "Cebu Digital Solutions",
+    "email": "accounts@cebudigital.ph",
+    "id": 25,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_25",
+      "name": "Cebu Digital Solutions",
+      "accountNumber": "5432109876",
+      "routingNumber": "021000021",
+      "bankName": "BPI",
+      "bankAddress": "BPI Cebu Business Park",
+      "bankCity": "Cebu",
+      "bankState": "CEB",
+      "bankZip": "6000",
+      "currency": {
+        "currencyCode": "PHP"
+      }
+    }
+  },
+  {
+    "name": "Shenzhen Electronics Co",
+    "email": "payments@szelectronics.cn",
+    "id": 26,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_26",
+      "name": "Shenzhen Electronics Co",
+      "accountNumber": "4321098765",
+      "routingNumber": "021000021",
+      "bankName": "China Construction Bank",
+      "bankAddress": "No. 6011 Shennan Road",
+      "bankCity": "Shenzhen",
+      "bankState": "",
+      "bankZip": "518000",
+      "currency": {
+        "currencyCode": "CNY"
+      }
+    }
+  },
+  {
+    "name": "Singapore Fintech Solutions",
+    "email": "treasury@sgfintech.sg",
+    "id": 27,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_27",
+      "name": "Singapore Fintech Solutions",
+      "accountNumber": "3210987654",
+      "routingNumber": "021000021",
+      "bankName": "OCBC Bank",
+      "bankAddress": "65 Chulia Street",
+      "bankCity": "Singapore",
+      "bankState": "",
+      "bankZip": "049513",
+      "currency": {
+        "currencyCode": "SGD"
+      }
+    }
+  },
+  {
+    "name": "Hong Kong Trade Partners",
+    "email": "accounts@hktrade.hk",
+    "id": 28,
+    "isVerified": true,
+    "recipientType": "business",
+    "bankingDetails": {
+      "id": "bd_28",
+      "name": "Hong Kong Trade Partners",
+      "accountNumber": "2109876543",
+      "routingNumber": "021000021",
+      "bankName": "Bank of East Asia",
+      "bankAddress": "10 Des Voeux Road Central",
+      "bankCity": "Hong Kong",
+      "bankState": "",
+      "bankZip": "",
+      "currency": {
+        "currencyCode": "HKD"
+      }
+    }
+  },
+  {
     "name": "Crisanto Reyes",
     "email": "crisanto@example.com", 
     "id": 1,
@@ -306,173 +474,5 @@
     "id": 20,
     "isVerified": false,
     "recipientType": "personal"
-  },
-  {
-    "name": "Global Solutions Corp",
-    "email": "accounts@globalsolutions.com",
-    "id": 21,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_21",
-      "name": "Global Solutions Corp",
-      "accountNumber": "9876543210",
-      "routingNumber": "021000021",
-      "bankName": "Chase Bank",
-      "bankAddress": "270 Park Avenue",
-      "bankCity": "New York",
-      "bankState": "NY",
-      "bankZip": "10017",
-      "currency": {
-        "currencyCode": "USD"
-      }
-    }
-  },
-  {
-    "name": "Tech Innovators Ltd",
-    "email": "finance@techinnovators.com",
-    "id": 22,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_22",
-      "name": "Tech Innovators Ltd",
-      "accountNumber": "8765432109",
-      "routingNumber": "021000021",
-      "bankName": "HSBC",
-      "bankAddress": "452 Fifth Avenue",
-      "bankCity": "London",
-      "bankState": "",
-      "bankZip": "EC2V 7HH",
-      "currency": {
-        "currencyCode": "GBP"
-      }
-    }
-  },
-  {
-    "name": "Digital Services Asia Pte",
-    "email": "payments@digitalservices.asia",
-    "id": 23,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_23",
-      "name": "Digital Services Asia Pte",
-      "accountNumber": "7654321098",
-      "routingNumber": "021000021",
-      "bankName": "DBS Bank",
-      "bankAddress": "12 Marina Boulevard",
-      "bankCity": "Singapore",
-      "bankState": "",
-      "bankZip": "018982",
-      "currency": {
-        "currencyCode": "SGD"
-      }
-    }
-  },
-  {
-    "name": "European Ventures GmbH",
-    "email": "accounting@euventures.de",
-    "id": 24,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_24",
-      "name": "European Ventures GmbH",
-      "accountNumber": "6543210987",
-      "routingNumber": "021000021",
-      "bankName": "Deutsche Bank",
-      "bankAddress": "Taunusanlage 12",
-      "bankCity": "Frankfurt",
-      "bankState": "",
-      "bankZip": "60325",
-      "currency": {
-        "currencyCode": "EUR"
-      }
-    }
-  },
-  {
-    "name": "Pacific Trading Co",
-    "email": "finance@pacifictrading.jp",
-    "id": 25,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_25",
-      "name": "Pacific Trading Co",
-      "accountNumber": "5432109876",
-      "routingNumber": "021000021",
-      "bankName": "MUFG Bank",
-      "bankAddress": "2-7-1 Marunouchi",
-      "bankCity": "Tokyo",
-      "bankState": "",
-      "bankZip": "100-8388",
-      "currency": {
-        "currencyCode": "JPY"
-      }
-    }
-  },
-  {
-    "name": "Canadian Solutions Inc",
-    "email": "payments@canadiansolutions.ca",
-    "id": 26,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_26",
-      "name": "Canadian Solutions Inc",
-      "accountNumber": "4321098765",
-      "routingNumber": "021000021",
-      "bankName": "Royal Bank of Canada",
-      "bankAddress": "200 Bay Street",
-      "bankCity": "Toronto",
-      "bankState": "ON",
-      "bankZip": "M5J 2J5",
-      "currency": {
-        "currencyCode": "CAD"
-      }
-    }
-  },
-  {
-    "name": "Australian Tech Pty Ltd",
-    "email": "accounts@austech.com.au",
-    "id": 27,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_27",
-      "name": "Australian Tech Pty Ltd",
-      "accountNumber": "3210987654",
-      "routingNumber": "021000021",
-      "bankName": "Commonwealth Bank",
-      "bankAddress": "201 Sussex Street",
-      "bankCity": "Sydney",
-      "bankState": "NSW",
-      "bankZip": "2000",
-      "currency": {
-        "currencyCode": "AUD"
-      }
-    }
-  },
-  {
-    "name": "Nordic Innovations AB",
-    "email": "finance@nordicinnovations.se",
-    "id": 28,
-    "isVerified": true,
-    "recipientType": "business",
-    "bankingDetails": {
-      "id": "bd_28",
-      "name": "Nordic Innovations AB",
-      "accountNumber": "2109876543",
-      "routingNumber": "021000021",
-      "bankName": "Nordea Bank",
-      "bankAddress": "Smålandsgatan 17",
-      "bankCity": "Stockholm",
-      "bankState": "",
-      "bankZip": "105 71",
-      "currency": {
-        "currencyCode": "SEK"
-      }
-    }
   }
 ]

@@ -25,8 +25,8 @@ export function PageContent({
     <div className="bg-neutral-100 md:bg-white">
       <MaxWidthWrapper
         className={cn(
-          "mt-3",
-          (hasTitle || hasDescription) && "md:mt-6 md:py-3",
+          "mt-1",
+          (hasTitle || hasDescription) && "md:mt-3 md:py-3",
         )}
       >
         <div className="flex items-center justify-between gap-4">

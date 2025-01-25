@@ -1,12 +1,13 @@
 import { PageContent } from "@/ui/layout/page-content";
-import WorkspaceLinksClient from "./page-client";
-import { SignedIn } from "@clerk/nextjs";
+import { MaxWidthWrapper } from "@freelii/ui";
+import PayoutsTable from "./payouts/page-payouts";
 
-export default function WorkspaceLinks() {
+export default function WorkspacePage() {
   return (
-    <PageContent title="Links">
-      Content
-      <WorkspaceLinksClient />
+    <PageContent title="Account Payouts" description="Overview of all payouts">
+      <MaxWidthWrapper>
+        <PayoutsTable />
+      </MaxWidthWrapper>
     </PageContent>
   );
 }

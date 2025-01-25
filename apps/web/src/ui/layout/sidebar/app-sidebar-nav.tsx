@@ -1,21 +1,17 @@
 "use client";
 
-import { Calendar6, ConnectedDots, ConnectedDots4, CreditCard, GlobePointer, GreekTemple, InvoiceDollar, User, useRouterStuff, Users6 } from "@freelii/ui";
 import {
-//   Books2,
-//   CircleInfo,
-//   ConnectedDots,
-//   ConnectedDots4,
-//   CubeSettings,
-//   Gear2,
-//   Gift,
-//   Globe, 
+  Calendar6,
+  //   Books2,
+  //   CircleInfo,
+  //   ConnectedDots,
+  //   ConnectedDots4,
+  //   CubeSettings,
+  //   Gear2,
+  //   Gift,
+  //   Globe, 
   Facebook,
-//   Key,
-//   Receipt2,
-//   ShieldCheck,
-//   Users6,
-//   Webhook,
+  InvoiceDollar, useRouterStuff, Users6
 } from "@freelii/ui";
 // import { Session } from "next-auth";
 // import { useSession } from "next-auth/react";
@@ -28,8 +24,6 @@ import { ReactNode, useMemo } from "react";
 // import { LinesY } from "./icons/lines-y";
 import { SidebarNav, SidebarNavAreas } from "./sidebar-nav";
 // import { Usage } from "./usage";
-import { WorkspaceDropdown } from "./workspace-dropdown";
-import { Gear } from "./icons/gear";
 
 const NAV_AREAS: SidebarNavAreas<{
   slug: string;
@@ -47,17 +41,17 @@ const NAV_AREAS: SidebarNavAreas<{
       {
         name: "Main",
         items: [
-          {
-            name: "Home",
-            icon: GreekTemple,
-            href: `/${slug}`,
-            exact: true,
-          },
-          {
-            name: "Sub-Accounts",
-            icon: ConnectedDots,
-            href: `/${slug}/accounts${queryString}`,
-          },
+          // {
+          //   name: "Home",
+          //   icon: GreekTemple,
+          //   href: `/${slug}`,
+          //   exact: true,
+          // },
+          // {
+          //   name: "Sub-Accounts",
+          //   icon: ConnectedDots,
+          //   href: `/${slug}/accounts${queryString}`,
+          // },
           {
             name: "Payouts",
             icon: InvoiceDollar,
@@ -68,39 +62,34 @@ const NAV_AREAS: SidebarNavAreas<{
             icon: Users6,
             href: `/${slug}/recipients${queryString}`,
           },
-          {
-            name: "Transactions",
-            icon: CreditCard,
-            href: `/${slug}/transactions${queryString}`,
-          },
-          {
-            name: "Settings",
-            icon: Gear,
-            href: `/${slug}/settings`,
-          },
+          // {
+          //   name: "Deposits",
+          //   icon: CreditCard,
+          //   href: `/${slug}/deposits${queryString}`,
+          // },
+          // {
+          //   name: "Settings",
+          //   icon: Gear,
+          //   href: `/${slug}/settings`,
+          //   disabled: true,
+          // },
         ],
       }],
   }),
   // Payments
   payments: ({ slug }) => ({
-    title: "Payments",
+    title: "Payouts",
     backHref: `/${slug}`,
     content: [
       {
         name: "Payouts",
         items: [
-        
+
           {
-            name: "Scheduled payments",
+            name: "Account Payouts",
             icon: Calendar6,
             href: `/${slug}/payouts`,
           },
-          {
-            name: "Disbursements",
-            icon: InvoiceDollar,
-            href: `/${slug}/payouts/disbursements`,
-          },
-
         ],
       },
     ],
@@ -204,10 +193,10 @@ export function AppSidebarNav({
   const { slug } = useParams() as { slug?: string };
   const pathname = usePathname();
   const { getQueryString } = useRouterStuff();
-//   const { data: session } = useSession();
-// TODO trpc  const { programs } = usePrograms();
+  //   const { data: session } = useSession();
+  // TODO trpc  const { programs } = usePrograms();
 
-const programs = [{ id: "1" }];
+  const programs = [{ id: "1" }];
 
   const currentArea = useMemo(() => {
     return pathname.startsWith("/account/settings")
@@ -215,8 +204,8 @@ const programs = [{ id: "1" }];
       : pathname.startsWith(`/${slug}/settings`)
         ? "workspaceSettings"
         : pathname.startsWith(`/${slug}/payouts`)
-        ? "payments"
-        : "default";
+          ? "payments"
+          : "default";
   }, [slug, pathname]);
 
   return (
@@ -234,7 +223,7 @@ const programs = [{ id: "1" }];
       }}
       toolContent={toolContent}
       newsContent={newsContent}
-      switcher={<WorkspaceDropdown />}
+      // switcher={<WorkspaceDropdown />}
       bottom={
         <>
           {/* TODO <UserSurveyButton /> */}

@@ -1,21 +1,20 @@
 "use client";
 
-import { Avatar, User, Icon, Popover } from "@freelii/ui";
+import { Avatar, Icon, Popover } from "@freelii/ui";
 import { cn, noop } from "@freelii/utils";
-import { Gift, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 // import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
 import { ComponentPropsWithoutRef, ElementType, useState } from "react";
 
 export default function UserDropdown() {
-    const session = {
-        user: {
-            name: 'Jose',
-            email: 'jose@freelii.app',
-            referralLinkId: '123',
-        }
-    };
-//   const { data: session } = useSession();
+  const session = {
+    user: {
+      name: 'Jose',
+      email: 'jose@freelii.app',
+      referralLinkId: '123',
+    }
+  };
+  //   const { data: session } = useSession();
   const [openPopover, setOpenPopover] = useState(false);
 
   return (
@@ -37,7 +36,7 @@ export default function UserDropdown() {
               <div className="h-3 w-20 animate-pulse rounded-full bg-neutral-200" />
             </div>
           )}
-          <UserOption
+          {/* <UserOption
             as={Link}
             label="Account"
             icon={User}
@@ -52,7 +51,7 @@ export default function UserDropdown() {
               href="/account/settings/referrals"
               onClick={() => setOpenPopover(false)}
             />
-          )}
+          )} */}
           <UserOption
             as="button"
             type="button"

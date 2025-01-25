@@ -4,37 +4,39 @@
 // import { ModalContext } from "@/ui/modals/modal-provider";
 import {
   BlurImage,
+  Facebook,
   getUserAvatarUrl,
   Popover,
   useScrollProgress,
 } from "@freelii/ui";
-import { Facebook } from "@freelii/ui";
-import { cn, DICEBEAR_AVATAR_URL } from "@freelii/utils";
-import { ChevronsUpDown, HelpCircle } from "lucide-react";
+import { cn, CURRENCIES, DICEBEAR_AVATAR_URL } from "@freelii/utils";
+import { ChevronsUpDown, HelpCircle, Plus } from "lucide-react";
 // import { useSession } from "next-auth/react";
+import { useFixtures } from "@/fixtures/useFixtures";
+import { FlagIcon } from "@/ui/shared/flag-icon";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import {
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 
 export function WorkspaceDropdown() {
-  const workspaces = [
-    {
-      id: "1",
-      name: "Freelii",
-      slug: "/",
-      image: getUserAvatarUrl({name: 'Jose', email: 'jose@freelii.app'}),
-      plan: "free",
-    },
-  ]
-  // const { workspaces } = useWorkspaces();
-  // const { data: session, status } = useSession();
+  const { subAccounts } = useFixtures();
+
+  const workspaces = subAccounts.map(account => ({
+    id: account.id,
+    name: account.name,
+    slug: `/${account.id}`,
+    image: getUserAvatarUrl({ name: account.name, email: `${account.id}@freelii.app` }),
+    plan: account.type === 'operational' ? 'business' : account.type === 'budget' ? 'pro' : 'free',
+    status: account.status,
+    currency: account.currency
+  }));
+
   const { slug: currentSlug, key } = useParams() as {
     slug?: string;
     key?: string;
@@ -47,97 +49,89 @@ export function WorkspaceDropdown() {
   }, [currentSlug]);
 
   const selected = useMemo(() => {
-    const selectedWorkspace = {
-      id: "1",
-      name: "Freelii",
-      slug: "/",
-      image: getUserAvatarUrl({name: 'Jose', email: 'jose@freelii.app'}),
-      plan: "free",
-    }
-
-    // const selectedWorkspace = workspaces?.find(
-    //   (workspace) => workspace.slug === slug,
-    // );
+    const selectedWorkspace = workspaces?.find(
+      (workspace) => workspace.slug === `/${slug}`,
+    );
 
     if (slug && workspaces && selectedWorkspace) {
       return {
         ...selectedWorkspace,
         image: `${DICEBEAR_AVATAR_URL}${selectedWorkspace.name}`,
       };
-
-      // return personal account selector if there's no workspace or error (user doesn't have access to workspace)
     } else {
       return {
-        name: 'jose',// TODO; session?.user?.name || session?.user?.email,
+        name: 'Main Account',
         slug: "/",
-        image: getUserAvatarUrl({name: 'Jose', email: 'jose@freelii.app'}),
-        plan: "free",
+        image: getUserAvatarUrl({ name: 'Main Account', email: 'main@freelii.app' }),
+        plan: "business" as const,
       };
     }
-  }, [slug, workspaces, /* TODO session */]) as {
-    id?: string;
-    name: string;
-    slug: string;
-    image: string;
-    plan: 'free' | 'pro' | 'business' | 'enterprise';
-  };
+  }, [slug, workspaces]);
 
   const [openPopover, setOpenPopover] = useState(false);
 
-  if (!workspaces || status === "loading") {
+  if (!workspaces) {
     return <WorkspaceDropdownPlaceholder />;
   }
 
   return (
     <div>
       <Popover
-      content={
-        <WorkspaceList
-          selected={selected}
-          workspaces={workspaces}
-          setOpenPopover={setOpenPopover}
-        />
-      }
-      align="start"
-      openPopover={openPopover}
-      setOpenPopover={setOpenPopover}
-    >
+        content={
+          <WorkspaceList
+            selected={selected}
+            workspaces={workspaces}
+            setOpenPopover={setOpenPopover}
+          />
+        }
+        align="start"
+        openPopover={openPopover}
+        setOpenPopover={setOpenPopover}
+      >
         <button
           onClick={() => setOpenPopover(!openPopover)}
           className={cn(
-            "flex w-full items-center justify-between rounded-lg p-1.5 text-left text-sm transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80 data-[state=open]:bg-neutral-200/80",
+            "flex w-full items-center justify-between rounded-lg p-1.5 text-left text-sm transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80",
             "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
           )}
-          >
+        >
           <div className="flex min-w-0 items-center gap-x-2.5 pr-2">
             <BlurImage
               src={selected.image}
               referrerPolicy="no-referrer"
               width={28}
               height={28}
-              alt={selected.id || selected.name}
+              alt={selected.name}
               className="h-7 w-7 flex-none shrink-0 overflow-hidden rounded-full"
-              />
+            />
             <div className={cn(key ? "hidden" : "block", "min-w-0 sm:block")}>
               <div className="truncate text-sm font-medium leading-5 text-neutral-900">
                 {selected.name}
               </div>
-              {selected.slug !== "/" && (
-                <div
-                className={cn(
-                  "truncate text-xs capitalize leading-tight",
-                  getPlanColor(selected.plan),
+              <div className="flex items-center gap-1">
+                {/* {selected.currency && (
+                  <>
+                    <FlagIcon currencyCode={selected.currency} size={12} />
+                    <span className="text-xs text-gray-500">
+                      {CURRENCIES[selected.currency]?.name}
+                    </span>
+                  </>
+                )} */}
+                {selected.plan && (
+                  <span className={cn(
+                    "truncate text-xs capitalize",
+                    getPlanColor(selected.plan),
+                  )}>
+                    {selected.plan}
+                  </span>
                 )}
-                >
-                  {selected.plan}
-                </div>
-              )}
+              </div>
             </div>
           </div>
           <ChevronsUpDown
             className="size-4 shrink-0 text-gray-400"
             aria-hidden="true"
-            />
+          />
         </button>
       </Popover>
     </div>
@@ -178,7 +172,8 @@ function WorkspaceList({
     name: string;
     slug: string;
     image: string;
-    plan: 'free' | 'pro' | 'business' | 'enterprise';
+    plan?: string;
+    currency?: string;
   };
   workspaces: {
     id: string;
@@ -186,6 +181,8 @@ function WorkspaceList({
     slug: string;
     image: string;
     plan: string;
+    currency: string;
+    status: 'active' | 'inactive';
   }[];
   setOpenPopover: (open: boolean) => void;
 }) {
@@ -240,48 +237,44 @@ function WorkspaceList({
         <div className="p-2">
           <div className="flex items-center justify-between pb-1">
             <p className="px-1 text-xs font-medium text-neutral-500">
-              Workspaces
+              Sub-Accounts
             </p>
           </div>
           <div className="flex flex-col gap-0.5">
-            {workspaces.map(({ id, name, slug, plan }) => {
-              const isActive = selected.slug === slug;
+            {workspaces.map((workspace) => {
+              const isActive = selected.slug === workspace.slug;
               return (
                 <Link
-                  key={slug}
+                  key={workspace.slug}
+                  href={`${workspace.slug}${pathname?.split("/").slice(2).join("/")}`}
+                  onClick={() => setOpenPopover(false)}
                   className={cn(
                     "relative flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 transition-all duration-75",
                     "hover:bg-neutral-200/50 active:bg-neutral-200/80",
                     "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
                     isActive && "bg-neutral-200/50",
+                    workspace.status === 'inactive' && "opacity-50 cursor-not-allowed"
                   )}
-                  href={href(slug)}
-                  shallow={false}
-                  onClick={() => setOpenPopover(false)}
                 >
                   <BlurImage
-                    src={`${DICEBEAR_AVATAR_URL}${name}`}
+                    src={workspace.image}
                     width={28}
                     height={28}
-                    alt={id}
+                    alt={workspace.name}
                     className="size-7 shrink-0 overflow-hidden rounded-full"
                   />
                   <div>
                     <span className="block truncate text-sm leading-5 text-neutral-900 sm:max-w-[140px]">
-                      {name}
+                      {workspace.name}
                     </span>
-                    {slug !== "/" && (
-                      <div
-                        className={cn(
-                          "truncate text-xs capitalize leading-tight",
-                          getPlanColor(plan),
-                        )}
-                      >
-                        {plan}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <FlagIcon currencyCode={workspace.currency} size={14} />
+                      <span className="text-xs text-gray-500">
+                        {CURRENCIES[workspace.currency]?.symbol}
+                      </span>
+                    </div>
                   </div>
-                  {selected.slug === slug ? (
+                  {selected.slug === workspace.slug ? (
                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-black">
                       <Facebook className="size-4" aria-hidden="true" />
                     </span>
@@ -297,8 +290,8 @@ function WorkspaceList({
               }}
               className="group flex w-full cursor-pointer items-center gap-x-2 rounded-md p-2 text-neutral-700 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
             >
-              <Facebook className="mx-1.5 size-4 text-neutral-500" />
-              <span className="block truncate">Create new workspace</span>
+              <Plus className="mx-1.5 size-4 text-neutral-500" />
+              <span className="block truncate">Create new sub-account</span>
             </button>
           </div>
         </div>

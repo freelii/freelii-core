@@ -1,14 +1,15 @@
 "use client"
 
-import * as React from "react"
-import { useRouter } from "next/navigation"
-import { Button, MaxWidthWrapper } from "@freelii/ui"
-import { PaymentSteps } from "./payment-steps"
 import { PageContent } from "@/ui/layout/page-content"
+import { Button, MaxWidthWrapper } from "@freelii/ui"
+import { useRouter } from "next/navigation"
+import * as React from "react"
+import { PaymentSteps } from "./payment-steps"
+import PayoutPreview from "./steps/payout-review"
 import SetupRecipients from "./steps/setup-recipients"
 
 interface StepProps {
-  onNext: () => void
+  onNext?: () => void
   onBack?: () => void
   onConfirm?: () => void
 }
@@ -44,7 +45,7 @@ function AdditionalInfoForm({ onBack, onNext }: StepProps) {
   )
 }
 
-function SchedulingForm({ onBack, onNext }: StepProps) {
+function SchedulingForm({ onBack, onConfirm }: StepProps) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-medium">Payment Schedule</h2>
@@ -53,7 +54,7 @@ function SchedulingForm({ onBack, onNext }: StepProps) {
       </div>
       <div className="flex gap-4">
         <Button variant="outline" onClick={onBack}>Back</Button>
-        <Button onClick={onNext}>Continue</Button>
+        <Button onClick={onConfirm}>Confirm</Button>
       </div>
     </div>
   )
@@ -76,57 +77,29 @@ function ConfirmationForm({ onBack, onConfirm }: StepProps) {
 
 const stepIds = {
   recipient: 1,
-  banking: 2,
-  schedule: 3,
-  confirm: 4,
+  confirm: 2,
 }
 
 export default function NewPaymentPage() {
   const [step, setStep] = React.useState(1)
   const router = useRouter()
-  
+
   const steps = [
     { id: stepIds.recipient, name: 'Setup new payment' },
-    { id: stepIds.banking, name: 'Review details' },
-    { id: stepIds.schedule, name: 'Schedule' },
-    { id: stepIds.confirm, name: 'Confirm' },
+    { id: stepIds.confirm, name: 'Review payment details' },
   ]
 
   return (
-    <PageContent titleBackButtonLink="/payouts" title="New Payment" description="Setup a new bank transfer">
+    <PageContent titleBackButtonLink="/dashboard/payouts" title="New Payment">
       <MaxWidthWrapper>
-      <PaymentSteps currentStep={step} steps={steps} setStep={setStep} />
-
-
-      <div className="">
-        {/* Step content will be rendered here */}
-        {step === stepIds.recipient && <SetupRecipients />}
-        {step === stepIds.banking && (
-          <BankingForm 
-            onBack={() => setStep(stepIds.recipient)} 
-            onNext={() => setStep(stepIds.schedule)} 
-          />
-        )}
-        {step === stepIds.schedule && (
-          <SchedulingForm 
-            onBack={() => setStep(stepIds.banking)} 
-            onNext={() => setStep(stepIds.confirm)} 
-          />
-        )}
-        {step === stepIds.confirm && (
-          <ConfirmationForm 
-            onBack={() => setStep(stepIds.banking)} 
-            onNext={() => setStep(stepIds.confirm)} 
-          />
-        )}
-        {step === stepIds.confirm && (
-          <ConfirmationForm 
-            onNext={() => router.push('/payouts')} 
-            onBack={() => setStep(stepIds.schedule)}
-            onConfirm={() => router.push('/payouts')} 
-          />
-        )}
-      </div>
+        <PaymentSteps currentStep={step} steps={steps} setStep={setStep} />
+        <div className="">
+          {/* Step content will be rendered here */}
+          {step === stepIds.recipient && <SetupRecipients onNext={() => setStep(stepIds.confirm)} onBack={() => setStep(stepIds.recipient)} />}
+          {step === stepIds.confirm && (
+            <PayoutPreview />
+          )}
+        </div>
       </MaxWidthWrapper>
 
     </PageContent>

@@ -1,5 +1,14 @@
 [
     {
+      "id": "a2gr84i9",
+      "amount": 56000,
+      "currency": "USD",
+      "nextPayment": "2024-03-20",
+      "recipients": [{ "id": 21 }],
+      "label": "Supplier Invoice Payment",
+      "progress": "One time payment"
+    },
+    {
       "id": "m5gr84i9",
       "amount": 1250,
       "currency": "PHP",

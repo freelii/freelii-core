@@ -27,6 +27,34 @@
     ]
   },
   {
+    "id": "sub-100",
+    "name": "PHP Payroll",
+    "accountNumber": "1234567820",
+    "balance": 100000,
+    "currency": "PHP",
+    "createdAt": "2024-01-01T12:00:00Z",
+    "status": "active",
+    "type": "operational",
+    "transactions": [
+      {
+        "id": "tx-001",
+        "date": "2024-01-15T08:30:00Z",
+        "description": "Monthly Salary Payment",
+        "amount": -15000,
+        "category": "salary",
+        "status": "completed"
+      },
+      {
+        "id": "tx-002",
+        "date": "2024-01-20T10:00:00Z",
+        "description": "Tax Deduction",
+        "amount": -2000,
+        "category": "tax",
+        "status": "completed"
+      }
+    ]
+  },
+  {
     "id": "sub-002",
     "name": "Marketing Budget",
     "accountNumber": "9876543210",

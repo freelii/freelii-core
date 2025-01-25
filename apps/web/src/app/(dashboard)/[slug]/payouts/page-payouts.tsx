@@ -1,23 +1,8 @@
 "use client"
 
-import React, { useEffect, useRef } from "react"
-import dayjs from 'dayjs'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Download, TableIcon, ClipboardCopy, Building2, Upload, Clock, CheckCircle2, ChevronRight } from "lucide-react"
-import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, ExpandingArrow, IconMenu, Input, Popover, ThreeDots } from "@freelii/ui"
-import { Checkbox } from "@freelii/ui"
+import { useFixtures } from "@/fixtures/useFixtures"
+import { FlagIcon } from "@/ui/shared/flag-icon"
+import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, ExpandingArrow, IconMenu, Popover, ThreeDots } from "@freelii/ui"
 import {
   Table,
   TableBody,
@@ -26,11 +11,25 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { PaymentDetails } from "./payment-details"
-import { cn, CURRENCIES, DICEBEAR_AVATAR_URL, DICEBEAR_SOLID_AVATAR_URL, GOOGLE_FAVICON_URL, noop, PHILIPPINES_FLAG } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop } from "@freelii/utils"
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table"
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { CheckCircle2, ChevronRight, Download, File, Repeat1 } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
-import { useFixtures } from "@/fixtures/useFixtures"
+import React, { useEffect, useRef } from "react"
+import { PaymentDetails } from "./payment-details"
 
 dayjs.extend(relativeTime)
 
@@ -89,7 +88,7 @@ function ImportOption({
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
+      className="rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
     >
       {children}
     </button>
@@ -124,7 +123,7 @@ export const columns: ColumnDef<Payout>[] = [
   },
   {
     accessorKey: "nextPayment",
-    header: "Next Payment",
+    header: "Payout Date",
     cell: ({ row }) => {
       const date = new Date(row.getValue("nextPayment"))
       const relativeDate = dayjs(date).fromNow()
@@ -149,22 +148,12 @@ export const columns: ColumnDef<Payout>[] = [
         currency,
       }).format(amount)
 
-      const currencyInfo = CURRENCIES[currency] 
+      const currencyInfo = CURRENCIES[currency]
 
       return (
         <div className="flex items-center justify-end gap-2">
+          <FlagIcon currencyCode={currency} />
           <div className="font-medium">{formatted}</div>
-          {currencyInfo && (<Badge className="flex items-center gap-1 rounded-full bg-gradient-to-br border-none from-gray-200 to-gray-100 px-2 py-0.5 text-xs font-bold text-gray-600">
-            <div className="size-4">
-              <Image 
-                src={currencyInfo.flag} 
-                alt={currencyInfo.name} 
-                className="size-4 rounded-full overflow-hidden" 
-                width={16} 
-                height={16} 
-              />  
-            </div>
-          </Badge>)}
         </div>
       )
     },
@@ -174,7 +163,7 @@ export const columns: ColumnDef<Payout>[] = [
     header: "Recipients",
     cell: ({ row }) => {
       const recipients = row.original.recipients
-      if(!recipients?.length) {
+      if (!recipients?.length) {
         return <div className="text-xs text-gray-500">No recipients</div>
       }
 
@@ -185,7 +174,7 @@ export const columns: ColumnDef<Payout>[] = [
         <div className="flex items-center gap-2">
           <div className="flex -space-x-2">
             {firstThreeRecipients.map((recipient, index) => (
-              <BlurImage 
+              <BlurImage
                 key={recipient.id}
                 src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
                 width={12}
@@ -235,14 +224,14 @@ export const columns: ColumnDef<Payout>[] = [
 
       return (
         <Popover
-        openPopover={openPopover}
-        setOpenPopover={setOpenPopover}
-        align="end"
+          openPopover={openPopover}
+          setOpenPopover={setOpenPopover}
+          align="end"
           content={
             <div className="w-full md:w-52">
               <div className="grid gap-px p-2">
                 <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-gray-500">
-                  Import from CSV
+                  Payment confirmation
                 </p>
                 <ImportOption
                   onClick={() => {
@@ -251,13 +240,9 @@ export const columns: ColumnDef<Payout>[] = [
                   setOpenPopover={setOpenPopover}
                 >
                   <IconMenu
-                    text="Import from Bitly"
+                    text="Attach files"
                     icon={
-                      <img
-                        src="https://assets.dub.co/misc/icons/bitly.svg"
-                        alt="Bitly logo"
-                        className="h-4 w-4"
-                      />
+                      <File className="size-4" />
                     }
                   />
                 </ImportOption>
@@ -268,49 +253,17 @@ export const columns: ColumnDef<Payout>[] = [
                   setOpenPopover={setOpenPopover}
                 >
                   <IconMenu
-                    text="Import from Rebrandly"
+                    text="Send similar payment"
                     icon={
-                      <img
-                        src="https://assets.dub.co/misc/icons/rebrandly.svg"
-                        alt="Rebrandly logo"
-                        className="h-4 w-4"
-                      />
+                      <Repeat1 className="size-4" />
                     }
-                  />
-                </ImportOption>
-                <ImportOption
-                  onClick={() => {
-                    setOpenPopover(false);
-                  }}
-                  setOpenPopover={setOpenPopover}
-                >
-                  <IconMenu
-                    text="Import from Short.io"
-                    icon={
-                      <img
-                        src="https://assets.dub.co/misc/icons/short.svg"
-                        alt="Short.io logo"
-                        className="h-4 w-4"
-                      />
-                    }
-                  />
-                </ImportOption>
-                <ImportOption
-                  onClick={() => {
-                    setOpenPopover(false);
-                  }}
-                  setOpenPopover={setOpenPopover}
-                >
-                  <IconMenu
-                    text="Import from CSV"
-                    icon={<TableIcon className="size-4" />}
                   />
                 </ImportOption>
               </div>
               <div className="border-t border-gray-200" />
               <div className="grid gap-px p-2">
                 <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-gray-500">
-                  Export Links
+                  Invoice
                 </p>
                 <button
                   onClick={() => {
@@ -319,7 +272,7 @@ export const columns: ColumnDef<Payout>[] = [
                   className="w-full rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
                 >
                   <IconMenu
-                    text="Export as CSV"
+                    text="Download invoice"
                     icon={<Download className="h-4 w-4" />}
                   />
                 </button>
@@ -373,7 +326,7 @@ export default function PayoutsTable() {
     },
   })
   const detailsRef = useRef<HTMLDivElement>(null)
-  
+
   useEffect(() => {
     console.log('fetching payouts')
     getPayouts().then(setPayouts)
@@ -416,16 +369,17 @@ export default function PayoutsTable() {
   return (
     <div className="w-full relative">
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex gap-2  w-full">
+        <div className="flex gap-2 w-full items-center justify-end">
           <Button
+            disabled
             variant="outline"
-            className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
-            onClick={() => {/* TODO: Import handler */}}
+            className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600 cursor-not-allowed"
+            onClick={() => {/* TODO: Import handler */ }}
           >
-            Import from CSV
-            <Upload className="size-4 ml-1" />
+            Export to CSV
+            <Download className="size-4 ml-1" />
           </Button>
-            <Button
+          <Button
             onClick={noop}
           >
             <Link href={`payouts/new`}>
@@ -450,9 +404,9 @@ export default function PayoutsTable() {
                         <>{header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}</>
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}</>
                       </TableHead>
                     )
                   })}
@@ -498,14 +452,6 @@ export default function PayoutsTable() {
                       <p className="text-sm text-gray-500">Get started by creating your first payment or importing existing ones.</p>
                       <div className="mt-4 flex gap-2">
                         <Button
-                          variant="outline"
-                          className="text-xs font-medium p-2"
-                          onClick={() => {/* TODO: Import handler */}}
-                        >
-                          Import payouts
-                          <Upload className="ml-2 h-4 w-4" />
-                        </Button>
-                        <Button
                           className="text-xs font-medium bg-black text-white hover:bg-neutral-900 p-2"
                         >
                           <Link href="payouts/new">
@@ -521,19 +467,19 @@ export default function PayoutsTable() {
           </Table>
         </div>
 
-        <div 
+        <div
           ref={detailsRef}
           className={cn(
-            "w-1/3", 
-            "rounded-lg", 
+            "w-1/3",
+            "rounded-lg",
             "border border-gray-200",
             "p-6",
             "mt-10",
             "relative",
             "transition-all duration-300 ease-in-out",
             "shadow-lg",
-            selectedPayout 
-              ? 'opacity-100 translate-x-0' 
+            selectedPayout
+              ? 'opacity-100 translate-x-0'
               : 'opacity-0 -translate-x-full w-0 p-0 border-0'
           )}
         >
