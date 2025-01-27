@@ -13,6 +13,9 @@ export const env = createEnv({
       .default("development"),
     CLERK_SECRET_KEY: z.string(),
     CLERK_PUBLISHABLE_KEY: z.string(),
+    COINS_SECRET_KEY: z.string(),
+    COINS_API_KEY: z.string(),
+    COINS_API_URL: z.string(),
   },
 
   /**
@@ -34,7 +37,11 @@ export const env = createEnv({
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
+    COINS_SECRET_KEY: process.env.COINS_SECRET_KEY,
+    COINS_API_KEY: process.env.COINS_API_KEY,
+    COINS_API_URL: process.env.COINS_API_URL,
   },
+
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
    * useful for Docker builds.

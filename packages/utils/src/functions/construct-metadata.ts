@@ -4,8 +4,8 @@ import { HOME_DOMAIN } from "../constants";
 export function constructMetadata({
   title,
   fullTitle,
-  description = "Dub.co is the open-source link management platform for modern marketing teams to create marketing campaigns, link sharing features, and referral programs.",
-  image = "https://assets.dub.co/thumbnail.jpg",
+  description = "Smart Business Banking",
+  image = "./logo.png",
   video,
   icons = [
     {
