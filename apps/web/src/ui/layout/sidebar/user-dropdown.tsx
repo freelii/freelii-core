@@ -1,10 +1,9 @@
 "use client";
 
-import { Avatar, Icon, Popover } from "@freelii/ui";
+import { Avatar, type Icon, Popover } from "@freelii/ui";
 import { cn, noop } from "@freelii/utils";
 import { LogOut } from "lucide-react";
-// import { signOut, useSession } from "next-auth/react";
-import { ComponentPropsWithoutRef, ElementType, useState } from "react";
+import { type ComponentPropsWithoutRef, type ElementType, useState } from "react";
 
 export default function UserDropdown() {
   const session = {
@@ -14,7 +13,6 @@ export default function UserDropdown() {
       referralLinkId: '123',
     }
   };
-  //   const { data: session } = useSession();
   const [openPopover, setOpenPopover] = useState(false);
 
   return (

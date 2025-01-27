@@ -27,7 +27,7 @@ export type NavItemType = NavItemCommon & {
   items?: NavSubItemType[];
 };
 
-export type SidebarNavAreas<T extends Record<any, any>> = Record<
+export type SidebarNavAreas<T extends Record<string, string | boolean | undefined>> = Record<
   string,
   (args: T) => {
     title?: string;
@@ -42,7 +42,7 @@ export type SidebarNavAreas<T extends Record<any, any>> = Record<
   }
 >;
 
-export function SidebarNav<T extends Record<any, any>>({
+export function SidebarNav<T extends Record<string, string | boolean | undefined>>({
   areas,
   currentArea,
   data,

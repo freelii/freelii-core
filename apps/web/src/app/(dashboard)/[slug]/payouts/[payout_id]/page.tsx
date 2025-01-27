@@ -4,7 +4,7 @@ import { useFixtures } from "@/fixtures/useFixtures"
 import { PageContent } from "@/ui/layout/page-content"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { Badge, BlurImage, MaxWidthWrapper, Separator } from "@freelii/ui"
-import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, pluralize, toUSD } from "@freelii/utils"
+import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop, pluralize, toUSD } from "@freelii/utils"
 import { Building2, CheckCircle2, Download } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -21,7 +21,7 @@ export default function PayoutDetailsPage() {
         const fetchPayout = async () => {
             try {
                 const payout = await getSinglePayout(params.payout_id as string)
-                setPayoutDetails(payout || null)
+                setPayoutDetails(payout ?? null)
             } catch (error) {
                 console.error('Error fetching payout:', error)
             } finally {
@@ -29,7 +29,7 @@ export default function PayoutDetailsPage() {
             }
         }
 
-        fetchPayout()
+        fetchPayout().then(noop).catch(noop)
     }, [params.payout_id, getSinglePayout])
 
     if (isLoading) {

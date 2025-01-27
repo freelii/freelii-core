@@ -17,7 +17,6 @@ import { FlagIcon } from "@/ui/shared/flag-icon";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import {
-  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -37,10 +36,10 @@ export function WorkspaceDropdown() {
     currency: account.currency
   }));
 
-  const { slug: currentSlug, key } = useParams() as {
+  const { slug: currentSlug, key } = useParams<{
     slug?: string;
     key?: string;
-  };
+  }>();
 
   // Prevent slug from changing to empty to avoid UI switching during nav animation
   const [slug, setSlug] = useState(currentSlug);
@@ -187,28 +186,16 @@ function WorkspaceList({
   setOpenPopover: (open: boolean) => void;
 }) {
   // const { setShowAddWorkspaceModal } = useContext(ModalContext);
-  const { domain, key, programId } = useParams() as {
+  const { domain, key, programId } = useParams<{
     domain?: string;
     key?: string;
     programId?: string;
-  };
+  }>();
   const pathname = usePathname();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, updateScrollProgress } = useScrollProgress(scrollRef);
 
-  const href = useCallback(
-    (slug: string) => {
-      if (domain || key || programId || selected.slug === "/") {
-        // if we're on a link or program page, navigate back to the workspace root
-        return `/${slug}`;
-      } else {
-        // else, we keep the path but remove all query params
-        return pathname?.replace(selected.slug, slug).split("?")[0] || "/";
-      }
-    },
-    [domain, key, programId, pathname, selected.slug],
-  );
 
   return (
     <div className="relative w-full">

@@ -2,39 +2,24 @@
 
 import {
   Calendar6,
-  //   Books2,
-  //   CircleInfo,
-  //   ConnectedDots,
-  //   ConnectedDots4,
-  //   CubeSettings,
-  //   Gear2,
-  //   Gift,
-  //   Globe, 
   Facebook,
   GreekTemple,
-  InvoiceDollar, useRouterStuff, Users6
+  InvoiceDollar,
+  useRouterStuff,
+  Users6
 } from "@freelii/ui";
-// import { Session } from "next-auth";
-// import { useSession } from "next-auth/react";
 import { useParams, usePathname } from "next/navigation";
 import { ReactNode, useMemo } from "react";
-// import UserSurveyButton from "../user-survey";
-// import { CursorRays } from "./icons/cursor-rays";
-// import { Gear } from "./icons/gear";
-// import { Hyperlink } from "./icons/hyperlink";
-// import { LinesY } from "./icons/lines-y";
 import { SidebarNav, SidebarNavAreas } from "./sidebar-nav";
-// import { Usage } from "./usage";
 
 const NAV_AREAS: SidebarNavAreas<{
   slug: string;
   queryString: string;
-  programs?: { id: string }[];
   // session?: Session | null;
   showNews?: boolean;
 }> = {
   // Top-level
-  default: ({ slug, queryString, programs, showNews }) => ({
+  default: ({ slug, queryString, showNews }) => ({
     showSwitcher: true,
     showNews,
     direction: "left",
@@ -191,7 +176,7 @@ export function AppSidebarNav({
   toolContent?: ReactNode;
   newsContent?: ReactNode;
 }) {
-  const { slug } = useParams() as { slug?: string };
+  const { slug } = useParams();
   const pathname = usePathname();
   const { getQueryString } = useRouterStuff();
   //   const { data: session } = useSession();
@@ -202,9 +187,9 @@ export function AppSidebarNav({
   const currentArea = useMemo(() => {
     return pathname.startsWith("/account/settings")
       ? "userSettings"
-      : pathname.startsWith(`/${slug}/settings`)
+      : pathname.startsWith(`/${String(slug)}/settings`)
         ? "workspaceSettings"
-        : pathname.startsWith(`/${slug}/payouts`)
+        : pathname.startsWith(`/${String(slug)}/payouts`)
           ? "payments"
           : "default";
   }, [slug, pathname]);
@@ -214,13 +199,12 @@ export function AppSidebarNav({
       areas={NAV_AREAS}
       currentArea={currentArea}
       data={{
-        slug: slug || "",
+        slug: (slug ?? "") as string,
         queryString: getQueryString(undefined, {
           ignore: ["sortBy", "sortOrder"],
         }),
-        programs,
         session: undefined, // TODO session || undefined,
-        showNews: pathname.startsWith(`/${slug}/programs/`) ? false : true,
+        showNews: pathname.startsWith(`/${String(slug)}/programs/`) ? false : true,
       }}
       toolContent={toolContent}
       newsContent={newsContent}

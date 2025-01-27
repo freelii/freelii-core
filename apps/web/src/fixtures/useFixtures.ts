@@ -50,11 +50,16 @@ const getRandomPastDate = () => {
 }
 
 export const useFixtures = () => {
-  const [fiatAccounts, setFiatAccounts] = useState<FiatAccount[]>(require('./fiat-accounts.json'))
-  const [recipients, setRecipients] = useState<Map<number, Recipient>>(new Map(require('./recipients.json').map((recipient: any) => [Number(recipient.id), recipient])))
-  const [payouts, setPayouts] = useState<Payout[]>(require('./payments.json'))
-  const [subAccounts, setSubAccounts] = useState<SubAccount[]>(require('./accounts.json'))
-  const [transactions, setTransactions] = useState<Transaction[]>(require('./transactions.json'))
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const [fiatAccounts] = useState<FiatAccount[]>(require('./fiat-accounts.json') as unknown as FiatAccount[])
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const [recipients] = useState<Map<number, Recipient>>(new Map((require('./recipients.json') as unknown as Recipient[]).map((recipient: Recipient) => [Number(recipient.id), recipient])))
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const [payouts] = useState<Payout[]>(require('./payments.json') as unknown as Payout[])
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const [subAccounts] = useState<SubAccount[]>(require('./accounts.json') as unknown as SubAccount[])
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const [transactions] = useState<Transaction[]>(require('./transactions.json') as unknown as Transaction[])
 
 
   const [usdcAccount, setUsdcAccount] = useState({
@@ -125,7 +130,7 @@ export const useFixtures = () => {
 
     return payouts.map(mapRecipients);
 
-  }, [recipients])
+  }, [recipients, payouts])
 
   const getRecipients = useCallback(async () => {
     await new Promise((resolve) => setTimeout(resolve, 400))

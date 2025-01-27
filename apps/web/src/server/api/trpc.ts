@@ -7,13 +7,13 @@
  * need to use are documented accordingly near the end.
  */
 
+import { getAuth } from "@clerk/nextjs/server";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { getAuth } from "@clerk/nextjs/server";
 
-import { db } from "@/server/db";
 import { env } from "@/env";
+import { db } from "@/server/db";
 
 /**
  * 1. CONTEXT
@@ -28,15 +28,16 @@ import { env } from "@/env";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-    // @ts-ignore
-    const { userId } = getAuth({
-      headers: opts.headers,
-    }, {
-      secretKey: env.CLERK_SECRET_KEY
-    }
-    );
-    console.log(userId)
-  
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const { userId } = getAuth({
+    headers: opts.headers,
+  }, {
+    secretKey: env.CLERK_SECRET_KEY
+  }
+  );
+  console.log(userId)
+
   return {
     db,
     userId,

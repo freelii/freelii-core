@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import axios from 'axios';
+import axios, { type AxiosError } from 'axios';
 import crypto from 'crypto';
 
 interface CoinsPHErrorResponse {
@@ -64,26 +64,26 @@ export class CoinsPHService {
     }
 
 
-    private parseError(error: any): string {
+    private parseError(error: Error | AxiosError): string {
         if (axios.isAxiosError(error)) {
-            if (error.response?.data?.json) {
+            if ((error as AxiosError<{ json?: CoinsPHErrorResponse }>)?.response?.data?.json) {
                 // Handle CoinsPH specific error format
-                const coinsPHError = error.response.data.json as CoinsPHErrorResponse;
-                return `CoinsPH Error ${coinsPHError.code}: ${coinsPHError.msg}`;
+                const coinsPHError = (error as AxiosError<{ json?: CoinsPHErrorResponse }>)?.response?.data?.json;
+                return `CoinsPH Error ${coinsPHError?.code}: ${coinsPHError?.msg}`;
             }
             // Handle Axios error response
-            if (error.response?.data) {
-                if (typeof error.response.data === 'string') {
-                    return error.response.data;
+            if ((error as AxiosError)?.response?.data) {
+                if (typeof (error as AxiosError)?.response?.data === 'string') {
+                    return (error as AxiosError)?.response?.data as string;
                 }
                 // Handle structured error response
-                if (error.response.data.msg || error.response.data.message) {
-                    return error.response.data.msg || error.response.data.message;
+                if ((error as AxiosError<{ msg?: string, message?: string }>)?.response?.data?.msg || (error as AxiosError<{ msg?: string, message?: string }>)?.response?.data?.message) {
+                    return (error as AxiosError<{ msg?: string, message?: string }>)?.response?.data?.msg ?? (error as AxiosError<{ msg?: string, message?: string }>)?.response?.data?.message ?? '';
                 }
-                return JSON.stringify(error.response.data);
+                return JSON.stringify((error as AxiosError)?.response?.data);
             }
             // Handle network errors
-            if (error.message) {
+            if ((error as AxiosError)?.message) {
                 return error.message;
             }
         }
@@ -91,7 +91,7 @@ export class CoinsPHService {
         return error instanceof Error ? error.message : 'Unknown error occurred';
     }
 
-    async makeSignedRequest<T>(endpoint: string, method: 'GET' | 'POST', params: { [key: string]: string | number | boolean | string[] } = {}): Promise<T> {
+    async makeSignedRequest<T>(endpoint: string, method: 'GET' | 'POST', params: Record<string, string | number | boolean | string[]> = {}): Promise<T> {
         try {
             const timestamp = Date.now().toString();
             const url = `${this.apiUrl}${endpoint}`;
@@ -112,7 +112,7 @@ export class CoinsPHService {
             // Build body string for POST requests or empty string for GET
             const bodyString = method === 'POST'
                 ? Object.keys(params)
-                    .map((key) => `${key}=${params[key]}`)
+                    .map((key) => `${key}=${params[key] as string}`)
                     .join('&')
                 : '';
 
@@ -137,7 +137,7 @@ export class CoinsPHService {
 
             console.log('headers', headers);
             console.log('params', params);
-            const urlWithParams = `${url}?${Object.keys(params).map(key => `${key}=${params[key]}`).join('&')}`;
+            const urlWithParams = `${url}?${Object.keys(params).map(key => `${key}=${params[key] as string}`).join('&')}`;
             console.log('url', urlWithParams);
 
             let response;
@@ -154,18 +154,18 @@ export class CoinsPHService {
 
             return response?.data as T;
         } catch (error) {
-            const errorMessage = this.parseError(error);
+            const errorMessage = this.parseError(error as Error | AxiosError);
             console.error('Error making request:', errorMessage);
             throw new Error(errorMessage);
         }
     }
 
-    async makeSignedMerchantRequest<T>(endpoint: string, method: 'GET' | 'POST', params: { [key: string]: string | number | boolean | string[] } = {}): Promise<T> {
+    async makeSignedMerchantRequest<T>(endpoint: string, method: 'GET' | 'POST', params: Record<string, string | number | boolean | string[]> = {}): Promise<T> {
         try {
             const timestamp = new Date().getTime().toString();
 
 
-            let str: string[] = []
+            const str: string[] = []
             Object.entries(params).forEach(([key, value]) => {
                 const paramValue = Array.isArray(value) ? JSON.stringify(value) : value;
                 str.push(key + "=" + paramValue);
@@ -211,7 +211,7 @@ export class CoinsPHService {
 
             return response?.data as T;
         } catch (error) {
-            const errorMessage = this.parseError(error);
+            const errorMessage = this.parseError(error as Error | AxiosError);
             console.error('Error making request:', errorMessage);
             throw new Error(errorMessage);
         }

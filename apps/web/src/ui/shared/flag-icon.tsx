@@ -2,7 +2,7 @@ import { cn, CURRENCIES } from "@freelii/utils";
 import Image from "next/image";
 
 export function FlagIcon({ currencyCode, size = 16, className }: { currencyCode?: string, size?: number, className?: string }) {
-    const currency = CURRENCIES[currencyCode as keyof typeof CURRENCIES];
+    const currency = CURRENCIES[currencyCode!];
     if (!currencyCode || !currency) {
         return (
             <div

@@ -212,7 +212,7 @@ export default function PageClient() {
                   <span className="font-medium text-sm">Main Account</span>
                 </div>
                 <div className="text-2xl font-semibold">
-                  {CURRENCIES['USDC']?.symbol}
+                  {CURRENCIES.USDC?.symbol}
                   {usdcAccount.balance.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-500">Available balance</div>
@@ -263,7 +263,7 @@ export default function PageClient() {
                           className="h-7 text-xs gap-1"
                           onClick={() => {
                             // TODO: Implement balance refresh
-                            getBalance().finally(noop)
+                            getBalance().then(noop).catch(noop)
                           }}
                         >
                           <RefreshCw className="size-3" />

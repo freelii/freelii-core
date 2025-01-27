@@ -10,7 +10,7 @@ export function PayoutNotFound() {
             </div>
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Payout Not Found</h2>
             <p className="text-gray-500 text-center mb-6 max-w-[400px]">
-                The payout you're looking for doesn't exist or has been removed.
+                The payout you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
             <Link href="../payouts">
                 <Button variant="outline" className="gap-2">

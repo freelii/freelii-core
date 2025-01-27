@@ -3,7 +3,7 @@
 import { Badge, buttonVariants } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import Link from "next/link";
-import { CSSProperties, PropsWithChildren, ReactNode } from "react";
+import type { CSSProperties, PropsWithChildren, ReactNode } from "react";
 
 export function AnimatedEmptyState({
   title,
@@ -36,7 +36,7 @@ export function AnimatedEmptyState({
           style={{ "--scroll": "-50%" } as CSSProperties}
           className="animate-infinite-scroll-y flex flex-col [animation-duration:10s]"
         >
-          {[...Array(6)].map((_, idx) => (
+          {new Array(6).fill(0).map((_, idx) => (
             <Card key={idx}>
               {typeof cardContent === "function"
                 ? cardContent(idx % 3)

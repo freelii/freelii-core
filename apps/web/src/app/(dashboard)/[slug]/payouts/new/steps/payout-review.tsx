@@ -402,7 +402,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                 <h2 className="text-2xl font-semibold">Payment Confirmed!</h2>
                                 <p className="text-gray-500">
                                     Your payment of {CURRENCIES[paymentDetails.originAccount.currency]?.symbol}
-                                    {finalTotal.toLocaleString()} has been processed. We've sent you a confirmation email.
+                                    {finalTotal.toLocaleString()} has been processed. We&apos;ve sent you a confirmation email.
                                 </p>
                             </div>
 

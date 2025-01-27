@@ -2,7 +2,7 @@
 
 import { useFixtures } from "@/fixtures/useFixtures"
 import { FlagIcon } from "@/ui/shared/flag-icon"
-import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, ExpandingArrow, IconMenu, Popover, ThreeDots } from "@freelii/ui"
+import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, ExpandingArrow } from "@freelii/ui"
 import {
   Table,
   TableBody,
@@ -26,7 +26,7 @@ import {
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { CheckCircle2, ChevronRight, Download, File, Repeat1 } from "lucide-react"
+import { CheckCircle2, ChevronRight, Download } from "lucide-react"
 import Link from "next/link"
 import React, { useEffect, useRef } from "react"
 import { PaymentDetails } from "./payment-details"
@@ -211,86 +211,8 @@ export const columns: ColumnDef<Payout>[] = [
     accessorKey: "progress",
     header: "Payment frequency",
     cell: ({ row }) => {
-      const progress = row.getValue("progress") as Payout["progress"]
-      return <div className="">{progress}</div>
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: true,
-    cell: ({ row }) => {
-      const payout = row.original
-      const [openPopover, setOpenPopover] = React.useState(false)
-
-      return (
-        <Popover
-          openPopover={openPopover}
-          setOpenPopover={setOpenPopover}
-          align="end"
-          content={
-            <div className="w-full md:w-52">
-              <div className="grid gap-px p-2">
-                <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-gray-500">
-                  Payment confirmation
-                </p>
-                <ImportOption
-                  onClick={() => {
-                    setOpenPopover(false);
-                  }}
-                  setOpenPopover={setOpenPopover}
-                >
-                  <IconMenu
-                    text="Attach files"
-                    icon={
-                      <File className="size-4" />
-                    }
-                  />
-                </ImportOption>
-                <ImportOption
-                  onClick={() => {
-                    setOpenPopover(false);
-                  }}
-                  setOpenPopover={setOpenPopover}
-                >
-                  <IconMenu
-                    text="Send similar payment"
-                    icon={
-                      <Repeat1 className="size-4" />
-                    }
-                  />
-                </ImportOption>
-              </div>
-              <div className="border-t border-gray-200" />
-              <div className="grid gap-px p-2">
-                <p className="mb-1.5 mt-1 flex items-center gap-2 px-1 text-xs font-medium text-gray-500">
-                  Invoice
-                </p>
-                <button
-                  onClick={() => {
-                    setOpenPopover(false);
-                  }}
-                  className="w-full rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
-                >
-                  <IconMenu
-                    text="Download invoice"
-                    icon={<Download className="h-4 w-4" />}
-                  />
-                </button>
-              </div>
-            </div>
-          }
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setOpenPopover(!openPopover)
-            }}
-            className="w-auto px-1.5"
-          >
-            <ThreeDots className="h-5 w-5 text-gray-500" />
-          </button>
-        </Popover>
-      )
+      const progress = row.getValue("progress")
+      return <div className="">{progress as string}</div>
     },
   },
 ]
@@ -328,8 +250,7 @@ export default function PayoutsTable() {
   const detailsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    console.log('fetching payouts')
-    getPayouts().then(setPayouts)
+    getPayouts().then(setPayouts).catch(console.error)
   }, [setPayouts])
 
   useEffect(() => {
@@ -337,10 +258,8 @@ export default function PayoutsTable() {
       // hide progress column
       console.log(table.getAllColumns().map(column => column.id))
       table.getColumn('progress')?.toggleVisibility(false)
-      table.getColumn('actions')?.toggleVisibility(false)
     } else {
       // show progress column
-      table.getColumn('actions')?.toggleVisibility(true)
       table.getColumn('progress')?.toggleVisibility(true)
     }
   }, [selectedPayout])

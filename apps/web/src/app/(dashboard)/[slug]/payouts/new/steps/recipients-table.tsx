@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, pluralize } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop, pluralize } from "@freelii/utils"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -26,7 +26,7 @@ import {
   getSortedRowModel,
   SortingState,
   useReactTable,
-  VisibilityState,
+  VisibilityState
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -265,44 +265,7 @@ export const columns: ColumnDef<Recipient>[] = [
   {
     id: "actions",
     enableHiding: true,
-    cell: ({ row }) => {
-      const [openPopover, setOpenPopover] = React.useState(false)
-
-      return (
-        <Popover
-          openPopover={openPopover}
-          setOpenPopover={setOpenPopover}
-          align="end"
-          content={
-            <div className="w-full md:w-52">
-              <div className="grid gap-px p-2">
-                <button
-                  onClick={() => {
-                    setOpenPopover(false);
-                  }}
-                  className="w-full rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
-                >
-                  <IconMenu
-                    text="Copy Email"
-                    icon={<ClipboardCopy className="h-4 w-4" />}
-                  />
-                </button>
-              </div>
-            </div>
-          }
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setOpenPopover(!openPopover)
-            }}
-            className="w-auto px-1.5"
-          >
-            <ThreeDots className="h-5 w-5 text-gray-500" />
-          </button>
-        </Popover>
-      )
-    },
+    cell: (row) => <ActionCell />
   },
 ]
 
@@ -360,7 +323,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
     return filtered
   }, [recipients, recipientTypeFilter, searchQuery])
 
-  const table = useReactTable({
+  const TableComponent = useReactTable({
     data: filteredRecipients,
     columns,
     getRowId: (row) => row.id.toString(),
@@ -390,7 +353,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
             ...recipient,
             bankingDetails: {
               ...recipient.bankingDetails,
-              currency: currencyCode ? CURRENCIES[currencyCode as keyof typeof CURRENCIES] : undefined
+              currency: currencyCode ? CURRENCIES[currencyCode] : undefined
             }
           }
         }
@@ -398,7 +361,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
       })
       setRecipients(recipientsWithMappedCurrencies as Recipient[])
       setLoading(false)
-    })
+    }).catch(noop)
   }, [])
 
   useEffect(() => {
@@ -448,7 +411,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
 
       <div className={cn(
         "grid gap-6 transition-all duration-300",
-        (hasSelectedRecipients || selectedRecipient || mode === 'payout') ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
+        (hasSelectedRecipients ?? selectedRecipient ?? mode === 'payout') ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
       )}>
         <div className="space-y-4">
           <div className="mb-4 flex items-center gap-4">
@@ -465,7 +428,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
             <div className="flex items-center justify-between flex-1">
               <ToggleGroup
                 type="single"
-                value={recipientTypeFilter || ''}
+                value={recipientTypeFilter ?? ''}
                 onValueChange={(value) => setRecipientTypeFilter(value || null)}
               >
                 <ToggleGroupItem
@@ -507,7 +470,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
           <div className="rounded-lg">
             <Table className="border-none relative">
               <TableHeader className="border-none">
-                {table.getHeaderGroups().map((headerGroup) => (
+                {TableComponent.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => (
                       <TableHead key={header.id} className="text-xs font-medium p-1">
@@ -552,8 +515,8 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                       </TableCell>
                     </TableRow>
                   ))
-                ) : table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                ) : TableComponent.getRowModel().rows?.length ? (
+                  TableComponent.getRowModel().rows.map((row) => (
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
@@ -746,7 +709,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                             size={16}
                           />
                           <span className="text-sm text-gray-500">
-                            {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                            {CURRENCIES[selectedCurrency]?.symbol}
                           </span>
                         </div>
                       )}
@@ -790,7 +753,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                             {paymentMode === 'per-recipient' ? 'Amount per recipient' : 'Total amount'}
                           </span>
                           <span className="font-medium">
-                            {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}{amount.toFixed(2)}
+                            {CURRENCIES[selectedCurrency]?.symbol}{amount.toFixed(2)}
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
@@ -801,7 +764,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                           <div className="flex justify-between text-sm font-medium">
                             <span>Total amount</span>
                             <span>
-                              {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                              {CURRENCIES[selectedCurrency]?.symbol}
                               {(amount * selectedRecipients.length).toFixed(2)}
                             </span>
                           </div>
@@ -809,7 +772,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                           <div className="flex justify-between text-sm font-medium">
                             <span>Amount per recipient</span>
                             <span>
-                              {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                              {CURRENCIES[selectedCurrency]?.symbol}
                               {selectedRecipients.length ? (amount / selectedRecipients.length).toFixed(2) : '0.00'}
                             </span>
                           </div>
@@ -819,7 +782,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                       <div className="flex justify-between text-sm font-medium">
                         <span>Amount</span>
                         <span>
-                          {CURRENCIES[selectedCurrency as keyof typeof CURRENCIES]?.symbol}
+                          {CURRENCIES[selectedCurrency]?.symbol}
                           {amount.toFixed(2)}
                         </span>
                       </div>
@@ -923,7 +886,7 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
 
         <div>
           <h4 className="text-sm font-medium mb-2">Notes</h4>
-          <p className="text-xs text-gray-600">{recipient.notes || 'No notes provided'}</p>
+          <p className="text-xs text-gray-600">{recipient.notes ?? 'No notes provided'}</p>
         </div>
 
         <div className="flex gap-2 pt-2">
@@ -936,5 +899,43 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
         </div>
       </div>
     </div>
+  )
+}
+
+function ActionCell() {
+  const [openPopover, setOpenPopover] = React.useState(false)
+  return (
+    <Popover
+      openPopover={openPopover}
+      setOpenPopover={setOpenPopover}
+      align="end"
+      content={
+        <div className="w-full md:w-52">
+          <div className="grid gap-px p-2">
+            <button
+              onClick={() => {
+                setOpenPopover(false);
+              }}
+              className="w-full rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
+            >
+              <IconMenu
+                text="Copy Email"
+                icon={<ClipboardCopy className="h-4 w-4" />}
+              />
+            </button>
+          </div>
+        </div>
+      }
+    >
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          setOpenPopover(!openPopover)
+        }}
+        className="w-auto px-1.5"
+      >
+        <ThreeDots className="h-5 w-5 text-gray-500" />
+      </button>
+    </Popover>
   )
 }

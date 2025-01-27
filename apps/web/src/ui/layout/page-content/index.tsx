@@ -2,7 +2,7 @@ import { MaxWidthWrapper } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { PropsWithChildren, ReactNode } from "react";
+import type { PropsWithChildren, ReactNode } from "react";
 import UserDropdown from "../sidebar/user-dropdown";
 import { NavButton } from "./nav-button";
 
