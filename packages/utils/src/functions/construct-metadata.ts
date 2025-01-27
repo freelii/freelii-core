@@ -5,7 +5,7 @@ export function constructMetadata({
   title,
   fullTitle,
   description = "Smart Business Banking",
-  image = "./logo.png",
+  image = "/logo.png",
   video,
   icons = [
     {
