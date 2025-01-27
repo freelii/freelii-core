@@ -6,38 +6,61 @@
       "amount": 5000.00,
       "date": "2024-03-15T14:30:00Z",
       "status": "completed",
-      "currency": "PHP",
-      "reference": "PAY-123456"
+      "currency": "USDC",
+      "reference": "PAY-123456",
+      "sender": "John Smith",
+      "senderEmail": "john.smith@example.com",
+      "blockchain": {
+        "network": "Stellar",
+        "txHash": "0x123...abc",
+        "fromAddress": "G123...XYZ"
+      }
     },
     {
       "id": "tx_2",
       "type": "sent",
-      "description": "Withdrawal to BDO",
+      "description": "Withdrawal to BDO Unibank",
       "amount": 2500.00,
       "date": "2024-03-14T09:15:00Z",
       "status": "processing",
       "currency": "PHP",
-      "reference": "WD-789012"
+      "reference": "WD-789012",
+      "bankName": "BDO Unibank",
+      "accountNumber": "****5678"
     },
     {
       "id": "tx_3",
       "type": "received",
-      "description": "Payment from Sarah Lee",
-      "amount": 7500.00,
+      "description": "USDC Transfer from Sarah Lee",
+      "amount": 150.00,
       "date": "2024-03-13T16:45:00Z",
       "status": "completed",
-      "currency": "PHP",
-      "reference": "PAY-345678"
+      "currency": "USDC",
+      "reference": "PAY-345678",
+      "sender": "Sarah Lee",
+      "senderEmail": "sarah.lee@example.com",
+      "blockchain": {
+        "network": "Stellar",
+        "txHash": "0x456...def",
+        "fromAddress": "G456...ABC"
+      }
     },
     {
       "id": "tx_4",
       "type": "sent",
-      "description": "Withdrawal to UnionBank",
-      "amount": 3000.00,
+      "description": "USDC Transfer to Mike",
+      "amount": 75.00,
       "date": "2024-03-12T11:20:00Z",
-      "status": "pending",
-      "currency": "PHP",
-      "reference": "WD-901234"
+      "status": "completed",
+      "currency": "USDC",
+      "reference": "TRF-901234",
+      "recipient": "Mike Johnson",
+      "recipientEmail": "mike.j@example.com",
+      "blockchain": {
+        "network": "Stellar",
+        "txHash": "0x789...ghi",
+        "toAddress": "G789...DEF"
+      }
     },
     {
       "id": "tx_5",
@@ -47,17 +70,27 @@
       "date": "2024-03-11T13:10:00Z",
       "status": "completed",
       "currency": "PHP",
-      "reference": "PAY-567890"
+      "reference": "PAY-567890",
+      "sender": "Mike Johnson",
+      "senderEmail": "mike.j@example.com"
     },
     {
       "id": "tx_6",
       "type": "sent",
-      "description": "Withdrawal to MetroBank",
-      "amount": 5000.00,
+      "description": "USDC Transfer to Emma",
+      "amount": 200.00,
       "date": "2024-03-10T15:30:00Z",
-      "status": "failed",
-      "currency": "PHP",
-      "reference": "WD-345678"
+      "status": "completed",
+      "currency": "USDC",
+      "reference": "TRF-345678",
+      "recipient": "Emma Davis",
+      "recipientEmail": "emma.d@example.com",
+      "blockchain": {
+        "network": "Stellar",
+        "txHash": "0x012...jkl",
+        "toAddress": "G012...GHI",
+        "error": "Insufficient balance"
+      }
     },
     {
       "id": "tx_7",
@@ -78,5 +111,5 @@
       "status": "completed",
       "currency": "PHP",
       "reference": "WD-234567"
-}
+    }
 ]

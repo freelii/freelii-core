@@ -64,7 +64,7 @@ export const useFixtures = () => {
     blockchain: 'stellar',
     network: 'testnet',
     address: 'GB7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ',
-    balance: 100000,
+    balance: 109001.99,
     status: 'active',
     createdAt: dayjs().subtract(1, 'month').toISOString(),
     fiatUSDAccount: {

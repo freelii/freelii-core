@@ -28,7 +28,7 @@ export const coinsPHRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const coinsService = new CoinsPHService();
-            return await coinsService.getInvoices(input);
+            return await coinsService.getInvoices(input.external_transaction_id);
         }),
     createInvoice: publicProcedure
         .input(
