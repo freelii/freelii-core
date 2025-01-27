@@ -1,6 +1,6 @@
 "use client"
-import { Globe } from "./_components/globe";
-import { WaitlistSignup } from "./_components/waitlist-signup"
+
+import LandingPage from "./_components/landing-page";
 
 const backgroundStyle = `
   .bg-pattern {
@@ -27,24 +27,14 @@ const backgroundStyle = `
 
 export default function Home() {
   return (
-      <main
+    <main
       className="min-h-screen flex items-center justify-center"
       style={{
-        background: "radial-gradient(circle at center, #4abbe8, #FFFFFF)",
+        background: "radial-gradient(circle at center, #daf0f9, #FFFFFF)",
       }}
     >
-      <style jsx global>
-        {backgroundStyle}
-      </style>
-      <div className="bg-pattern"></div>
-      <div className="content w-full relative">
-        <div className="absolute inset-0 z-0 opacity-30">
-          <Globe />
-        </div>
-        <div className="relative z-10">
-          <WaitlistSignup />
-        </div>
-      </div>
+      <LandingPage />
+
     </main>
   );
 }
