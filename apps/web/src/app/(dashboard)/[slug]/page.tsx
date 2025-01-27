@@ -1,12 +1,12 @@
 import { PageContent } from "@/ui/layout/page-content";
 import { MaxWidthWrapper } from "@freelii/ui";
-import PayoutsTable from "./payouts/page-payouts";
+import PageClient from "./page-client";
 
 export default function WorkspacePage() {
   return (
-    <PageContent title="Account Payouts" description="Overview of all payouts">
+    <PageContent title="Welcome back!">
       <MaxWidthWrapper>
-        <PayoutsTable />
+        <PageClient />
       </MaxWidthWrapper>
     </PageContent>
   );

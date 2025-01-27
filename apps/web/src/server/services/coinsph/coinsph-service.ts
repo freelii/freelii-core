@@ -162,49 +162,47 @@ export class CoinsPHService {
 
     async makeSignedMerchantRequest<T>(endpoint: string, method: 'GET' | 'POST', params: { [key: string]: string | number | boolean | string[] } = {}): Promise<T> {
         try {
-            const timestamp = Date.now().toString();
-            const url = `${this.apiUrl}${endpoint}`;
+            const timestamp = new Date().getTime().toString();
 
-            // Build query string for GET requests or empty string for POST
-            const queryString = method === 'GET'
-                ? '?' + Object.keys(params)
-                    .sort()
-                    .map((key) => `${key}=${encodeURIComponent(params[key] as string)}`)
-                    .join('&')
-                : '';
 
-            // Build body string for POST requests or empty string for GET
-            const bodyString = method === 'POST'
-                ? Object.keys(params)
-                    .map((key) => `${key}=${params[key]}`)
-                    .join('&')
-                : '';
+            let str: string[] = []
+            Object.entries(params).forEach(([key, value]) => {
+                const paramValue = Array.isArray(value) ? JSON.stringify(value) : value;
+                str.push(key + "=" + paramValue);
+            });
+
+
+            const stringParams = str.join("&");
+            const host = this.apiUrl;
+            const messageToSign = timestamp + host + endpoint + stringParams
+            const signature = this.sign(messageToSign);
+
 
             // Construct message according to CoinsPH specification:
             // timestamp + URL(with query params for GET) + BODY(for POST)
-            const messageToSign = `${timestamp}${url}${queryString}${bodyString}`;
-            console.log('Message to sign:', messageToSign); // For debugging
-
-            const signature = this.sign(messageToSign);
-            console.log('Signature:', signature); // For debugging
 
             const headers = {
                 'X-Merchant-Key': this.apiKey,
                 'X-Merchant-Sign': signature,
                 'X-Timestamp': timestamp,
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
             };
 
-            console.log('headers', headers);
-            console.log('params', params);
-            console.log('url', url);
 
             let response;
             if (method === 'GET') {
-                const finalUrl = `${url}${queryString}`;
-                response = await axios.get(finalUrl, { headers });
+                response = await axios.get(this.apiUrl + endpoint, { headers });
             } else {
-                response = await axios.post(url, params, { headers });
+                // Convert params to URLSearchParams format for POST requests
+                const formData = new URLSearchParams();
+                Object.entries(params).forEach(([key, value]) => {
+                    // Special handling for arrays
+                    const paramValue = Array.isArray(value) ? JSON.stringify(value) : value;
+                    formData.append(key, String(paramValue));
+                });
+                console.log('formData', formData);
+
+                response = await axios.post(this.apiUrl + endpoint, formData, { headers });
             }
 
             if (response?.status !== 200) {
@@ -250,6 +248,17 @@ export class CoinsPHService {
             endpoint,
             'POST',
             requestParams
+        );
+    }
+
+    async getInvoices(invoiceId: string): Promise<InvoiceResponse> {
+        const endpoint = '/merchant-api/v1/get-invoices';
+
+
+        return await this.makeSignedMerchantRequest<InvoiceResponse>(
+            endpoint,
+            'GET',
+            { invoice_id: invoiceId }
         );
     }
 

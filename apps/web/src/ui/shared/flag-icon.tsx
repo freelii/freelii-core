@@ -1,7 +1,7 @@
-import { CURRENCIES } from "@freelii/utils";
+import { cn, CURRENCIES } from "@freelii/utils";
 import Image from "next/image";
 
-export function FlagIcon({ currencyCode, size = 16 }: { currencyCode?: string, size?: number }) {
+export function FlagIcon({ currencyCode, size = 16, className }: { currencyCode?: string, size?: number, className?: string }) {
     const currency = CURRENCIES[currencyCode as keyof typeof CURRENCIES];
     if (!currencyCode || !currency) {
         return (
@@ -18,7 +18,7 @@ export function FlagIcon({ currencyCode, size = 16 }: { currencyCode?: string, s
             alt={currency.name}
             width={size}
             height={size}
-            className="rounded-full object-cover"
+            className={cn("rounded-full object-cover", className)}
             style={{ width: size, height: size }}
         />
     )

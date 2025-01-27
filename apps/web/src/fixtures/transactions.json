@@ -1,0 +1,82 @@
+[
+    {
+      "id": "tx_1",
+      "type": "received",
+      "description": "Payment from John Smith",
+      "amount": 5000.00,
+      "date": "2024-03-15T14:30:00Z",
+      "status": "completed",
+      "currency": "PHP",
+      "reference": "PAY-123456"
+    },
+    {
+      "id": "tx_2",
+      "type": "sent",
+      "description": "Withdrawal to BDO",
+      "amount": 2500.00,
+      "date": "2024-03-14T09:15:00Z",
+      "status": "processing",
+      "currency": "PHP",
+      "reference": "WD-789012"
+    },
+    {
+      "id": "tx_3",
+      "type": "received",
+      "description": "Payment from Sarah Lee",
+      "amount": 7500.00,
+      "date": "2024-03-13T16:45:00Z",
+      "status": "completed",
+      "currency": "PHP",
+      "reference": "PAY-345678"
+    },
+    {
+      "id": "tx_4",
+      "type": "sent",
+      "description": "Withdrawal to UnionBank",
+      "amount": 3000.00,
+      "date": "2024-03-12T11:20:00Z",
+      "status": "pending",
+      "currency": "PHP",
+      "reference": "WD-901234"
+    },
+    {
+      "id": "tx_5",
+      "type": "received",
+      "description": "Payment from Mike Johnson",
+      "amount": 10000.00,
+      "date": "2024-03-11T13:10:00Z",
+      "status": "completed",
+      "currency": "PHP",
+      "reference": "PAY-567890"
+    },
+    {
+      "id": "tx_6",
+      "type": "sent",
+      "description": "Withdrawal to MetroBank",
+      "amount": 5000.00,
+      "date": "2024-03-10T15:30:00Z",
+      "status": "failed",
+      "currency": "PHP",
+      "reference": "WD-345678"
+    },
+    {
+      "id": "tx_7",
+      "type": "received",
+      "description": "Payment from Emma Davis",
+      "amount": 15000.00,
+      "date": "2024-03-09T10:25:00Z",
+      "status": "completed",
+      "currency": "PHP",
+      "reference": "PAY-678901"
+    },
+    {
+      "id": "tx_8",
+      "type": "sent",
+      "description": "Withdrawal to Security Bank",
+      "amount": 8000.00,
+      "date": "2024-03-08T14:40:00Z",
+      "status": "completed",
+      "currency": "PHP",
+      "reference": "WD-234567"
+}
+]

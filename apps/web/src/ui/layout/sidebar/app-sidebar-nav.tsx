@@ -11,6 +11,7 @@ import {
   //   Gift,
   //   Globe, 
   Facebook,
+  GreekTemple,
   InvoiceDollar, useRouterStuff, Users6
 } from "@freelii/ui";
 // import { Session } from "next-auth";
@@ -41,12 +42,12 @@ const NAV_AREAS: SidebarNavAreas<{
       {
         name: "Main",
         items: [
-          // {
-          //   name: "Home",
-          //   icon: GreekTemple,
-          //   href: `/${slug}`,
-          //   exact: true,
-          // },
+          {
+            name: "Home",
+            icon: GreekTemple,
+            href: `/${slug}`,
+            exact: true,
+          },
           // {
           //   name: "Sub-Accounts",
           //   icon: ConnectedDots,

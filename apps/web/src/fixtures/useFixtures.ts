@@ -14,6 +14,28 @@ export interface SubAccount {
   type: 'operational' | 'budget' | 'savings';
 }
 
+export interface FiatAccount {
+  id: string;
+  currency: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  branch: string;
+  swift_code: string;
+}
+
+export interface Transaction {
+  id: string;
+  type: 'received' | 'sent';
+  description: string;
+  amount: number;
+  date: string;
+  status: 'completed' | 'pending' | 'processing' | 'failed';
+  currency: string;
+  reference: string;
+}
+
+
 const getRandomPastDate = () => {
   const minHours = 6;
   const maxDays = 7;
@@ -28,9 +50,51 @@ const getRandomPastDate = () => {
 }
 
 export const useFixtures = () => {
+  const [fiatAccounts, setFiatAccounts] = useState<FiatAccount[]>(require('./fiat-accounts.json'))
   const [recipients, setRecipients] = useState<Map<number, Recipient>>(new Map(require('./recipients.json').map((recipient: any) => [Number(recipient.id), recipient])))
   const [payouts, setPayouts] = useState<Payout[]>(require('./payments.json'))
   const [subAccounts, setSubAccounts] = useState<SubAccount[]>(require('./accounts.json'))
+  const [transactions, setTransactions] = useState<Transaction[]>(require('./transactions.json'))
+
+
+  const [usdcAccount, setUsdcAccount] = useState({
+    id: 'acc_usdc_001',
+    lastUpdated: dayjs().subtract(7, 'minutes').toISOString(),
+    currency: 'USDC',
+    blockchain: 'stellar',
+    network: 'testnet',
+    address: 'GB7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ',
+    balance: 100000,
+    status: 'active',
+    createdAt: dayjs().subtract(1, 'month').toISOString(),
+    fiatUSDAccount: {
+      id: 'acc_us_001',
+      currency: 'USD',
+      bank_name: 'Chase Bank',
+      account_number: '987654321',
+      account_name: 'Maria Santos',
+      routing_number: '021000021',
+      swift_code: 'CHASUS33'
+    }
+  });
+
+
+  const getBalance = useCallback(async () => {
+    setUsdcAccount({
+      ...usdcAccount,
+      lastUpdated: dayjs().toISOString()
+    })
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    return usdcAccount.balance;
+  }, [usdcAccount]);
+
+  const setBalance = useCallback((balance: number) => {
+    setUsdcAccount({
+      ...usdcAccount,
+      balance,
+      lastUpdated: dayjs().toISOString()
+    })
+  }, [usdcAccount]);
 
   const getPayouts = useCallback(async () => {
     await new Promise((resolve) => setTimeout(resolve, 400))
@@ -93,9 +157,14 @@ export const useFixtures = () => {
 
   return {
     recipients,
+    subAccounts,
+    usdcAccount,
     getPayouts,
     getRecipients,
-    subAccounts,
-    getSinglePayout
+    getSinglePayout,
+    getBalance,
+    setBalance,
+    fiatAccounts,
+    transactions
   }
 }

@@ -20,7 +20,16 @@ export const coinsPHRouter = createTRPCRouter({
                 input.params
             );
         }),
-
+    getInvoices: publicProcedure
+        .input(
+            z.object({
+                external_transaction_id: z.string(),
+            })
+        )
+        .mutation(async ({ input }) => {
+            const coinsService = new CoinsPHService();
+            return await coinsService.getInvoices(input);
+        }),
     createInvoice: publicProcedure
         .input(
             z.object({
@@ -52,4 +61,5 @@ export const coinsPHRouter = createTRPCRouter({
             const coinsService = new CoinsPHService();
             return await coinsService.createOrder(input);
         }),
+
 }); 

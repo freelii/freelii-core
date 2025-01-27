@@ -1,0 +1,32 @@
+[
+    {
+        "id": "acc_ph_001",
+        "currency": "PHP",
+        "bank_name": "BDO Unibank",
+        "account_number": "1234567890",
+        "account_name": "Maria Santos",
+        "branch": "Makati City",
+        "swift_code": "BNORPHMM",
+        "verificationStatus": "verified"
+      },
+      {
+        "id": "acc_us_001",
+        "currency": "USD",
+        "bank_name": "Chase Bank",
+        "account_number": "987654321",
+        "account_name": "Maria Santos",
+        "routing_number": "021000021",
+        "swift_code": "CHASUS33",
+        "verificationStatus": "verified"
+       },
+       {
+        "id": "acc_us_002",
+        "currency": "USD",
+        "bank_name": "Bank of America",
+        "account_number": "22434567890",
+        "account_name": "Maria Santos",
+        "routing_number": "011000021",
+        "swift_code": "CHASUS33",
+        "verificationStatus": "pending"
+       }
+]

@@ -19,6 +19,7 @@ export * from './blur-image';
 export * from './card-list';
 export * from './checkbox';
 export * from './client-only';
+export * from "./collapsible";
 export * from './dialog';
 export * from "./hover-card";
 export * from './icon-menu';
