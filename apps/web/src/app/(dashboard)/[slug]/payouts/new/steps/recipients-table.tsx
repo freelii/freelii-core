@@ -411,7 +411,8 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
 
       <div className={cn(
         "grid gap-6 transition-all duration-300",
-        (hasSelectedRecipients ?? selectedRecipient ?? mode === 'payout') ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
+        mode === 'payout' ? "grid-cols-[2fr,1fr]" : // Always show 2-column layout in payout mode
+          selectedRecipient ? "grid-cols-[2fr,1fr]" : "grid-cols-1"
       )}>
         <div className="space-y-4">
           <div className="mb-4 flex items-center gap-4">
@@ -567,7 +568,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
           </div>
         </div>
 
-        {/* Right side card - either recipient details or payout form */}
+        {/* Right side panel */}
         {mode === 'default' && selectedRecipient && (
           <div
             ref={detailsCardRef}
@@ -579,7 +580,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
           </div>
         )}
 
-        {/* Right side card - with payout form */}
+        {/* Payment details panel - always shown in payout mode */}
         {mode === 'payout' && (
           <div className="animate-in slide-in-from-right duration-300">
             <div className="p-6 bg-white rounded-lg border border-gray-200">
@@ -587,37 +588,40 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                 <div>
                   <h3 className="font-medium text-lg">New Payment Details</h3>
                   <p className="text-sm text-gray-500 mt-2">
-                    Configure the payment details for {selectedRecipients.length} selected {pluralize(selectedRecipients.length, 'recipient')}
+                    {selectedRecipients.length > 0
+                      ? `Configure the payment details for ${selectedRecipients.length} selected ${pluralize(selectedRecipients.length, 'recipient')}`
+                      : 'Select recipients to configure payment details'}
                   </p>
-                  <div className="flex items-center gap-2 mt-3">
-                    <div className="flex -space-x-2">
-                      {selectedRecipients.slice(0, 3).map((recipient, index) => (
-                        <BlurImage
-                          key={recipient.id}
-                          src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
-                          width={12}
-                          height={12}
-                          alt={recipient.name}
-                          className="size-6 shrink-0 overflow-hidden rounded-full border-2 border-white"
-                          style={{ zIndex: 3 - index }}
-                        />
-                      ))}
+                  {selectedRecipients.length > 0 && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <div className="flex -space-x-2">
+                        {selectedRecipients.slice(0, 3).map((recipient, index) => (
+                          <BlurImage
+                            key={recipient.id}
+                            src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
+                            width={12}
+                            height={12}
+                            alt={recipient.name}
+                            className="size-6 shrink-0 overflow-hidden rounded-full border-2 border-white"
+                            style={{ zIndex: 3 - index }}
+                          />
+                        ))}
+                      </div>
+                      <div className={cn(
+                        "text-sm text-gray-600 text-xs",
+                        selectedRecipients.length > 2 && "px-2"
+                      )}>
+                        {selectedRecipients.slice(0, 3).map((recipient, index) => (
+                          <span key={recipient.id}>
+                            {index > 0 && index === Math.min(selectedRecipients.length, 3) - 1 && selectedRecipients.length <= 3 && " and "}
+                            {index > 0 && index < Math.min(selectedRecipients.length, 4) - 1 && ", "}
+                            {recipient.name}
+                          </span>
+                        ))}
+                        {selectedRecipients.length > 3 && ` and ${selectedRecipients.length - 3} more`}
+                      </div>
                     </div>
-                    <div className={cn(
-                      "text-sm text-gray-600 text-xs",
-                      selectedRecipients.length > 2 && "px-2"
-                    )}>
-                      {selectedRecipients.slice(0, 3).map((recipient, index) => (
-                        <span key={recipient.id}>
-                          {index > 0 && index === Math.min(selectedRecipients.length, 3) - 1 && selectedRecipients.length <= 3 && " and "}
-                          {index > 0 && index < Math.min(selectedRecipients.length, 4) - 1 && ", "}
-                          {recipient.name}
-                        </span>
-                      ))}
-                      {selectedRecipients.length > 3 && ` and ${selectedRecipients.length - 3} more`}
-                    </div>
-                  </div>
-
+                  )}
                 </div>
 
                 <div className="space-y-4">
