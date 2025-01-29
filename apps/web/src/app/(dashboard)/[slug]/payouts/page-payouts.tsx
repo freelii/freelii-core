@@ -2,7 +2,7 @@
 
 import { useFixtures } from "@/fixtures/useFixtures"
 import { FlagIcon } from "@/ui/shared/flag-icon"
-import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, ExpandingArrow } from "@freelii/ui"
+import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, Download } from "@freelii/ui"
 import {
   Table,
   TableBody,
@@ -26,7 +26,7 @@ import {
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { CheckCircle2, ChevronRight, Download } from "lucide-react"
+import { CheckCircle2, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import React, { useEffect, useRef } from "react"
 import { PaymentDetails } from "./payment-details"
@@ -75,26 +75,6 @@ export type Payout = {
   progress: string
   notes?: string
 }
-
-function ImportOption({
-  children,
-  setOpenPopover,
-  onClick,
-}: {
-  children: React.ReactNode;
-  setOpenPopover: React.Dispatch<React.SetStateAction<boolean>>;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
-    >
-      {children}
-    </button>
-  );
-}
-
 
 export const columns: ColumnDef<Payout>[] = [
   {
@@ -264,18 +244,6 @@ export default function PayoutsTable() {
     }
   }, [selectedPayout])
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (detailsRef.current && !detailsRef.current.contains(event.target as Node)) {
-        setSelectedPayout(null)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
 
   const selectedTotal = table.getSelectedRowModel().rows.reduce(
     (total, row) => {
@@ -285,9 +253,17 @@ export default function PayoutsTable() {
     0
   )
 
+  const handlePaymentSelect = (payout: Payout | null) => {
+    if (payout?.id === selectedPayout?.id) {
+      setSelectedPayout(null)
+    } else {
+      setSelectedPayout(payout)
+    }
+  }
+
   return (
-    <div className="w-full relative">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="">
+      <div className="mb-4 flex items-center justify-between ">
         <div className="flex gap-2 w-full items-center justify-end">
           <Button
             disabled
@@ -307,12 +283,11 @@ export default function PayoutsTable() {
           </Button>
         </div>
       </div>
-
-      <div className="flex gap-4">
-        <div className={`
-          flex-1 
-          transition-all duration-300 ease-in-out
-        `}>
+      <div className="grid grid-cols-12 gap-6">
+        <div className={cn(
+          "flex-1",
+          selectedPayout ? "col-span-8" : "col-span-12"
+        )}>
           <Table className="border-none relative">
             <TableHeader className="border-none">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -339,19 +314,13 @@ export default function PayoutsTable() {
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className={cn(
-                      "cursor-pointer hover:bg-gray-50 relative",
-                      selectedPayout?.id === row.original.id && "bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
-                      selectedPayout?.id === row.original.id && "rounded-full"
+                      "cursor-pointer hover:bg-gray-50",
+                      selectedPayout?.id === row.original.id && "bg-gray-100"
                     )}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedPayout(
-                        selectedPayout?.id === row.original.id ? null : row.original
-                      )
-                    }}
+                    onClick={() => handlePaymentSelect(row.original)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="font-normal text-xs p-1">
+                      <TableCell key={cell.id} className={cn("font-normal text-xs p-1", selectedPayout?.id === row.original.id && "font-semibold")}>
                         <>{flexRender(cell.column.columnDef.cell, cell.getContext())}</>
                       </TableCell>
                     ))}
@@ -384,86 +353,43 @@ export default function PayoutsTable() {
               )}
             </TableBody>
           </Table>
-        </div>
 
-        <div
-          ref={detailsRef}
-          className={cn(
-            "w-1/3",
-            "rounded-lg",
-            "border border-gray-200",
-            "p-6",
-            "mt-10",
-            "relative",
-            "transition-all duration-300 ease-in-out",
-            "shadow-lg",
-            selectedPayout
-              ? 'opacity-100 translate-x-0'
-              : 'opacity-0 -translate-x-full w-0 p-0 border-0'
-          )}
-        >
-          {selectedPayout && <PaymentDetails payment={selectedPayout} />}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-            <ChevronRight className="size-3 ml-1" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Floating Actions Bar */}
-      {Object.keys(rowSelection).length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4 bg-white rounded-full shadow-2xl border border-gray-200 z-50 shadow-gray-500/20">
-          <div className="text-sm">
-            <span className="font-medium">
-              {Object.keys(rowSelection).length} payouts selected
-            </span>
-            <span className="mx-2 text-gray-400">·</span>
-            <span className="text-gray-600">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(selectedTotal)}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="text-xs p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-              onClick={() => table.resetRowSelection()}
-            >
-              Cancel payouts
-            </Button>
-            <Button
-              className="group text-xs p-2 pr-6 bg-transparent text-black hover:bg-gray-100 flex items-center gap-2"
-            >
-              Process {Object.keys(rowSelection).length} payouts
-              <ExpandingArrow className="size-3" />
-            </Button>
+          <div className="flex items-center justify-end space-x-2 py-4">
+            <div className="flex-1 text-sm text-muted-foreground">
+              {table.getFilteredSelectedRowModel().rows.length} of{" "}
+              {table.getFilteredRowModel().rows.length} row(s) selected.
+            </div>
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                className="text-xs font-medium p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-600"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                Next
+                <ChevronRight className="size-3 ml-1" />
+              </Button>
+            </div>
           </div>
         </div>
-      )}
+
+        {selectedPayout && (
+          <div className="bg-gradient-to-br from-white rounded-lg to-neutral-50 col-span-4 border-[1px] border-gray-200 mt-4 p-4 transition-all duration-300">
+            <PaymentDetails
+              payment={selectedPayout}
+              onClose={() => handlePaymentSelect(null)}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
