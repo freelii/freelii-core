@@ -41,7 +41,7 @@ interface PayoutReviewProps {
 const DEMO_RECIPIENT_ID = 21;
 
 export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReviewProps) {
-    const { recipients, usdcAccount } = useFixtures();
+    const { recipients, usdcAccount, addDemoPayment } = useFixtures();
     const { searchParams } = useRouterStuff();
 
     const recipientId = searchParams.get('recipientId') ?? DEMO_RECIPIENT_ID;
@@ -71,6 +71,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
         setIsProcessing(false)
         setIsConfirmed(true)
         onConfirm?.()
+        addDemoPayment(Number(searchParams.get('amount')), paymentDetails.recipient.bankingDetails!.currency.shortName, Number(recipientId))
     }
 
     const recipientAmount = Number(searchParams.get('amount')) ?? 0;
