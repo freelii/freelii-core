@@ -7,6 +7,7 @@ import { cn, CURRENCIES, maskFirstDigits, noop } from "@freelii/utils"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { ArrowDownRight, ArrowUpRight, CheckCircle2, ChevronDown, Clock, RefreshCw, Wallet, XCircle } from "lucide-react"
+import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 
 dayjs.extend(relativeTime)
@@ -303,21 +304,20 @@ export default function PageClient() {
                       </div>
 
                     </div>
-                    <Button
-                      variant="outline"
-                      className="group text-xs px-6 pl-3 py-2 flex items-center gap-2"
-                      onClick={() => {
-                        // TODO: Implement off-ramp flow for this account
-                        console.log(`Initiate off-ramp to ${account.id}`);
-                      }}
-                    >
-                      Withdraw
-                      <ExpandingArrow className="size-4 -ml-2" />
-                      <FlagIcon
-                        currencyCode={account.currency}
-                        className="ml-2 transition-transform duration-200 group-hover:scale-110 group-hover:brightness-110"
-                      />
-                    </Button>
+
+                    <Link href={`/dashboard/withdrawals/request?to=${account.id}`}>
+                      <Button
+                        variant="outline"
+                        className="group text-xs px-6 pl-3 py-2 flex items-center gap-2"
+                      >
+                        Withdraw
+                        <ExpandingArrow className="size-4 -ml-2" />
+                        <FlagIcon
+                          currencyCode={account.currency}
+                          className="ml-2 transition-transform duration-200 group-hover:scale-110 group-hover:brightness-110"
+                        />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               ))}
