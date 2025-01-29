@@ -7,6 +7,12 @@ import {
   ExpandingArrow, HoverCard,
   HoverCardContent,
   HoverCardTrigger, IconMenu, Input, Label, Popover,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Separator,
   Textarea, ThreeDots, ToggleGroup, ToggleGroupItem,
   useRouterStuff
 } from "@freelii/ui"
@@ -35,6 +41,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Building2, CheckCircle2, ClipboardCopy, Clock, CreditCard, Search, UserPlus } from "lucide-react"
 import Link from "next/link"
+import { Logo } from "node_modules/@freelii/ui/src/logo"
 import React, { useEffect, useRef } from "react"
 
 dayjs.extend(relativeTime)
@@ -293,6 +300,8 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
   const [selectedCurrency] = React.useState<string>("USD")
   const [amount, setAmount] = React.useState<string>(searchParams.get('amount') ?? '')
 
+  // Hardcoded for DEMO
+  const transferToFreelii = searchParams.get('transferToFreelii') === 'true';
 
   // Initialize from URL params only once
 
@@ -572,33 +581,96 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                           <span>{selectedRecipient.name}</span>
                         </div>
                       </div>
+                      <Separator className="my-3" />
+                      <Label>Destination Account</Label>
 
-                      {selectedRecipient.bankingDetails ? (
+                      {/* Switch Bank Account */}
+                      <Select defaultValue={transferToFreelii ? "usdc" : "bank"} onValueChange={(value) => {
+                        if (value === "usdc") {
+                          queryParams({ set: { transferToFreelii: "true" } })
+                        } else {
+                          queryParams({ set: { transferToFreelii: "false" } })
+                        }
+                      }}>
+                        <SelectTrigger className="w-full mt-3 bg-gray-50 rounded-md">
+                          <SelectValue placeholder="Select payment method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedRecipient.bankingDetails && (
+                            <SelectItem value="bank" className="py-2 bg-white">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-gray-500" />
+                                <div className="flex flex-col">
+                                  <span className="text-sm">{selectedRecipient.bankingDetails.bankName}</span>
+                                  <span className="text-xs text-gray-500">
+                                    ••••{selectedRecipient.bankingDetails.accountNumber.slice(-4)}
+                                  </span>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          )}
+                          <SelectItem value="usdc" className="py-2 bg-white">
+                            <div className="flex items-center gap-2">
+                              <Logo className="h-4 w-4 text-gray-500 bg-gray-50 rounded-full" />
+                              <div className="flex flex-col">
+                                <span className="flex text-sm">Freelii Account
+                                  <Badge className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                    USDC
+                                  </Badge>
+                                </span>
+                                <span className="text-xs text-gray-500">Instant settlement</span>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {transferToFreelii ? (
                         <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Bank</span>
-                            <span className="font-medium">{selectedRecipient.bankingDetails.bankName}</span>
+                            <span className="text-gray-500">Destination Account</span>
+                            <span className="font-medium">Freelii USDC Account</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500">Account</span>
-                            <span className="font-medium">
-                              ••••{selectedRecipient.bankingDetails.accountNumber.slice(-4)}
-                            </span>
+                            Digital Currency Account
+
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-gray-500">Currency</span>
                             <div className="flex items-center gap-1.5">
-                              <FlagIcon
-                                currencyCode={selectedRecipient.bankingDetails.currency?.shortName}
-                                size={14}
-                              />
-                              <span className="font-medium">
-                                {selectedRecipient.bankingDetails.currency?.name}
-                              </span>
+                              <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                USDC
+                              </Badge>
                             </div>
                           </div>
-                        </div>
-                      ) : (
+
+                        </div>) : selectedRecipient.bankingDetails ? (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">Bank</span>
+                              <span className="font-medium">{selectedRecipient.bankingDetails.bankName}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">Account</span>
+                              <span className="font-medium">
+                                ••••{selectedRecipient.bankingDetails.accountNumber.slice(-4)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-500">Currency</span>
+                              <div className="flex items-center gap-1.5">
+                                <FlagIcon
+                                  currencyCode={selectedRecipient.bankingDetails.currency?.shortName}
+                                  size={14}
+                                />
+                                <span className="font-medium">
+                                  {selectedRecipient.bankingDetails.currency?.name}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
                         <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs text-gray-500">
                           No banking details provided
                         </div>

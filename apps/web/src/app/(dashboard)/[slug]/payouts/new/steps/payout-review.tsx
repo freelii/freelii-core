@@ -45,8 +45,30 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
     const { searchParams } = useRouterStuff();
 
     const recipientId = searchParams.get('recipientId') ?? DEMO_RECIPIENT_ID;
-    console.log('recipientId', recipientId)
-    const recipient = recipients.get(Number(recipientId)) as Recipient;
+    const transferToFreelii = searchParams.get('transferToFreelii') === 'true';
+    const recipient = transferToFreelii ? {
+        id: 24,
+        isVerified: true,
+        name: recipients.get(Number(recipientId))?.name ?? "Freelii USDC Account",
+        email: recipients.get(Number(recipientId))?.email ?? "payments@freelii.com",
+        recipientType: recipients.get(Number(recipientId))?.recipientType ?? "business",
+        bankingDetails: {
+            id: "bd_24",
+            name: "Freelii USDC Account",
+            accountNumber: "1234567890",
+            routingNumber: "1234567890",
+            bankName: "Freelii Digital Currency Account",
+            bankAddress: "1234567890",
+            bankCity: "San Francisco",
+            bankState: "CA",
+            bankZip: "94101",
+            currency: {
+                shortName: "USDC",
+                name: "USDC",
+                symbol: "USDC",
+            }
+        }
+    } as Recipient : recipients.get(Number(recipientId)) as Recipient;
 
     const [paymentDetails] = useState<PaymentDetails>({
         recipient,
@@ -294,7 +316,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                         </div>
                                     </div>
 
-                                    <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
+                                    {!transferToFreelii && <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
                                         {isProcessing ?
                                             <LoadingSpinner className="size-4 absolute left-0 -translate-x-[5px] p-2 bg-white pt-2 pb-0" /> :
                                             <div className={cn(
@@ -304,13 +326,16 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                             <p className="font-medium text-sm">Processing</p>
                                             <p className="text-xs text-gray-500">Within 24 hours</p>
                                         </div>
-                                    </div>
+                                    </div>}
 
                                     <div className="relative pl-8 border-l-2 border-transparent">
                                         <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 border-gray-200 bg-white" />
                                         <div>
-                                            <p className="font-medium text-sm">Expected Delivery</p>
-                                            <p className="text-xs text-gray-500 mt-1">1-2 business days</p>
+                                            <p className="font-medium text-sm flex items-center gap-1 justify-between">Expected Delivery
+                                                {transferToFreelii && <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                                    Instant
+                                                </Badge>}
+                                            </p>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 To {paymentDetails.recipient.bankingDetails!.bankName}
                                             </p>
@@ -345,7 +370,6 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                         </div>
                     </div>
                 </div>
-
             </div>
 
 

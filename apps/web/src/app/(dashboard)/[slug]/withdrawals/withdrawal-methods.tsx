@@ -1,11 +1,12 @@
 "use client"
 
-import { FiatAccount, useFixtures } from "@/fixtures/useFixtures"
+import { FiatAccount, useFixtures, Withdrawal } from "@/fixtures/useFixtures"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { Badge, Button, ExpandingArrow, Tabs, TabsContent, TabsList, TabsTrigger } from "@freelii/ui"
 import { CURRENCIES } from "@freelii/utils/constants"
 import { cn, maskFirstDigits } from "@freelii/utils/functions"
 import dayjs from "dayjs"
+import Link from "next/link"
 
 type WithdrawalMethod = {
     id: string
@@ -15,7 +16,7 @@ type WithdrawalMethod = {
     currency: string
 }
 
-export function WithdrawalsList({ withdrawals, fiatAccountsHash }: { withdrawals: any[], fiatAccountsHash: Map<string, FiatAccount> }) {
+export function WithdrawalsList({ withdrawals, fiatAccountsHash }: { withdrawals: Withdrawal[], fiatAccountsHash: Map<string, FiatAccount> }) {
     return (<div>
         {withdrawals.map((transaction) => (
             <div
@@ -96,16 +97,16 @@ export function WithdrawalMethods() {
                 </div>
             </div>
             <div className="col-span-5 p-4 border border-gray-200 rounded-lg">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
 
                     <h3 className="font-medium mb-4">Available Withdrawal Options</h3>
-                    <Button variant="outline" >
-                        Add
+                    <Button variant="outline" className="border-none" >
+                        Link account
                     </Button>
                 </div>
 
 
-                <div className="space-y-3">
+                <div className="space-y-3 mt-2">
                     {fiatAccounts.map((account) => (
                         <div key={account.id} className="px-3 border-none rounded-lg">
                             <div className="flex items-start justify-between">
@@ -120,21 +121,19 @@ export function WithdrawalMethods() {
                                     </div>
 
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    className="group text-xs px-6 pl-3 py-2 flex items-center gap-2"
-                                    onClick={() => {
-                                        // TODO: Implement off-ramp flow for this account
-                                        console.log(`Initiate off-ramp to ${account.id}`);
-                                    }}
-                                >
-                                    Withdraw
-                                    <ExpandingArrow className="size-4 -ml-2" />
-                                    <FlagIcon
-                                        currencyCode={account.currency}
-                                        className="ml-2 transition-transform duration-200 group-hover:scale-110 group-hover:brightness-110"
-                                    />
-                                </Button>
+                                <Link href={`/dashboard/withdrawals/request?to=${account.id}`}>
+                                    <Button
+                                        variant="outline"
+                                        className="group text-xs px-6 pl-3 py-2 flex items-center gap-2"
+                                    >
+                                        Withdraw
+                                        <ExpandingArrow className="size-4 -ml-2" />
+                                        <FlagIcon
+                                            currencyCode={account.currency}
+                                            className="ml-2 transition-transform duration-200 group-hover:scale-110 group-hover:brightness-110"
+                                        />
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     ))}
