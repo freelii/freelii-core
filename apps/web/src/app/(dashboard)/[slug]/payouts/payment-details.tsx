@@ -1,4 +1,4 @@
-import { Badge, Button } from "@freelii/ui"
+import { Badge } from "@freelii/ui"
 import { Calendar, CheckCircle2, Clock, Users } from "lucide-react"
 import { type Payout } from "./page-payouts"
 
@@ -95,14 +95,6 @@ export function PaymentDetails({ payment }: PayoutDetailsProps) {
           ))}
         </div>
 
-        <div className="flex gap-2 pt-6">
-          <Button variant="outline" className="text-red-600 hover:bg-red-50">
-            Cancel Payout
-          </Button>
-          <Button className="ml-auto">
-            Process Payout
-          </Button>
-        </div>
       </div>
     </div>
   )
