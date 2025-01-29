@@ -23,6 +23,7 @@ export default function WithdrawalsRequestPage() {
 
     const to = searchParams.get('to');
     const destination = to ? fiatAccounts.find(account => account.id === to) : null;
+    const transferToFreelii = searchParams.get('transferToFreelii') === 'true';
 
     if (!destination) {
         return (
@@ -153,14 +154,14 @@ export default function WithdrawalsRequestPage() {
                             </div>
                         </div>
 
-                        {/* Right - Payment Details */}
+                        {/* Right - Withdrawal Details */}
                         <div className="space-y-6">
                             <div className="p-6 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-6">
                                 <div className="space-y-6">
                                     <div>
-                                        <h3 className="font-medium text-lg">Payment Details</h3>
+                                        <h3 className="font-medium text-lg">Withdrawal Details</h3>
                                         <p className="text-sm text-gray-500 mt-2">
-                                            Review the payment breakdown before confirming
+                                            Review the withdrawal breakdown before confirming
                                         </p>
                                     </div>
 
@@ -304,7 +305,7 @@ export default function WithdrawalsRequestPage() {
                                                 <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 border-gray-200 bg-white" />
                                                 <div>
                                                     <p className="font-medium text-sm">Expected Delivery</p>
-                                                    <p className="text-xs text-gray-500 mt-1">1-2 business days</p>
+                                                    <p className="text-xs text-gray-500 mt-1">{transferToFreelii ? "Instant" : "1-3 business days"}</p>
                                                     <p className="text-xs text-gray-500 mt-1">
                                                         To {destination.bank_name}
                                                     </p>

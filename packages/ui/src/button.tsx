@@ -42,11 +42,12 @@ export interface ButtonProps
   icon?: React.ReactNode;
 }
 
-export const Button = ({ children, className, text, icon, variant, onClick }: ButtonProps) => {
+export const Button = ({ children, className, text, icon, variant, onClick, ...props }: ButtonProps) => {
   return (
     <button
       className={cn(buttonVariants({ variant }), className)}
       onClick={onClick}
+      {...props}
     >
       {icon}
       {text || children}

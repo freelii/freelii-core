@@ -2,6 +2,7 @@
 
 import { useFixtures } from "@/fixtures/useFixtures"
 import { FlagIcon } from "@/ui/shared/flag-icon"
+import { InstantBadge } from "@/ui/shared/instant-badge"
 import { Badge, BlurImage, Button, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { AnimatePresence, motion } from "framer-motion"
@@ -149,7 +150,9 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Estimated delivery</span>
-                                        <span>1-2 business days</span>
+                                        {transferToFreelii ?
+                                            <InstantBadge /> :
+                                            <span>1-3 business days</span>}
                                     </div>
                                 </div>
 
@@ -332,9 +335,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                         <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 border-gray-200 bg-white" />
                                         <div>
                                             <p className="font-medium text-sm flex items-center gap-1 justify-between">Expected Delivery
-                                                {transferToFreelii && <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                                    Instant
-                                                </Badge>}
+                                                {transferToFreelii && <InstantBadge />}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 To {paymentDetails.recipient.bankingDetails!.bankName}
