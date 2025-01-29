@@ -2,6 +2,7 @@
 
 import {
   ArrowRight,
+  ArrowsOppositeDirectionY,
   Calendar6,
   Facebook,
   GreekTemple,
@@ -48,6 +49,11 @@ const NAV_AREAS: SidebarNavAreas<{
             name: "Recipients",
             icon: Users6,
             href: `/${slug}/recipients${queryString}`,
+          },
+          {
+            name: "Withdrawals",
+            icon: ArrowsOppositeDirectionY,
+            href: `/${slug}/withdrawals${queryString}`,
           },
           // {
           //   name: "Deposits",

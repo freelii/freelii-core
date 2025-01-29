@@ -1,0 +1,29 @@
+[
+  {
+    "id": "wth_001",
+    "usdcAmount": 450.25,
+    "amount": 25000,
+    "currency": "PHP",
+    "date": "2024-03-15T08:30:00Z",
+    "destination": "acc_ph_001",
+    "status": "completed"
+  },
+  {
+    "id": "wth_002",
+    "usdcAmount": 270.15,
+    "amount": 15000,
+    "currency": "PHP",
+    "date": "2024-03-10T14:20:00Z",
+    "destination": "acc_ph_002",
+    "status": "processing"
+  },
+  {
+    "id": "wth_003",
+    "usdcAmount": 5000,
+    "amount": 5000,
+    "currency": "USD",
+    "date": "2024-03-05T11:45:00Z",
+    "destination": "acc_us_002",
+    "status": "completed"
+  }
+]

@@ -36,6 +36,16 @@ export interface Transaction {
   reference: string;
 }
 
+export interface Withdrawal {
+  id: string;
+  usdcAmount: number;
+  amount: number;
+  currency: string;
+  date: string;
+  destination: string;
+  status: 'completed' | 'pending' | 'processing' | 'failed';
+}
+
 
 const getRandomPastDate = () => {
   const minHours = 6;
@@ -77,6 +87,8 @@ export const useFixtures = () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return [...storedTransactions, ...initialTransactions];
   })
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const [withdrawals] = useState<Withdrawal[]>(require('./withdrawals.json') as unknown as Withdrawal[])
 
 
   const [usdcAccount, setUsdcAccount] = useState({
@@ -240,6 +252,7 @@ export const useFixtures = () => {
     setBalance,
     fiatAccounts,
     transactions,
-    addDemoPayment
+    addDemoPayment,
+    withdrawals
   }
 }
