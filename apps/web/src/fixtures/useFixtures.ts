@@ -34,6 +34,8 @@ export interface Transaction {
   status: 'completed' | 'pending' | 'processing' | 'failed';
   currency: string;
   reference: string;
+  bankName?: string
+  accountNumber?: string
 }
 
 export interface Withdrawal {
@@ -145,9 +147,11 @@ export const useFixtures = () => {
       description: `${currency} Payment to ${recipient.name}`,
       amount,
       date: dayjs().toISOString(),
-      status: 'completed',
+      status: currency === "USDC" ? 'completed' : 'processing',
       currency,
-      reference: `PAY-${Date.now()}`
+      reference: `PAY-${Date.now()}`,
+      bankName: currency === "USDC" ? "Freelii Digital Currency Account" : "Bank of China",
+      accountNumber: "****3210"
     }
 
     const updatedTransactions = [newTransaction, ...transactions];
