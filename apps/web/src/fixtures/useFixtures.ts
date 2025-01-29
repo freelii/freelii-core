@@ -60,7 +60,7 @@ export const useFixtures = () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const initialPayments = require('./payments.json') as unknown as Payout[];
     const storedPayments = typeof window !== 'undefined'
-      ? JSON.parse(localStorage.getItem('demo_payments') ?? '[]')
+      ? JSON.parse(localStorage.getItem('demo_payments') ?? '[]') as Payout[]
       : [];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return [...storedPayments, ...initialPayments];
@@ -72,7 +72,7 @@ export const useFixtures = () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const initialTransactions = require('./transactions.json') as unknown as Transaction[];
     const storedTransactions = typeof window !== 'undefined'
-      ? JSON.parse(localStorage.getItem('demo_transactions') ?? '[]')
+      ? JSON.parse(localStorage.getItem('demo_transactions') ?? '[]') as Transaction[]
       : [];
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     return [...storedTransactions, ...initialTransactions];
