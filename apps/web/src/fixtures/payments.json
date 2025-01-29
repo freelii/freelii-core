@@ -2,7 +2,7 @@
     {
       "id": "a2gr84i9",
       "amount": 56000,
-      "currency": "USD",
+      "currency": "USDC",
       "nextPayment": "2024-03-20",
       "recipients": [{ "id": 21 }],
       "label": "Supplier Invoice Payment",
@@ -11,37 +11,37 @@
     {
       "id": "m5gr84i9",
       "amount": 1250,
-      "currency": "PHP",
+      "currency": "USDC",
       "nextPayment": "2024-03-20",
-      "recipients": [{ "id": 1 }, { "id": 2 }],
+      "recipients": [{ "id": 22 }],
       "label": "Payment",
       "progress": "One time payment"
     },
     {
       "id": "3u1reuv4",
       "amount": 2100,
-      "currency": "PHP",
+      "currency": "USD",
       "nextPayment": "2024-03-21",
-      "recipients": [{ "id": 3 }, { "id": 4 }, { "id": 5 }],
-      "label": "Salary",
+      "recipients": [{ "id": 24 }],
+      "label": "Supplier Invoice Payment",
       "progress": "Monthly payment"
     },
     {
       "id": "derv1ws0",
       "amount": 3500,
-      "currency": "PHP",
+      "currency": "USDC",
       "nextPayment": "2024-03-27",
-      "recipients": [{ "id": 6 }],
-      "label": "Salary",
+      "recipients": [{ "id": 26 }],
+      "label": "Supplier Invoice Payment",
       "progress": "Monthly payment"
     },
     {
       "id": "5kma53ae",
       "amount": 4800,
-      "currency": "PHP",
+      "currency": "USD",
       "nextPayment": "2024-03-20",
-      "recipients": [{ "id": 7 }, { "id": 8 }, { "id": 9 }, { "id": 10 }],
-      "label": "Insurance",
+      "recipients": [{ "id": 27 }],
+      "label": "Float Insurance",
       "progress": "4 out of 6"
     },
     {

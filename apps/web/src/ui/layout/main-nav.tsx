@@ -4,12 +4,12 @@ import { useMediaQuery } from "@freelii/ui";
 import { cn, noop } from "@freelii/utils";
 import { usePathname } from "next/navigation";
 import {
-  ComponentType,
+  type ComponentType,
   createContext,
-  Dispatch,
-  PropsWithChildren,
-  ReactNode,
-  SetStateAction,
+  type Dispatch,
+  type PropsWithChildren,
+  type ReactNode,
+  type SetStateAction,
   useEffect,
   useState,
 } from "react";

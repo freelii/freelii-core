@@ -13,16 +13,16 @@ import {
 } from "@freelii/ui/table"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop } from "@freelii/utils"
 import {
-  ColumnDef,
-  ColumnFiltersState,
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
+  type SortingState,
   useReactTable,
-  VisibilityState,
+  type VisibilityState,
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -145,13 +145,13 @@ export const columns: ColumnDef<Payout>[] = [
       const currency = row.original.currency
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency,
+        currency: currency === "USDC" ? "USD" : currency,
       }).format(amount)
 
       const currencyInfo = CURRENCIES[currency]
 
       return (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-start gap-2">
           <FlagIcon currencyCode={currency} />
           <div className="font-medium">{formatted}</div>
         </div>

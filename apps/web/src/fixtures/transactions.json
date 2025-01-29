@@ -1,5 +1,107 @@
 [
     {
+        "id": "tx_a2gr84i9",
+        "type": "sent",
+        "description": "Supplier Invoice Payment",
+        "amount": 56000.00,
+        "date": "2024-03-20T10:00:00Z",
+        "status": "completed",
+        "currency": "USDC",
+        "reference": "PAY-a2gr84i9",
+        "recipient": "Shanghai Tech Solutions",
+        "recipientEmail": "finance@shanghaitech.cn",
+        "bankName": "Bank of China",
+        "accountNumber": "****3210"
+      },
+      {
+        "id": "tx_m5gr84i9",
+        "type": "sent",
+        "description": "Payment",
+        "amount": 1250.00,
+        "date": "2024-03-20T10:00:00Z",
+        "status": "completed",
+        "currency": "USDC",
+        "reference": "PAY-m5gr84i9",
+        "recipient": "Hong Kong Digital Ltd",
+        "recipientEmail": "accounts@hkdigital.com",
+        "bankName": "HSBC Hong Kong",
+        "accountNumber": "****2109"
+      },
+      {
+        "id": "tx_3u1reuv4",
+        "type": "sent",
+        "description": "Supplier Invoice Payment",
+        "amount": 2100.00,
+        "date": "2024-03-21T10:00:00Z",
+        "status": "processing",
+        "currency": "USD",
+        "reference": "PAY-3u1reuv4",
+        "recipient": "Manila Tech Corp",
+        "recipientEmail": "finance@manilatech.ph",
+        "bankName": "BDO Unibank",
+        "accountNumber": "****0987"
+      },
+      {
+        "id": "tx_derv1ws0",
+        "type": "sent",
+        "description": "Supplier Invoice Payment",
+        "amount": 3500.00,
+        "date": "2024-03-27T10:00:00Z",
+        "status": "completed",
+        "currency": "USDC",
+        "reference": "PAY-derv1ws0",
+        "recipient": "Shenzhen Electronics Co",
+        "recipientEmail": "payments@szelectronics.cn",
+        "bankName": "Bank of China",
+        "accountNumber": "****8765"
+      },
+      {
+        "id": "tx_3",
+        "type": "received",
+        "description": "USDC Transfer from Sarah Lee",
+        "amount": 150.00,
+        "date": "2024-03-13T16:45:00Z",
+        "status": "completed",
+        "currency": "USDC",
+        "reference": "PAY-345678",
+        "sender": "Sarah Lee",
+        "senderEmail": "sarah.lee@example.com",
+        "blockchain": {
+          "network": "Stellar",
+          "txHash": "0x456...def",
+          "fromAddress": "G456...ABC"
+        }
+      },
+      {
+        "id": "tx_5kma53ae",
+        "type": "sent",
+        "description": "Float Insurance",
+        "amount": 4800.00,
+        "date": "2024-03-20T10:00:00Z",
+        "status": "processing",
+        "currency": "USD",
+        "reference": "PAY-5kma53ae",
+        "recipient": "Singapore Fintech Solutions",
+        "recipientEmail": "treasury@sgfintech.sg",
+        "bankName": "OCBC Bank",
+        "accountNumber": "****7654"
+      },
+      {
+        "id": "tx_bhqecj4p",
+        "type": "sent",
+        "description": "Inventory restocking",
+        "amount": 2750.00,
+        "date": "2024-03-20T10:00:00Z",
+        "status": "completed",
+        "currency": "PHP",
+        "reference": "PAY-bhqecj4p",
+        "recipient": "Oliver Santos",
+        "recipientEmail": "oliver.s@example.com",
+        "bankName": "JPMorgan Chase",
+        "accountNumber": "****4567"
+      },
+
+      {
       "id": "tx_1",
       "type": "received",
       "description": "Payment from John Smith",
@@ -22,28 +124,11 @@
       "description": "Withdrawal to BDO Unibank",
       "amount": 2500.00,
       "date": "2024-03-14T09:15:00Z",
-      "status": "processing",
+      "status": "completed",
       "currency": "PHP",
       "reference": "WD-789012",
       "bankName": "BDO Unibank",
       "accountNumber": "****5678"
-    },
-    {
-      "id": "tx_3",
-      "type": "received",
-      "description": "USDC Transfer from Sarah Lee",
-      "amount": 150.00,
-      "date": "2024-03-13T16:45:00Z",
-      "status": "completed",
-      "currency": "USDC",
-      "reference": "PAY-345678",
-      "sender": "Sarah Lee",
-      "senderEmail": "sarah.lee@example.com",
-      "blockchain": {
-        "network": "Stellar",
-        "txHash": "0x456...def",
-        "fromAddress": "G456...ABC"
-      }
     },
     {
       "id": "tx_4",
@@ -111,5 +196,32 @@
       "status": "completed",
       "currency": "PHP",
       "reference": "WD-234567"
+    },
+    
+    {
+      "id": "tx_adedev",
+      "type": "sent",
+      "description": "Contract payment",
+      "amount": 3300.00,
+      "date": "2024-03-20T10:00:00Z",
+      "status": "processing",
+      "currency": "PHP",
+      "reference": "PAY-adedev",
+      "recipient": "Multiple Recipients",
+      "recipientCount": 3,
+      "bankName": "Various Banks"
+    },
+    {
+      "id": "tx_434343",
+      "type": "sent",
+      "description": "Contract payment",
+      "amount": 7500.00,
+      "date": "2024-03-20T10:00:00Z",
+      "status": "processing",
+      "currency": "PHP",
+      "reference": "PAY-434343",
+      "recipient": "Multiple Recipients",
+      "recipientCount": 5,
+      "bankName": "Various Banks"
     }
 ]

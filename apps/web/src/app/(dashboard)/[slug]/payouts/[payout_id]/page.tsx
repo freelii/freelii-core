@@ -8,7 +8,7 @@ import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop, pluralize, toUSD } from "@
 import { Building2, CheckCircle2, Download } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Payout } from "../../payouts/page-payouts"
+import { type Payout } from "../../payouts/page-payouts"
 import { PayoutNotFound } from "./payout-not-found"
 
 export default function PayoutDetailsPage() {

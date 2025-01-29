@@ -1,5 +1,6 @@
 "use client";
-import { Payout, Recipient } from "@/app/(dashboard)/[slug]/payouts/page-payouts";
+import { type Payout, type Recipient } from "@/app/(dashboard)/[slug]/payouts/page-payouts";
+import { CURRENCIES } from "@freelii/utils/constants";
 import dayjs from "dayjs";
 import { useCallback, useState } from "react";
 
@@ -64,8 +65,10 @@ export const useFixtures = () => {
 
   const [usdcAccount, setUsdcAccount] = useState({
     id: 'acc_usdc_001',
+    name: 'USDC Account',
+    accountNumber: '1234567890',
     lastUpdated: dayjs().subtract(7, 'minutes').toISOString(),
-    currency: 'USDC',
+    currency: CURRENCIES.USDC!,
     blockchain: 'stellar',
     network: 'testnet',
     address: 'GB7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ7JQJQ',

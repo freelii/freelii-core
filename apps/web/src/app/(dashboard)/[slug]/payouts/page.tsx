@@ -1,6 +1,6 @@
 import { PageContent } from "@/ui/layout/page-content"
 import { MaxWidthWrapper } from "@freelii/ui"
-import { Metadata } from "next"
+import { type Metadata } from "next"
 import PayoutsTable from "./page-payouts"
 
 export const metadata: Metadata = {

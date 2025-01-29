@@ -1,8 +1,6 @@
-import { Button } from "@freelii/ui"
-import { Building2, ClipboardCopy, Clock, CheckCircle2, Users, Calendar } from "lucide-react"
-import { Payout } from "./page-payouts"
-import { Badge } from "@freelii/ui"
-import Image from "next/image"
+import { Badge, Button } from "@freelii/ui"
+import { Calendar, CheckCircle2, Clock, Users } from "lucide-react"
+import { type Payout } from "./page-payouts"
 
 interface PayoutDetailsProps {
   payment: Payout
@@ -17,14 +15,14 @@ export function PaymentDetails({ payment }: PayoutDetailsProps) {
       {/* Summary Section */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-4">{payment.label}</h3>
-        
+
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
             <div className="text-sm text-gray-500">Total amount</div>
             <div className="text-lg font-semibold">
               {new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: payment.currency,
+                currency: payment.currency === "USDC" ? "USD" : payment.currency,
               }).format(totalAmount)}
             </div>
           </div>
@@ -33,7 +31,7 @@ export function PaymentDetails({ payment }: PayoutDetailsProps) {
             <div className="text-lg font-semibold">
               {new Intl.NumberFormat("en-US", {
                 style: "currency",
-                currency: payment.currency,
+                currency: payment.currency === "USDC" ? "USD" : payment.currency,
               }).format(payment.amount)}
             </div>
           </div>
@@ -66,7 +64,7 @@ export function PaymentDetails({ payment }: PayoutDetailsProps) {
 
         <div className="space-y-3">
           {payment.recipients.map((recipient) => (
-            <div 
+            <div
               key={recipient.id}
               className="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
             >
@@ -88,7 +86,7 @@ export function PaymentDetails({ payment }: PayoutDetailsProps) {
                 <div className="text-sm font-medium">
                   {new Intl.NumberFormat("en-US", {
                     style: "currency",
-                    currency: payment.currency,
+                    currency: payment.currency === "USDC" ? "USD" : payment.currency,
                   }).format(payment.amount)}
                 </div>
               </div>

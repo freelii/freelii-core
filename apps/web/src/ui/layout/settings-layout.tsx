@@ -1,5 +1,5 @@
 import { MaxWidthWrapper } from "@freelii/ui";
-import { PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import { PageContent } from "./page-content";
 
 export default function SettingsLayout({ children }: PropsWithChildren) {

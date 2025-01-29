@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  ArrowRight,
   Calendar6,
   Facebook,
   GreekTemple,
@@ -9,8 +10,8 @@ import {
   Users6
 } from "@freelii/ui";
 import { useParams, usePathname } from "next/navigation";
-import { ReactNode, useMemo } from "react";
-import { SidebarNav, SidebarNavAreas } from "./sidebar-nav";
+import { type ReactNode, useMemo } from "react";
+import { SidebarNav, type SidebarNavAreas } from "./sidebar-nav";
 
 const NAV_AREAS: SidebarNavAreas<{
   slug: string;
@@ -70,11 +71,16 @@ const NAV_AREAS: SidebarNavAreas<{
       {
         name: "Payouts",
         items: [
-
           {
             name: "Account Payouts",
             icon: Calendar6,
             href: `/${slug}/payouts`,
+            exact: true,
+          },
+          {
+            name: "New Payment",
+            icon: ArrowRight,
+            href: `/${slug}/payouts/new`,
           },
         ],
       },

@@ -9,14 +9,18 @@
       "id": "bd_21",
       "name": "Shanghai Tech Solutions",
       "accountNumber": "9876543210",
-      "routingNumber": "021000021",
+      "routingNumber": "BKCHCNBJ300",
       "bankName": "Bank of China",
-      "bankAddress": "200 Mid Yincheng Road",
+      "bankAddress": "23 Zhongshan Road",
       "bankCity": "Shanghai",
       "bankState": "",
-      "bankZip": "200120",
+      "bankZip": "200002",
       "currency": {
-        "currencyCode": "CNY"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -37,7 +41,11 @@
       "bankState": "",
       "bankZip": "",
       "currency": {
-        "currencyCode": "HKD"
+        "currencyCode": "HKD",
+        "name": "Hong Kong Dollar",
+        "flag": "https://flagcdn.com/hk.svg",
+        "symbol": "HK$",
+        "shortName": "HKD"
       }
     }
   },
@@ -58,7 +66,11 @@
       "bankState": "",
       "bankZip": "018982",
       "currency": {
-        "currencyCode": "SGD"
+        "currencyCode": "SGD",
+        "name": "Singapore Dollar",
+        "flag": "https://flagcdn.com/sg.svg",
+        "symbol": "S$",
+        "shortName": "SGD"
       }
     }
   },
@@ -79,7 +91,11 @@
       "bankState": "NCR",
       "bankZip": "1200",
       "currency": {
-        "currencyCode": "PHP"
+        "currencyCode": "PHP",
+        "name": "Philippine Peso",
+        "flag": "https://flagcdn.com/ph.svg",
+        "symbol": "₱",
+        "shortName": "PHP"
       }
     }
   },
@@ -100,7 +116,11 @@
       "bankState": "CEB",
       "bankZip": "6000",
       "currency": {
-        "currencyCode": "PHP"
+        "currencyCode": "PHP",
+        "name": "Philippine Peso",
+        "flag": "https://flagcdn.com/ph.svg",
+        "symbol": "₱",
+        "shortName": "PHP"
       }
     }
   },
@@ -114,14 +134,18 @@
       "id": "bd_26",
       "name": "Shenzhen Electronics Co",
       "accountNumber": "4321098765",
-      "routingNumber": "021000021",
-      "bankName": "China Construction Bank",
-      "bankAddress": "No. 6011 Shennan Road",
-      "bankCity": "Shenzhen",
+      "routingNumber": "BKCHCNBJ300",
+      "bankName": "Bank of China",
+      "bankAddress": "23 Zhongshan Road",
+      "bankCity": "Shanghai",
       "bankState": "",
-      "bankZip": "518000",
+      "bankZip": "200002",
       "currency": {
-        "currencyCode": "CNY"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -142,7 +166,11 @@
       "bankState": "",
       "bankZip": "049513",
       "currency": {
-        "currencyCode": "SGD"
+        "currencyCode": "SGD",
+        "name": "Singapore Dollar",
+        "flag": "https://flagcdn.com/sg.svg",
+        "symbol": "S$",
+        "shortName": "SGD"
       }
     }
   },
@@ -163,7 +191,11 @@
       "bankState": "",
       "bankZip": "",
       "currency": {
-        "currencyCode": "HKD"
+        "currencyCode": "HKD",
+        "name": "Hong Kong Dollar",
+        "flag": "https://flagcdn.com/hk.svg",
+        "symbol": "HK$",
+        "shortName": "HKD"
       }
     }
   },
@@ -184,7 +216,11 @@
       "bankState": "NY",
       "bankZip": "10017",
       "currency": {
-        "currencyCode": "USD"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -212,7 +248,11 @@
       "bankState": "MA",
       "bankZip": "02110",
       "currency": {
-        "currencyCode": "USD"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -233,7 +273,11 @@
       "bankState": "NY",
       "bankZip": "10013",
       "currency": {
-        "currencyCode": "USD"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -261,7 +305,11 @@
       "bankState": "NY",
       "bankZip": "10005",
       "currency": {
-        "currencyCode": "EUR"
+        "currencyCode": "EUR",
+        "name": "Euro",
+        "flag": "https://flagcdn.com/eu.svg",
+        "symbol": "€",
+        "shortName": "EUR"
       }
     }
   },
@@ -289,7 +337,11 @@
       "bankState": "NY",
       "bankZip": "10018",
       "currency": {
-        "currencyCode": "GBP"
+        "currencyCode": "GBP",
+        "name": "British Pound",
+        "flag": "https://flagcdn.com/gb.svg",
+        "symbol": "£",
+        "shortName": "GBP"
       }
     }
   },
@@ -310,7 +362,11 @@
       "bankState": "CA",
       "bankZip": "94104",
       "currency": {
-        "currencyCode": "USD"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -338,7 +394,11 @@
       "bankState": "NY",
       "bankZip": "10179",
       "currency": {
-        "currencyCode": "USD"
+        "currencyCode": "USD",
+        "name": "United States Dollar",
+        "flag": "https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "shortName": "USD"
       }
     }
   },
@@ -359,7 +419,11 @@
       "bankState": "ON",
       "bankZip": "M5X 1A1",
       "currency": {
-        "currencyCode": "CAD"
+        "currencyCode": "CAD",
+        "name": "Canadian Dollar",
+        "flag": "https://flagcdn.com/ca.svg",
+        "symbol": "CA$",
+        "shortName": "CAD"
       }
     }
   },
@@ -387,7 +451,11 @@
       "bankState": "MA",
       "bankZip": "02109",
       "currency": {
-        "currencyCode": "EUR"
+        "currencyCode": "EUR",
+        "name": "Euro",
+        "flag": "https://flagcdn.com/eu.svg",
+        "symbol": "€",
+        "shortName": "EUR"
       }
     }
   },
@@ -415,7 +483,11 @@
       "bankState": "NCR",
       "bankZip": "1200",
       "currency": {
-        "currencyCode": "PHP"
+        "currencyCode": "PHP",
+        "name": "Philippine Peso",
+        "flag": "https://flagcdn.com/ph.svg",
+        "symbol": "₱",
+        "shortName": "PHP"
       }
     }
   },
@@ -436,7 +508,11 @@
       "bankState": "NCR",
       "bankZip": "1226",
       "currency": {
-        "currencyCode": "PHP"
+        "currencyCode": "PHP",
+        "name": "Philippine Peso",
+        "flag": "https://flagcdn.com/ph.svg",
+        "symbol": "₱",
+        "shortName": "PHP"
       }
     }
   },
@@ -464,7 +540,11 @@
       "bankState": "NCR",
       "bankZip": "1200",
       "currency": {
-        "currencyCode": "PHP"
+        "currencyCode": "PHP",
+        "name": "Philippine Peso",
+        "flag": "https://flagcdn.com/ph.svg",
+        "symbol": "₱",
+        "shortName": "PHP"
       }
     }
   },

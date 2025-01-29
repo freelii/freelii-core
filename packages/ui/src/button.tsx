@@ -1,8 +1,8 @@
 "use client";
 
-import { ReactNode } from "react";
 import { cn } from "@freelii/utils";
 import { VariantProps, cva } from "class-variance-authority";
+import { ReactNode } from "react";
 
 export const buttonVariants = cva(
   "inline-flex items-center text-xs p-2 justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
@@ -10,7 +10,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default: "text-xs font-medium p-2 text-neutral-200 bg-black hover:bg-neutral-900 hover:text-white",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        outline: "border border-input text-xs bg-background hover:bg-accent hover:text-accent-foreground",
         primary:
           "border-black bg-black text-white hover:bg-gray-800 hover:ring-4 hover:ring-gray-200",
         secondary: cn(
@@ -34,7 +34,7 @@ export const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   children?: ReactNode;
   className?: string;
   appName?: string;

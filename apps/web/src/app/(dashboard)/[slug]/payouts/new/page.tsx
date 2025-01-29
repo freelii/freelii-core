@@ -29,7 +29,7 @@ export default function NewPaymentPage() {
           {/* Step content will be rendered here */}
           {step === stepIds.recipient && <SetupRecipients onNext={() => setStep(stepIds.confirm)} onBack={() => setStep(stepIds.recipient)} />}
           {step === stepIds.confirm && (
-            <PayoutPreview />
+            <PayoutPreview onEdit={() => setStep(stepIds.recipient)} />
           )}
         </div>
       </MaxWidthWrapper>

@@ -1,42 +1,34 @@
 "use client"
 
-import { Badge, BlurImage, Button, Separator } from "@freelii/ui"
-import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, pluralize, toUSD } from "@freelii/utils"
+import { useFixtures } from "@/fixtures/useFixtures"
+import { FlagIcon } from "@/ui/shared/flag-icon"
+import { Badge, BlurImage, Button, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { AnimatePresence, motion } from "framer-motion"
-import { ArrowLeft, Building2, Check, ChevronRight, Download, Edit2 } from "lucide-react"
-import Image from "next/image"
+import { Building2, Check, ChevronRight, Download, Edit2 } from "lucide-react"
 import { useState } from "react"
-
-interface Recipient {
-    id: number
-    name: string
-    amount: number
-    currency: string
-    estimatedDelivery: string
-    bankingDetails?: {
-        bankName: string
-        currency: {
-            name: string
-            flag: string
-            symbol: string
-        }
-    }
-}
+import { Recipient } from "./recipients-table"
 
 interface PaymentDetails {
-    senderBalance: number
-    senderCurrency: string
-    recipients: Recipient[]
-    processingFee: number
-    serviceCharge: number
-    conversionRate: number
-    paymentMode: 'per-recipient' | 'split'
+    recipient: Recipient;
     originAccount: {
         id: string
         name: string
         accountNumber: string
-        currency: string
+        currency: {
+            shortName: string
+            name: string
+            symbol: string
+        }
         balance: number
+    }
+    fees: {
+        processingFee: number
+        serviceCharge: number
+    }
+    fx: {
+        rate: number
+        margin: number
     }
 }
 
@@ -46,209 +38,302 @@ interface PayoutReviewProps {
     onConfirm?: () => void
 }
 
+const DEMO_RECIPIENT_ID = 21;
+
 export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReviewProps) {
+    const { recipients, usdcAccount } = useFixtures();
+    const { searchParams } = useRouterStuff();
+
+    const recipientId = searchParams.get('recipientId') ?? DEMO_RECIPIENT_ID;
+    console.log('recipientId', recipientId)
+    const recipient = recipients.get(Number(recipientId)) as Recipient;
+
     const [paymentDetails] = useState<PaymentDetails>({
-        senderBalance: 10000,
-        senderCurrency: "USD",
-        recipients: [
-            {
-                id: 1,
-                name: "John Doe",
-                amount: 97500,
-                currency: "PHP",
-                estimatedDelivery: "1-2 business days",
-                bankingDetails: {
-                    bankName: "BDO Unibank",
-                    currency: {
-                        name: "Philippine Peso",
-                        flag: "https://flagcdn.com/w20/ph.png",
-                        symbol: "₱"
-                    }
-                }
-            },
-            {
-                id: 2,
-                name: "Jane Smith",
-                amount: 97500,
-                currency: "PHP",
-                estimatedDelivery: "2-3 business days",
-                bankingDetails: {
-                    bankName: "BPI",
-                    currency: {
-                        name: "Philippine Peso",
-                        flag: "https://flagcdn.com/w20/ph.png",
-                        symbol: "₱"
-                    }
-                }
-            },
-        ],
-        processingFee: (97500 * 2) * 0.001,
-        serviceCharge: 10,
-        conversionRate: CURRENCIES.PHP?.rate ?? 1,
-        paymentMode: 'split',
-        originAccount: {
-            id: "acc_123",
-            name: "Main USD Account",
-            accountNumber: "****1234",
-            currency: "USD",
-            balance: 50000
+        recipient,
+        originAccount: usdcAccount,
+        fees: {
+            processingFee: 1.00,
+            serviceCharge: 10.00
+        },
+        fx: {
+            rate: 0.018,
+            margin: 0.5
         }
     })
 
-    const totalAmount = toUSD(paymentDetails.recipients.reduce((sum, recipient) => sum + recipient.amount, 0), "PHP")
-    const totalFees = paymentDetails.processingFee + paymentDetails.serviceCharge;
-    const finalTotal = totalAmount + totalFees
-
     const [isConfirmed, setIsConfirmed] = useState(false)
+    const [isProcessing, setIsProcessing] = useState(false)
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
+        setIsProcessing(true)
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        setIsProcessing(false)
         setIsConfirmed(true)
         onConfirm?.()
     }
 
+    const recipientAmount = Number(searchParams.get('amount')) ?? 0;
+    const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
+    const fxRate = CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.rate ?? 1
+    const totalCost = recipientAmount / fxRate + totalFees
+
     return (
         <div className="w-full relative space-y-6">
-            <div className="grid grid-cols-[2fr,1fr] gap-6">
-                {/* Left side - Payment Details */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] gap-6">
+                {/* Left side - Recipient Details */}
                 <div className="space-y-6">
                     <div className="p-6 rounded-lg border border-gray-200">
                         <div className="space-y-6">
-                            <div>
-                                <h3 className="font-medium text-lg">Payment Details</h3>
-                                <p className="text-sm text-gray-500 mt-2">
-                                    Review the payment details for {paymentDetails.recipients.length} {pluralize(paymentDetails.recipients.length, 'recipient')}
-                                </p>
-                            </div>
-
-                            <div className="space-y-4">
-                                {/* Origin Account */}
-                                <div className="rounded-lg border border-gray-200 p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium">{paymentDetails.originAccount.name}</span>
-                                            <span className="text-xs text-gray-500">
-                                                {paymentDetails.originAccount.accountNumber}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-start justify-between gap-3">
-                                            <Badge className="bg-green-50 text-green-700 border-green-200">
-                                                <span className="size-1.5 rounded-full bg-current" />
-                                                <span className="text-[10px]">Active</span>
-                                            </Badge>
-
-                                            <div className="flex flex-col items-end">
-                                                <div className="flex items-center gap-1">
-                                                    {CURRENCIES[paymentDetails.originAccount.currency] && (
-                                                        <Image
-                                                            src={CURRENCIES[paymentDetails.originAccount.currency]?.flag ?? ''}
-                                                            alt={CURRENCIES[paymentDetails.originAccount.currency]?.name ?? ''}
-                                                            width={12}
-                                                            height={12}
-                                                            className="rounded-full object-cover size-3"
-                                                        />
-                                                    )}
-                                                    <span className="text-sm font-medium">
-                                                        {CURRENCIES[paymentDetails.originAccount.currency]?.symbol ?? ''}
-                                                        {paymentDetails.originAccount.balance.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <span className="text-[10px] text-gray-500">Available balance</span>
-                                            </div>
+                            {/* Recipient Card */}
+                            <div className="">
+                                <div className="flex items-start gap-3">
+                                    <BlurImage
+                                        src={`${DICEBEAR_SOLID_AVATAR_URL}${paymentDetails.recipient.name}`}
+                                        width={48}
+                                        height={48}
+                                        alt={paymentDetails.recipient.name}
+                                        className="size-12 shrink-0 overflow-hidden rounded-full"
+                                    />
+                                    <div className="flex-1">
+                                        <p className="font-medium">{paymentDetails.recipient.name}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <Building2 className="size-3 text-gray-500" />
+                                            <span className="text-xs text-gray-500">{paymentDetails.recipient.bankingDetails!.bankName}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Cost Breakdown */}
+                                <Separator className="my-4" />
+
                                 <div className="space-y-3">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">
-                                            {paymentDetails.paymentMode === 'per-recipient' ? 'Amount per recipient' : 'Total amount'}
-                                        </span>
-                                        <span className="font-medium flex items-center gap-1">
-                                            {CURRENCIES[paymentDetails.originAccount.currency] && (
-                                                <Image
-                                                    src={CURRENCIES[paymentDetails.originAccount.currency]?.flag ?? ''}
-                                                    alt={CURRENCIES[paymentDetails.originAccount.currency]?.name ?? ''}
-                                                    width={12}
-                                                    height={12}
-                                                    className="rounded-full object-cover size-3"
-                                                />
-                                            )}
-                                            {CURRENCIES[paymentDetails.originAccount.currency]?.symbol ?? ''}
-                                            {totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        <span className="text-gray-600">Will receive</span>
+                                        <span className="font-medium">
+                                            {paymentDetails.recipient.bankingDetails!.currency.symbol}
+                                            {recipientAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Currency</span>
+                                        <div className="flex items-center gap-2">
+                                            <FlagIcon
+                                                currencyCode={paymentDetails.recipient.bankingDetails!.currency.shortName}
+                                                className="size-4"
+                                            />
+                                            <span>{paymentDetails.recipient.bankingDetails!.currency.name}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Estimated delivery</span>
+                                        <span>1-2 business days</span>
+                                    </div>
+                                </div>
 
-                                    <Separator />
-
+                                <div className="mt-4 space-y-3">
+                                    <h4 className="text-sm font-medium">Bank Account Details</h4>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Processing fee</span>
-                                            <span className="font-medium flex items-center gap-1">
-                                                {CURRENCIES[paymentDetails.originAccount.currency] && (
-                                                    <Image
-                                                        src={CURRENCIES[paymentDetails.originAccount.currency]?.flag ?? ''}
-                                                        alt={CURRENCIES[paymentDetails.originAccount.currency]?.name ?? ''}
-                                                        width={12}
-                                                        height={12}
-                                                        className="rounded-full object-cover size-3"
-                                                    />
-                                                )}
-                                                {CURRENCIES[paymentDetails.originAccount.currency]?.symbol ?? ''}
-                                                {paymentDetails.processingFee.toFixed(2)}
-                                            </span>
+                                            <span className="text-gray-600">Account holder</span>
+                                            <span>{paymentDetails.recipient.bankingDetails!.name}</span>
                                         </div>
-
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Service charge</span>
-                                            <span className="font-medium flex items-center gap-1">
-                                                {CURRENCIES[paymentDetails.originAccount.currency] && (
-                                                    <Image
-                                                        src={CURRENCIES[paymentDetails.originAccount.currency]?.flag ?? ''}
-                                                        alt={CURRENCIES[paymentDetails.originAccount.currency]?.name ?? ''}
-                                                        width={12}
-                                                        height={12}
-                                                        className="rounded-full object-cover size-3"
-                                                    />
-                                                )}
-                                                {CURRENCIES[paymentDetails.originAccount.currency]?.symbol ?? ''}
-                                                {paymentDetails.serviceCharge.toFixed(2)}
-                                            </span>
+                                            <span className="text-gray-600">Account number</span>
+                                            <span>{paymentDetails.recipient.bankingDetails!.accountNumber}</span>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
 
-                                    <Separator />
+                            <Separator />
 
-                                    <div className="flex justify-between text-sm font-medium">
-                                        <span>Total cost</span>
-                                        <span className="flex items-center gap-1">
-                                            {CURRENCIES[paymentDetails.originAccount.currency] && (
-                                                <Image
-                                                    src={CURRENCIES[paymentDetails.originAccount.currency]?.flag ?? ''}
-                                                    alt={CURRENCIES[paymentDetails.originAccount.currency]?.name ?? ''}
-                                                    width={12}
-                                                    height={12}
-                                                    className="rounded-full object-cover size-3"
-                                                />
-                                            )}
-                                            {CURRENCIES[paymentDetails.originAccount.currency]?.symbol ?? '$'}
-                                            {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {/* Origin Account */}
+                            <div className="">
+                                <h4 className="text-sm font-medium mb-3">Paying From</h4>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-medium">{paymentDetails.originAccount.name}</span>
+                                        <span className="text-xs text-gray-500">
+                                            {paymentDetails.originAccount.accountNumber}
                                         </span>
+                                    </div>
+
+                                    <div className="flex items-start justify-between gap-3">
+                                        <Badge className="bg-green-50 text-green-700 border-green-200">
+                                            <span className="size-1.5 rounded-full bg-current" />
+                                            <span className="text-[10px]">Active</span>
+                                        </Badge>
+
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-center gap-1">
+                                                <FlagIcon
+                                                    currencyCode={paymentDetails.originAccount.currency.shortName}
+                                                    className="size-3"
+                                                />
+                                                <span className="text-sm font-medium">
+                                                    {paymentDetails.originAccount.balance.toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <span className="text-[10px] text-gray-500">Available balance</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Right - Payment Details */}
+                <div className="space-y-6">
+                    <div className="p-6 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-6">
+                        <div className="space-y-6">
+                            <div>
+                                <h3 className="font-medium text-lg">Payment Details</h3>
+                                <p className="text-sm text-gray-500 mt-2">
+                                    Review the payment breakdown before confirming
+                                </p>
+                            </div>
+
+                            <div className="mt-6 space-y-6">
+                                {/* Amount and FX Details */}
+                                <div className="space-y-3">
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-600">Recipient will receive</span>
+                                        <span className="font-medium flex items-center gap-1">
+                                            {paymentDetails.recipient.bankingDetails!.currency.symbol}
+                                            {recipientAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+
+                                    <Separator />
+
+                                    {/* FX Details */}
+                                    <div className="rounded-lg bg-gray-50 p-3 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex">
+                                                    <FlagIcon
+                                                        currencyCode={paymentDetails.originAccount.currency.shortName}
+                                                        className="size-4 rounded-full border-2 border-white"
+                                                    />
+                                                    <FlagIcon
+                                                        currencyCode={paymentDetails.recipient.bankingDetails!.currency.shortName}
+                                                        className="size-4 -ml-2 rounded-full border-2 border-white"
+                                                    />
+
+                                                </div>
+                                                <span>Exchange Rate</span>
+                                            </div>
+                                            <span className="flex items-center gap-2 font-medium">
+                                                <Badge className="flex items-center gap-1.5 py-0.5 pl-1 pr-2">
+                                                    <FlagIcon
+                                                        currencyCode={paymentDetails.recipient.bankingDetails!.currency.shortName}
+                                                        className="size-4"
+                                                    />
+                                                    {CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.symbol}
+                                                    {CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.rate}
+                                                </Badge>
+                                            </span>
+                                        </div>
+                                        {/* <div className="text-xs text-gray-500 flex justify-between">
+                                            <span>Mid-market rate</span>
+                                            <span>{(paymentDetails.fx.rate * (1 - paymentDetails.fx.margin / 100)).toFixed(2)} {paymentDetails.recipient.bankingDetails.currency.symbol}</span>
+                                        </div>
+                                        <div className="text-xs text-gray-500 flex justify-between">
+                                            <span>FX Margin ({paymentDetails.fx.margin}%)</span>
+                                            <span>+ {(paymentDetails.fx.rate * (paymentDetails.fx.margin / 100)).toFixed(2)} {paymentDetails.recipient.bankingDetails.currency.symbol}</span>
+                                        </div> */}
+                                    </div>
+
+                                    {/* Fees */}
+                                    {/* <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Processing fee (0.1%)</span>
+                                            <span className="font-medium">
+                                                ${paymentDetails.fees.processingFee.toFixed(2)}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-600">Service charge</span>
+                                            <span className="font-medium">
+                                                ${paymentDetails.fees.serviceCharge.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div> */}
+
+                                    <Separator />
+
+                                    {/* Total */}
+                                    <div className="flex justify-between text-sm font-medium">
+                                        <span>Total cost</span>
+                                        <span className="flex items-center gap-1">
+                                            ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Right */}
+                        <div className="space-y-6">
+                            <div className="pl-3">
+                                <div>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        Estimated delivery progress
+                                    </p>
+                                </div>
+
+                                <div className="mt-6">
+                                    {/* Timeline steps */}
+                                    <div className="relative pl-8 border-l-2 border-[#4ab3e8] pb-6">
+                                        <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full bg-[#4ab3e8]" />
+                                        <div>
+                                            <p className="font-medium text-sm">Payment Initiated</p>
+                                            <p className="text-xs text-gray-500">Today</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
+                                        {isProcessing ?
+                                            <LoadingSpinner className="size-4 absolute left-0 -translate-x-[5px] p-2 bg-white pt-2 pb-0" /> :
+                                            <div className={cn(
+                                                "border-gray-200 bg-white absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 transition-all duration-300",
+                                            )} />}
+                                        <div>
+                                            <p className="font-medium text-sm">Processing</p>
+                                            <p className="text-xs text-gray-500">Within 24 hours</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="relative pl-8 border-l-2 border-transparent">
+                                        <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 border-gray-200 bg-white" />
+                                        <div>
+                                            <p className="font-medium text-sm">Expected Delivery</p>
+                                            <p className="text-xs text-gray-500 mt-1">1-2 business days</p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                To {paymentDetails.recipient.bankingDetails!.bankName}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Additional info */}
+                                {/* <div className="mt-6 p-3 bg-gray-50 rounded-lg">
+                                    <p className="text-xs text-gray-500">
+                                        Note: Delivery times are estimates and may vary based on the receiving bank's processing times and local banking hours.
+                                    </p>
+                                </div> */}
+                            </div>
+                        </div>
+
+                    </div>
+
 
                     {/* Action Buttons */}
-                    <div className="flex items-center justify-between">
-                        <Button variant="outline" onClick={onBack} className="gap-2">
-                            <ArrowLeft className="size-4" />
-                            Back
-                        </Button>
+                    <div className="flex items-center justify-end">
+
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" onClick={onEdit} className="gap-2">
+                            <Button variant="outline" onClick={onEdit} className="gap-2 text-xs">
                                 <Edit2 className="size-4" />
                                 Edit Payment
                             </Button>
@@ -260,120 +345,8 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                     </div>
                 </div>
 
-                {/* Right side - Recipients Review */}
-                <div
-                    className="animate-in slide-in-from-right duration-300 p-6 rounded-lg border border-gray-200"
-                >
-                    <div className="space-y-6 ">
-                        <div>
-                            <h3 className="font-medium text-lg">Recipients</h3>
-                            <div className="flex items-center gap-2 mt-3">
-                                <div className="flex -space-x-2">
-                                    {paymentDetails.recipients.map((recipient, index) => (
-                                        <BlurImage
-                                            key={recipient.id}
-                                            src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
-                                            width={12}
-                                            height={12}
-                                            alt={recipient.name}
-                                            className="size-6 shrink-0 overflow-hidden rounded-full border-2 border-white"
-                                            style={{ zIndex: paymentDetails.recipients.length - index }}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="text-sm text-gray-600">
-                                    {paymentDetails.recipients.map((recipient, index) => (
-                                        <span key={recipient.id}>
-                                            {index > 0 && index === paymentDetails.recipients.length - 1 && " and "}
-                                            {index > 0 && index < paymentDetails.recipients.length - 1 && ", "}
-                                            {recipient.name}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            {paymentDetails.recipients.map((recipient) => (
-                                <div key={recipient.id} className="rounded-lg border border-gray-200 p-4">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <BlurImage
-                                                src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
-                                                width={12}
-                                                height={12}
-                                                alt={recipient.name}
-                                                className="size-8 shrink-0 overflow-hidden rounded-full"
-                                            />
-                                            <div>
-                                                <p className="font-medium">{recipient.name}</p>
-                                                {recipient.bankingDetails && (
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <Building2 className="size-3 text-gray-500" />
-                                                        <span className="text-xs text-gray-500">{recipient.bankingDetails.bankName}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col items-end">
-                                            <div className="flex items-center gap-1">
-                                                {recipient.bankingDetails?.currency && (
-                                                    <Image
-                                                        src={recipient.bankingDetails.currency.flag ?? ''}
-                                                        alt={recipient.bankingDetails.currency.name ?? ''}
-                                                        width={12}
-                                                        height={12}
-                                                        className="rounded-full object-cover size-3"
-                                                    />
-                                                )}
-                                                <span className="text-sm font-medium">
-                                                    {recipient.bankingDetails?.currency.symbol}
-                                                    {recipient.amount.toLocaleString()}
-                                                </span>
-                                            </div>
-                                            <span className="text-[10px] text-gray-500">Will receive</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-3 flex flex-col gap-1 text-xs text-gray-500">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center">
-                                                {CURRENCIES.USD && (
-                                                    <Image
-                                                        src={CURRENCIES.USD?.flag ?? ''}
-                                                        alt="USD"
-                                                        width={12}
-                                                        height={12}
-                                                        className="rounded-full object-cover size-3 border border-white"
-                                                    />
-                                                )}
-                                                {CURRENCIES[recipient.currency] && (
-                                                    <Image
-                                                        src={CURRENCIES[recipient.currency]?.flag ?? ''}
-                                                        alt={recipient.currency}
-                                                        width={12}
-                                                        height={12}
-                                                        className="rounded-full object-cover size-3 -ml-1 border border-white"
-                                                    />
-                                                )}
-                                            </div>
-                                            <span>
-                                                {CURRENCIES.USD?.symbol}1 = {recipient.bankingDetails?.currency.symbol}
-                                                {paymentDetails.conversionRate.toLocaleString()} • {" "}
-                                                <span className="text-gray-400">
-                                                    {CURRENCIES.USD?.symbol}{toUSD(recipient.amount, recipient.currency).toLocaleString()} → {recipient.bankingDetails?.currency.symbol}{recipient.amount.toLocaleString()}
-                                                </span>
-                                            </span>
-                                        </div>
-                                        <span>Estimated delivery: {recipient.estimatedDelivery}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
             </div>
+
 
             <AnimatePresence>
                 {isConfirmed && (
@@ -401,8 +374,8 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                             <div className="space-y-2">
                                 <h2 className="text-2xl font-semibold">Payment Confirmed!</h2>
                                 <p className="text-gray-500">
-                                    Your payment of {CURRENCIES[paymentDetails.originAccount.currency]?.symbol}
-                                    {finalTotal.toLocaleString()} has been processed. We&apos;ve sent you a confirmation email.
+                                    Your payment of ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })} has been processed.
+                                    We&apos;ve sent you a confirmation email.
                                 </p>
                             </div>
 
@@ -421,7 +394,6 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                 <Button
                                     className="w-full"
                                     onClick={() => {
-                                        // Add navigation logic here
                                         window.location.href = '/dashboard'
                                     }}
                                 >

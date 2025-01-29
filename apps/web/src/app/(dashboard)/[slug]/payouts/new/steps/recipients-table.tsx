@@ -3,9 +3,12 @@
 import { useFixtures } from "@/fixtures/useFixtures"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import {
-  Badge, BlurImage, Button, Checkbox, ExpandingArrow, HoverCard,
+  Badge, BlurImage, Button,
+  ExpandingArrow, HoverCard,
   HoverCardContent,
-  HoverCardTrigger, IconMenu, Input, Label, Popover, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Separator, Textarea, ThreeDots, ToggleGroup, ToggleGroupItem
+  HoverCardTrigger, IconMenu, Input, Label, Popover,
+  Textarea, ThreeDots, ToggleGroup, ToggleGroupItem,
+  useRouterStuff
 } from "@freelii/ui"
 import {
   Table,
@@ -15,18 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop, pluralize } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop } from "@freelii/utils"
 import {
-  ColumnDef,
-  ColumnFiltersState,
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  SortingState,
+  type SortingState,
   useReactTable,
-  VisibilityState
+  type VisibilityState
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -78,31 +81,31 @@ export type Payment = {
 
 
 export const columns: ColumnDef<Recipient>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() ? "indeterminate" : false)
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        onClick={(e) => e.stopPropagation()}
-        className="translate-y-[2px]"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   id: "select",
+  //   header: ({ table }) => (
+  //     <Checkbox
+  //       checked={
+  //         table.getIsAllPageRowsSelected() ||
+  //         (table.getIsSomePageRowsSelected() ? "indeterminate" : false)
+  //       }
+  //       onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+  //       aria-label="Select all"
+  //       className="translate-y-[2px]"
+  //     />
+  //   ),
+  //   cell: ({ row }) => (
+  //     <Checkbox
+  //       checked={row.getIsSelected()}
+  //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+  //       aria-label="Select row"
+  //       onClick={(e) => e.stopPropagation()}
+  //       className="translate-y-[2px]"
+  //     />
+  //   ),
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "name",
     header: "Contact",
@@ -239,8 +242,6 @@ export const columns: ColumnDef<Recipient>[] = [
         )
       }
 
-      console.log(bankingDetails)
-
       return (
         <div className="flex items-center gap-2">
           <div className="flex flex-col">
@@ -276,7 +277,9 @@ type RecipientsTableProps = {
 }
 
 export default function RecipientsTable({ mode = 'default', onNext, onBack }: RecipientsTableProps) {
-  const { getRecipients, subAccounts } = useFixtures()
+  const { getRecipients } = useFixtures()
+  const { queryParams, searchParams } = useRouterStuff()
+
   const [recipients, setRecipients] = React.useState<Recipient[]>([])
   const [loading, setLoading] = React.useState(true)
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -286,23 +289,12 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null)
   const detailsCardRef = useRef<HTMLDivElement>(null)
   const [recipientTypeFilter, setRecipientTypeFilter] = React.useState<string | null>(null)
-  const addNewCardRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [selectedRecipients, setSelectedRecipients] = React.useState<Recipient[]>([])
-  const hasSelectedRecipients = mode === 'payout' && selectedRecipients.length > 0
-  const [amount, setAmount] = React.useState<number>(0)
-  const [paymentMode, setPaymentMode] = React.useState<'per-recipient' | 'split'>('per-recipient')
-  const [selectedCurrency, setSelectedCurrency] = React.useState<string>("USD")
+  const [selectedCurrency] = React.useState<string>("USD")
+  const [amount, setAmount] = React.useState<string>(searchParams.get('amount') ?? '')
 
-  // Update selectedRecipients when rowSelection changes
-  useEffect(() => {
-    const selected = recipients.filter((recipient) => {
-      const id = recipient.id.toString()
-      return rowSelection[id]
-    })
-    console.log(rowSelection, selected)
-    setSelectedRecipients(selected)
-  }, [recipients, rowSelection])
+
+  // Initialize from URL params only once
 
   const filteredRecipients = React.useMemo(() => {
     let filtered = recipients
@@ -385,29 +377,6 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
 
   return (
     <div className="w-full relative space-y-6 pb-10">
-      {/* Floating Actions Bar - only shown in default mode */}
-      {mode === 'default' && selectedRecipients.length > 0 && (
-        <div
-          className={cn(
-            "absolute -top-4 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-4",
-            "bg-white rounded-full shadow-2xl border border-gray-200 z-50 shadow-gray-500/20",
-            "animate-in fade-in slide-in-from-top-4 duration-300",
-          )}
-        >
-          <div className="text-sm">
-            <span className="font-medium">{selectedRecipients.length} recipients selected</span>
-            <span className="mx-2 text-gray-400">·</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              className="group p-2 pr-4 bg-transparent hover:bg-gray-100 text-xs text-black flex items-center gap-2"
-            >
-              Add to new payout
-              <ExpandingArrow className="-translate-x-2 size-3 group-hover:translate-x-0 transition-all duration-300 ease-in-out" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       <div className={cn(
         "grid gap-6 transition-all duration-300",
@@ -523,14 +492,13 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                       data-state={row.getIsSelected() && "selected"}
                       className={cn(
                         "cursor-pointer hover:bg-gray-50 relative",
-                        mode === 'payout' || selectedRecipient?.id === row.original.id && "rounded-full bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
+                        selectedRecipient?.id === row.original.id && "rounded-full bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
                       )}
                       onClick={() => {
-                        if (mode === 'default') {
-                          setSelectedRecipient(
-                            selectedRecipient?.id === row.original.id ? null : row.original
-                          )
-                        }
+                        setSelectedRecipient(
+                          selectedRecipient?.id === row.original.id ? null : row.original
+                        )
+                        queryParams({ set: { recipientId: row.original.id.toString() } })
                       }}
                     >
                       {row.getVisibleCells().map((cell) => (
@@ -586,125 +554,63 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
             <div className="p-6 bg-white rounded-lg border border-gray-200">
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-medium text-lg">New Payment Details</h3>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {selectedRecipients.length > 0
-                      ? `Configure the payment details for ${selectedRecipients.length} selected ${pluralize(selectedRecipients.length, 'recipient')}`
-                      : 'Select recipients to configure payment details'}
-                  </p>
-                  {selectedRecipients.length > 0 && (
-                    <div className="flex items-center gap-2 mt-3">
-                      <div className="flex -space-x-2">
-                        {selectedRecipients.slice(0, 3).map((recipient, index) => (
+                  <h3 className="font-medium text-lg">New Payment</h3>
+                  {selectedRecipient ? (
+                    <>
+                      <div className="flex items-center gap-2 mt-3">
+                        <div className="flex -space-x-2">
                           <BlurImage
-                            key={recipient.id}
-                            src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
+                            key={selectedRecipient.id}
+                            src={`${DICEBEAR_SOLID_AVATAR_URL}${selectedRecipient.name}`}
                             width={12}
                             height={12}
-                            alt={recipient.name}
+                            alt={selectedRecipient.name}
                             className="size-6 shrink-0 overflow-hidden rounded-full border-2 border-white"
-                            style={{ zIndex: 3 - index }}
                           />
-                        ))}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          <span>{selectedRecipient.name}</span>
+                        </div>
                       </div>
-                      <div className={cn(
-                        "text-sm text-gray-600 text-xs",
-                        selectedRecipients.length > 2 && "px-2"
-                      )}>
-                        {selectedRecipients.slice(0, 3).map((recipient, index) => (
-                          <span key={recipient.id}>
-                            {index > 0 && index === Math.min(selectedRecipients.length, 3) - 1 && selectedRecipients.length <= 3 && " and "}
-                            {index > 0 && index < Math.min(selectedRecipients.length, 4) - 1 && ", "}
-                            {recipient.name}
-                          </span>
-                        ))}
-                        {selectedRecipients.length > 3 && ` and ${selectedRecipients.length - 3} more`}
-                      </div>
-                    </div>
-                  )}
+
+                      {selectedRecipient.bankingDetails ? (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-500">Bank</span>
+                            <span className="font-medium">{selectedRecipient.bankingDetails.bankName}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-500">Account</span>
+                            <span className="font-medium">
+                              ••••{selectedRecipient.bankingDetails.accountNumber.slice(-4)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-gray-500">Currency</span>
+                            <div className="flex items-center gap-1.5">
+                              <FlagIcon
+                                currencyCode={selectedRecipient.bankingDetails.currency?.shortName}
+                                size={14}
+                              />
+                              <span className="font-medium">
+                                {selectedRecipient.bankingDetails.currency?.name}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs text-gray-500">
+                          No banking details provided
+                        </div>
+                      )}
+                    </>
+                  ) : <p className="text-sm text-gray-500 mt-2">
+                    Select a recipient to configure payment details
+                  </p>}
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="currency">Origin Account</Label>
-                    <Select
-                      value={selectedCurrency}
-                      onValueChange={setSelectedCurrency}
-                    >
-                      <SelectTrigger id="payment-method" className="w-full ">
-                        <SelectValue placeholder="Select origin account" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white p-0">
-                        {subAccounts.map((subAccount) => (
-                          <SelectItem key={subAccount.id} value={subAccount.id} className="w-full">
-                            <div className="flex items-center justify-between w-full">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-medium">{subAccount.name}</span>
-                                <span className="text-xs text-gray-500">
-                                  {subAccount.accountNumber}
-                                </span>
-                              </div>
-
-                              <div className="flex items-start justify-between gap-3 ">
-                                <Badge
-                                  className={cn(
-                                    "flex items-center gap-1 m-0.5",
-                                    subAccount.status === 'active'
-                                      ? "bg-green-50 text-green-700 border-green-200"
-                                      : "bg-gray-50 text-gray-600 border-gray-200"
-                                  )}
-                                >
-                                  <span className="size-1.5 rounded-full bg-current" />
-                                  <span className="text-[10px] capitalize">{subAccount.status}</span>
-                                </Badge>
-
-                                <div className="flex flex-col items-end ">
-                                  <div className="flex items-center gap-1">
-                                    {subAccount.currency && CURRENCIES[subAccount.currency] && (
-                                      <FlagIcon
-                                        currencyCode={subAccount.currency}
-                                        size={16}
-                                      />
-                                    )}
-                                    <span className="text-sm font-medium">
-                                      {CURRENCIES[subAccount.currency]?.symbol}{subAccount.balance.toLocaleString()}
-                                    </span>
-                                  </div>
-                                  <span className="text-[10px] text-gray-500">Available balance</span>
-                                </div>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Separator className="my-10" />
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="amount">Amount</Label>
-                      {selectedRecipients.length > 1 && (
-                        <ToggleGroup
-                          type="single"
-                          value={paymentMode}
-                          onValueChange={(value) => setPaymentMode(value as 'per-recipient' | 'split')}
-                          className="border rounded-md"
-                        >
-                          <ToggleGroupItem
-                            value="per-recipient"
-                            aria-label="Per recipient"
-                            className="text-xs px-3 py-1"
-                          >
-                            Per recipient
-                          </ToggleGroupItem>
-                          <ToggleGroupItem
-                            value="split"
-                            aria-label="Split amount"
-                            className="text-xs px-3 py-1"
-                          >
-                            Split amount
-                          </ToggleGroupItem>
-                        </ToggleGroup>
-                      )}
-                    </div>
                     <div className="relative flex-1">
                       {selectedCurrency && (
                         <div className="absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-gray-200 pr-4 pl-2 py-2 rounded-l-md">
@@ -721,20 +627,15 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
                         id="amount"
                         type="number"
                         placeholder="0.00"
-                        className="pl-16 hover:border-gray-500 focus:border-none"
-                        value={amount || ''}
-                        onChange={(e) => setAmount(Number(e.target.value))}
+                        className="pl-16 hover:border-gray-200 focus:border-none"
+                        value={amount}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setAmount(value);
+                          queryParams({ set: { amount: value } });
+                        }}
                       />
                     </div>
-
-
-                    {selectedRecipients.length > 1 && (
-                      <p className="text-xs text-gray-500">
-                        {paymentMode === 'per-recipient'
-                          ? 'Each recipient will receive this amount'
-                          : 'This amount will be split equally between all recipients'}
-                      </p>
-                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -750,52 +651,20 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
 
                 <div className="pt-4 border-t border-gray-100">
                   <div className="space-y-3">
-                    {selectedRecipients.length > 1 ? (
-                      <>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
-                            {paymentMode === 'per-recipient' ? 'Amount per recipient' : 'Total amount'}
-                          </span>
-                          <span className="font-medium">
-                            {CURRENCIES[selectedCurrency]?.symbol}{amount.toFixed(2)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Number of recipients</span>
-                          <span className="font-medium">{selectedRecipients.length}</span>
-                        </div>
-                        {paymentMode === 'per-recipient' ? (
-                          <div className="flex justify-between text-sm font-medium">
-                            <span>Total amount</span>
-                            <span>
-                              {CURRENCIES[selectedCurrency]?.symbol}
-                              {(amount * selectedRecipients.length).toFixed(2)}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex justify-between text-sm font-medium">
-                            <span>Amount per recipient</span>
-                            <span>
-                              {CURRENCIES[selectedCurrency]?.symbol}
-                              {selectedRecipients.length ? (amount / selectedRecipients.length).toFixed(2) : '0.00'}
-                            </span>
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <div className="flex justify-between text-sm font-medium">
-                        <span>Amount</span>
-                        <span>
-                          {CURRENCIES[selectedCurrency]?.symbol}
-                          {amount.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
+                    {amount && <div className="flex justify-between text-sm font-medium">
+                      <span>Amount</span>
+                      <span>
+                        {Number(amount).toLocaleString('en-US', {
+                          style: 'currency',
+                          currency: selectedCurrency === 'USDC' ? 'USD' : selectedCurrency,
+                        })}
+                      </span>
+                    </div>}
                   </div>
 
                   <Button
                     className="w-full mt-6 group"
-                    disabled={!amount || !selectedRecipients.length}
+                    disabled={!amount || !selectedRecipient}
                     onClick={onNext}
                   >
                     Continue to Review

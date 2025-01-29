@@ -342,7 +342,7 @@ export default function PageClient() {
             </div>
 
             <div className="">
-              {transactions.map((transaction) => (
+              {transactions.slice(0, 5).map((transaction) => (
                 <div
                   key={transaction.id}
                   data-transaction-row

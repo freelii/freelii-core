@@ -1,4 +1,4 @@
-import { AnimatedSizeContainer, ClientOnly, Icon } from "@freelii/ui";
+import { AnimatedSizeContainer, ClientOnly, type Icon } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronLeft } from "lucide-react";
@@ -6,8 +6,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "node_modules/@freelii/ui/src/logo";
 import {
-  PropsWithChildren,
-  ReactNode,
+  type PropsWithChildren,
+  type ReactNode,
   Suspense,
   useMemo,
   useState,
