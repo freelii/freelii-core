@@ -1,0 +1,14 @@
+# https://www.robotstxt.org/robotstxt.html
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+
+# Sitemap location
+Sitemap: https://freelii.com/sitemap.xml
+
+# Disallow crawling of private/auth routes
+Disallow: /api/
+Disallow: /settings/
+Disallow: /auth/ 
