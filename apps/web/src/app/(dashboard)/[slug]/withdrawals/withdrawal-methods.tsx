@@ -99,7 +99,9 @@ export function WithdrawalMethods() {
             <div className="col-span-5 p-4 border border-gray-200 rounded-lg">
                 <div className="flex items-start justify-between">
 
-                    <h3 className="font-medium mb-4">Available Withdrawal Options</h3>
+                    <h3 className="font-medium mb-4">
+                        Available Withdrawal Options
+                    </h3>
                     <Button variant="outline" className="border-none" >
                         Link account
                     </Button>
@@ -108,7 +110,7 @@ export function WithdrawalMethods() {
 
                 <div className="space-y-3 mt-2">
                     {fiatAccounts.map((account) => (
-                        <div key={account.id} className="px-3 border-none rounded-lg">
+                        <div key={account.id} className="border-b border-gray-200 p-3 hover:bg-gray-50 rounded-lg">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">

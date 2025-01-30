@@ -1,12 +1,15 @@
 "use client"
 
 import { useFixtures } from "@/fixtures/useFixtures"
+import { InstantBadge } from "@/ui/shared/badges/instant-badge"
+import { StatusBadge } from "@/ui/shared/badges/status-badge"
+import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
-import { Badge, Button, Collapsible, CollapsibleContent, CollapsibleTrigger, ExpandingArrow, Separator } from "@freelii/ui"
+import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger, ExpandingArrow, Separator } from "@freelii/ui"
 import { cn, CURRENCIES, maskFirstDigits, noop } from "@freelii/utils"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { ArrowDownRight, ArrowUpRight, CheckCircle2, ChevronDown, Clock, RefreshCw, Wallet, XCircle } from "lucide-react"
+import { ArrowDownRight, ArrowUpRight, ChevronDown, RefreshCw, Wallet } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 
@@ -61,21 +64,7 @@ function TransactionDetails({
         {/* Header */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Badge
-              className={cn(
-                "flex items-center gap-1",
-                transaction.status === 'completed'
-                  ? 'bg-green-50 text-green-700'
-                  : transaction.status === 'processing'
-                    ? 'bg-yellow-50 text-yellow-700'
-                    : 'bg-red-50 text-red-700'
-              )}
-            >
-              {transaction.status === 'completed' && <CheckCircle2 className="size-3" />}
-              {transaction.status === 'processing' && <Clock className="size-3" />}
-              {transaction.status === 'failed' && <XCircle className="size-3" />}
-              <span className="capitalize">{transaction.status}</span>
-            </Badge>
+            <StatusBadge text={transaction.status} useIcon />
             <div className="text-sm text-gray-500">
               {dayjs(transaction.date).format('MMM D, YYYY')}
             </div>
@@ -172,7 +161,7 @@ function TransactionDetails({
                   {transaction.status === 'completed' && dayjs(transaction.date).add(transaction.currency === 'USDC' ? 0 : 15, 'minute').format('MMM D, YYYY [at] h:mm A')}
                   {transaction.status === 'processing' && 'In progress...'}
                   {transaction.status === 'failed' && transaction.failureReason}
-                  {transaction.currency === 'USDC' && <Badge className="bg-green-50 text-xs ml-2 text-green-700 border-green-200">instant</Badge>}
+                  {transaction.currency === 'USDC' && <InstantBadge className="bg-green-50 text-xs ml-2 text-green-700 border-green-200" />}
                 </div>
               </div>
             </div>
@@ -228,9 +217,7 @@ export default function PageClient() {
                     <div className="text-sm text-gray-500">Account Type</div>
                     <div className="font-medium">Digital Currency Account</div>
                   </div>
-                  <Badge className="bg-blue-50 text-blue-700 border-blue-200">
-                    USDC
-                  </Badge>
+                  <USDCBadge className="bg-blue-50 text-blue-700 border-blue-200" />
                 </div>
 
                 <Collapsible>
@@ -246,7 +233,7 @@ export default function PageClient() {
                       <div>
                         <div className="text-xs text-gray-500 mb-1">Asset</div>
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-blue-50 text-blue-700 border-blue-200">USDC</Badge>
+                          <USDCBadge className="bg-blue-50 text-blue-700 border-blue-200" />
                           <span className="text-xs text-gray-500">
                             Circle USD Coin
                           </span>
@@ -373,11 +360,7 @@ export default function PageClient() {
                         <div className="font-medium text-sm flex items-center gap-2">
                           {transaction.description}
                           {transaction.currency === 'USDC' && (
-                            <Badge
-                              className="bg-green-50 text-green-700 border-green-200 gap-1 flex items-center py-0 h-4"
-                            >
-                              <span className="text-[10px]">instant</span>
-                            </Badge>
+                            <InstantBadge className="bg-green-50 text-green-700 border-green-200 gap-1 flex items-center py-0 h-4" />
                           )}
                         </div>
                         <div className="text-xs text-gray-500 flex items-center gap-2">
@@ -394,16 +377,7 @@ export default function PageClient() {
                           {CURRENCIES[transaction.currency]?.symbol}
                           {transaction.amount.toLocaleString()}
                         </div>
-                        <Badge
-                          className={`${transaction.status === 'completed'
-                            ? 'bg-green-50 text-green-700 border-green-200'
-                            : transaction.status === 'processing'
-                              ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                              : 'bg-red-50 text-red-700 border-red-200'
-                            } text-[10px]`}
-                        >
-                          {transaction.status}
-                        </Badge>
+                        <StatusBadge text={transaction.status} useIcon />
                       </div>
                     </div>
                   </div>

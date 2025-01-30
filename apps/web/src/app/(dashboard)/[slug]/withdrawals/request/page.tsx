@@ -1,6 +1,7 @@
 "use client"
 import { useFixtures } from "@/fixtures/useFixtures";
 import { PageContent } from "@/ui/layout/page-content";
+import { USDCBadge } from "@/ui/shared/badges/usdc-badge";
 import { FlagIcon } from "@/ui/shared/flag-icon";
 import { Badge, Button, Input, LoadingSpinner, MaxWidthWrapper, Separator, useRouterStuff } from "@freelii/ui";
 import { CURRENCIES } from "@freelii/utils/constants";
@@ -122,18 +123,15 @@ export default function WithdrawalsRequestPage() {
                                             <h4 className="text-sm font-medium mb-3">Withdrawal From</h4>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium">USDC Account</span>
+                                                    <span className="text-sm font-medium">{usdcAccount.name}
+                                                        <USDCBadge className="ml-2" />
+                                                    </span>
                                                     <span className="text-xs text-gray-500">
                                                         {usdcAccount.accountNumber}
                                                     </span>
                                                 </div>
 
                                                 <div className="flex items-start justify-between gap-3">
-                                                    <Badge className="bg-green-50 text-green-700 border-green-200">
-                                                        <span className="size-1.5 rounded-full bg-current" />
-                                                        <span className="text-[10px]">Active</span>
-                                                    </Badge>
-
                                                     <div className="flex flex-col items-end">
                                                         <div className="flex items-center gap-1">
                                                             <FlagIcon

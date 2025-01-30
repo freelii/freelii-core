@@ -1,4 +1,5 @@
 "use client";
+
 import { type Payout, type Recipient } from "@/app/(dashboard)/[slug]/payouts/page-payouts";
 import { CURRENCIES } from "@freelii/utils/constants";
 import dayjs from "dayjs";

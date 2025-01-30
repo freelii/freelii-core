@@ -1,8 +1,9 @@
 "use client"
 
 import { useFixtures } from "@/fixtures/useFixtures"
+import { InstantBadge } from "@/ui/shared/badges/instant-badge"
+import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
-import { InstantBadge } from "@/ui/shared/instant-badge"
 import { Badge, BlurImage, Button, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { AnimatePresence, motion } from "framer-motion"
@@ -185,10 +186,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     </div>
 
                                     <div className="flex items-start justify-between gap-3">
-                                        <Badge className="bg-green-50 text-green-700 border-green-200">
-                                            <span className="size-1.5 rounded-full bg-current" />
-                                            <span className="text-[10px]">Active</span>
-                                        </Badge>
+                                        <StatusBadge text="Active" />
 
                                         <div className="flex flex-col items-end">
                                             <div className="flex items-center gap-1">
