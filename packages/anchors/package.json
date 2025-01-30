@@ -1,0 +1,22 @@
+{
+  "name": "@freelii/anchors",
+  "version": "1.0.0",
+  "description": "Freelii Anchor Integrations",
+  "license": "ISC",
+  "author": "Jose Toscano",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.3.3",
+    "@types/node": "^20.10.4"
+  }
+}
