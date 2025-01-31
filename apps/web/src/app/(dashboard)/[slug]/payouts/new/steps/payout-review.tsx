@@ -98,10 +98,10 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
         addDemoPayment(Number(searchParams.get('amount')), paymentDetails.recipient.bankingDetails!.currency.shortName, Number(recipientId))
     }
 
-    const recipientAmount = Number(searchParams.get('amount')) ?? 0;
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
     const fxRate = CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.rate ?? 1
-    const totalCost = recipientAmount / fxRate + totalFees
+    const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
+    const totalCost = Number(searchParams.get('amount')) + totalFees;
 
     return (
         <div className="w-full relative space-y-6">
@@ -135,8 +135,8 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Will receive</span>
                                         <span className="font-medium">
-                                            {paymentDetails.recipient.bankingDetails!.currency.symbol}
-                                            {recipientAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            {CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.symbol}
+                                            {(recipientAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm">

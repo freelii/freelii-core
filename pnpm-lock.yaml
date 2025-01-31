@@ -23,6 +23,9 @@ importers:
       '@freelii/anchors':
         specifier: workspace:*
         version: link:../../packages/anchors
+      '@freelii/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@inquirer/prompts':
         specifier: ^7.2.4
         version: 7.2.4(@types/node@20.17.16)
@@ -221,7 +224,13 @@ importers:
       axios:
         specifier: ^1.7.9
         version: 1.7.9
+      crypto:
+        specifier: ^1.0.1
+        version: 1.0.1
     devDependencies:
+      '@freelii/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

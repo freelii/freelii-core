@@ -4,10 +4,14 @@ const { Command } = require('commander');
 const dotenv = require('dotenv');
 const { input, confirm } = require('@inquirer/prompts');
 const { CoinsPHService } = require('@freelii/anchors');
+const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+console.log('Using API Host:', process.env.COINS_PH_API_HOST);
 const program = new Command();
+
+
 
 // Hardcoded balances and rate for now
 const BALANCES = {
@@ -15,7 +19,6 @@ const BALANCES = {
     PHP: 25000,
 };
 
-const HARDCODED_RATE = 56.50; // 1 USD = 56.50 PHP
 
 program
     .name('freelii')
@@ -27,49 +30,92 @@ program
     .description('Check FX rates and execute trades')
     .argument('<currency>', 'Base currency (e.g., usd)')
     .action(async (currency) => {
+        console.log('currency', currency);
+
+        let sourceCurrency = "USD";
+        let targetCurrency = "PHP";
+
+        if (["usd", "usdc"].includes(currency.toLowerCase())) {
+            sourceCurrency = "PHP";
+            targetCurrency = "USDC";
+        } else if (["php", "ph"].includes(currency.toLowerCase())) {
+            sourceCurrency = "USDC";
+            targetCurrency = "PHP";
+        }
+
+
+        const coinsPHService = new CoinsPHService();
+        const account = await coinsPHService.getAccount();
         // Show current balances
         console.log('\n💰 Current Balances:');
-        console.log(`USD: $${BALANCES.USD.toLocaleString()}`);
-        console.log(`PHP: ₱${BALANCES.PHP.toLocaleString()}`);
-        console.log(`Current Rate: $1 = ₱${HARDCODED_RATE}`);
+        account.balances.forEach((balance) => {
+            BALANCES[balance.asset] = balance.free;
+            console.log(`${balance.asset}: ${balance.free.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+        });
 
         // Prompt for amount
         const amount = await input(
             {
                 type: 'number',
                 name: 'amount',
-                message: 'Enter USD amount to convert to PHP:',
+                message: `Enter the amount of ${targetCurrency} you want to receive:`,
                 validate: (value) => {
                     if (value <= 0) return 'Please enter a positive amount';
-                    if (value > BALANCES.USD) return 'Insufficient USD balance';
+                    if (value > BALANCES[targetCurrency]) return 'Insufficient balance';
                     return true;
                 }
             }
         );
-        console.log(amount);
-        const coinsPHService = new CoinsPHService();
-        coinsPHService.test();
+        console.table({
+            sourceCurrency: sourceCurrency,
+            targetCurrency: targetCurrency,
+            targetAmount: amount.toString()
+        });
+
+        const quoteResponse = await coinsPHService.getQuote({
+            sourceCurrency: sourceCurrency,
+            targetCurrency: targetCurrency,
+            targetAmount: amount.toString()
+        });
+        if (!quoteResponse.success) {
+            console.error('Error getting quote', quoteResponse);
+            console.error(quoteResponse.error);
+            return;
+        }
+        const quote = quoteResponse.res;
+
+        console.log(quote);
         // Calculate quote
-        const phpAmount = Number(amount) * HARDCODED_RATE;
+        const sourceAmount = Number(quote.sourceAmount);
+        const targetAmount = Number(quote.targetAmount);
 
         console.log('\n📊 Quote Summary:');
-        console.log(`You will get: ₱${phpAmount.toLocaleString()}`);
-        console.log(`Rate: ₱${HARDCODED_RATE}`);
+        console.log(`You will get: ${targetAmount.toLocaleString(undefined, { style: 'currency', currency: targetCurrency === "USDC" ? "USD" : targetCurrency })} for ${sourceAmount.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}`);
+        console.log(`Rate: ${quote.price.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}`);
 
         // Confirm transaction
         const shouldProceed = await confirm({
             message: 'Would you like to proceed with this exchange?',
         });
         if (shouldProceed) {
+            const confirm = await coinsPHService.acceptQuote(quote.quoteId);
+            console.log(confirm);
+            if (!confirm.success) {
+                console.error('Error confirming quote', confirm);
+                console.error(confirm.error);
+                return;
+            }
             // In a real implementation, this would call an API
             console.log('\n✅ Transaction completed!');
-            console.log(`\n${amount.toLocaleString(undefined, { style: 'currency', currency: 'USD' })} deposited to your account!`);
-            console.log(`\nCost: ${phpAmount.toLocaleString(undefined, { style: 'currency', currency: 'PHP' })}!`);
+            console.log(`\n${amount.toLocaleString(undefined, { style: 'currency', currency: targetCurrency === "USDC" ? "USD" : targetCurrency })} deposited to your account!`);
+            console.log(`\nConversion Cost: ${sourceAmount.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}!`);
 
-            // Show new balances
+            const account = await coinsPHService.getAccount();
+            // Show current balances
             console.log('\n💰 New Balances:');
-            console.log(`USD: $${(BALANCES.USD - amount).toLocaleString()}`);
-            console.log(`PHP: ₱${(BALANCES.PHP + phpAmount).toLocaleString()}`);
+            account.balances.forEach((balance) => {
+                console.log(`${balance.asset}: ${balance.free.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+            });
         } else {
             console.log('\n❌ Transaction cancelled');
         }
