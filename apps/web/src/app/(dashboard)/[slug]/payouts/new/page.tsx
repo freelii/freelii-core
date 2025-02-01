@@ -1,9 +1,9 @@
 "use client"
 
 import { PageContent } from "@/ui/layout/page-content"
+import { NavSteps } from "@/ui/shared/nav-steps"
 import { MaxWidthWrapper } from "@freelii/ui"
 import * as React from "react"
-import { PaymentSteps } from "./payment-steps"
 import PayoutPreview from "./steps/payout-review"
 import SetupRecipients from "./steps/setup-recipients"
 
@@ -24,7 +24,7 @@ export default function NewPaymentPage() {
   return (
     <PageContent titleBackButtonLink="/dashboard/payouts" title="New Payment">
       <MaxWidthWrapper>
-        <PaymentSteps currentStep={step} steps={steps} setStep={setStep} />
+        <NavSteps currentStep={step} steps={steps} setStep={setStep} />
         <div className="">
           {/* Step content will be rendered here */}
           {step === stepIds.recipient && <SetupRecipients onNext={() => setStep(stepIds.confirm)} onBack={() => setStep(stepIds.recipient)} />}

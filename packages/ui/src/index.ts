@@ -16,6 +16,7 @@ export * from "./alert";
 export * from './animated-size-container';
 export * from './badge';
 export * from './blur-image';
+export * from "./calendar";
 export * from './card-list';
 export * from './checkbox';
 export * from './client-only';

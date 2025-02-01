@@ -12,17 +12,19 @@ export function PageContent({
   titleControls,
   description,
   children,
+  className,
 }: PropsWithChildren<{
   title?: ReactNode;
   titleBackButtonLink?: string;
   titleControls?: ReactNode;
   description?: ReactNode;
+  className?: string;
 }>) {
   const hasTitle = title !== undefined;
   const hasDescription = description !== undefined;
 
   return (
-    <div className="bg-neutral-100 md:bg-white">
+    <div className={cn("bg-neutral-100 md:bg-white", className)}>
       <MaxWidthWrapper
         className={cn(
           "mt-1",

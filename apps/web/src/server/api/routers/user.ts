@@ -18,4 +18,11 @@ export const userRouter = createTRPCRouter({
             });
             return user;
         }),
+    listClients: publicProcedure
+        .input(z.object({
+            userId: z.number(),
+        }))
+        .query(async ({ ctx, input }) => {
+            return await ctx.db.client.findMany({ where: { userId: input.userId }, include: { address: true } });
+        }),
 });

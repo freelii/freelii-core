@@ -1,7 +1,7 @@
 export const CURRENCIES: Record<string, { name: string; flag: string; symbol: string, rate: number, shortName: string }> = {
     "USDC": {
         "name": "USDC",
-        "flag": "https://flagcdn.com/us.svg",
+        "flag": "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7a1lsXQcn37SfveLNMUORa8duyswGr1CPQJlK",
         "symbol": "$",
         "rate": 1,
         "shortName": "USDC"

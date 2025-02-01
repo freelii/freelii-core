@@ -200,8 +200,6 @@ export function AppSidebarNav({
   //   const { data: session } = useSession();
   // TODO trpc  const { programs } = usePrograms();
 
-  const programs = [{ id: "1" }];
-
   const currentArea = useMemo(() => {
     return pathname.startsWith("/account/settings")
       ? "userSettings"

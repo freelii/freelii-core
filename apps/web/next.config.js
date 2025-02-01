@@ -12,6 +12,10 @@ const config = {
                 protocol: "https",
                 hostname: "flagcdn.com",
             },
+            {
+                protocol: "https",
+                hostname: "b4slusdeu7.ufs.sh",
+            },
         ],
     },
     pageExtensions: ['ts', 'tsx']

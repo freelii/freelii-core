@@ -1,4 +1,8 @@
-export function formatCurrency(amount: number, currency: string): string {
+export function formatCurrency(amount: number, inputCurrency: string): string {
+    let currency = inputCurrency
+    if (inputCurrency === "USDC") {
+        currency = "USD"
+    }
     const formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: currency,

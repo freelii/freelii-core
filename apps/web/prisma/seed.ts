@@ -3,40 +3,73 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-    // Create a user
+    // Create a user with address
     const user = await prisma.user.create({
         data: {
             id: 1,
+            address: {
+                create: {
+                    street: '789 Business Park',
+                    city: 'San Francisco',
+                    state: 'CA',
+                    country: 'US',
+                    zipCode: '94105',
+                }
+            }
         }
     })
 
-    // Create some clients
+    // Create some clients with addresses
     const clients = await Promise.all([
         prisma.client.create({
             data: {
                 name: 'Acme Corporation',
                 email: 'billing@acme.com',
-                address: '123 Business Ave, Suite 100, New York, NY 10001',
                 taxNumber: 'US123456789',
                 userId: user.id,
+                address: {
+                    create: {
+                        street: '123 Business Ave, Suite 100',
+                        city: 'New York',
+                        state: 'NY',
+                        country: 'US',
+                        zipCode: '10001',
+                    }
+                }
             }
         }),
         prisma.client.create({
             data: {
                 name: 'TechStart Inc',
                 email: 'accounts@techstart.io',
-                address: '456 Innovation Drive, San Francisco, CA 94105',
                 taxNumber: 'US987654321',
                 userId: user.id,
+                address: {
+                    create: {
+                        street: '456 Innovation Drive',
+                        city: 'San Francisco',
+                        state: 'CA',
+                        country: 'US',
+                        zipCode: '94105',
+                    }
+                }
             }
         }),
         prisma.client.create({
             data: {
                 name: 'Global Solutions Ltd',
                 email: 'finance@globalsolutions.co',
-                address: '789 Enterprise Road, London, UK SW1A 1AA',
                 taxNumber: 'GB123456789',
                 userId: user.id,
+                address: {
+                    create: {
+                        street: '789 Enterprise Road',
+                        city: 'London',
+                        state: 'Greater London',
+                        country: 'UK',
+                        zipCode: 'SW1A 1AA',
+                    }
+                }
             }
         }),
     ])
