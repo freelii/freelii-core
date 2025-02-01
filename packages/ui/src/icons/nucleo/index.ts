@@ -1,4 +1,5 @@
 export * from "./arrow-right";
+export * from "./arrows-opposite-direction-x";
 export * from "./arrows-opposite-direction-y";
 export * from "./book2-fill";
 export * from "./calendar";

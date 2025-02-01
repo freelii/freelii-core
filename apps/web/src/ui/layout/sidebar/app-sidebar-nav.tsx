@@ -2,6 +2,7 @@
 
 import {
   ArrowRight,
+  ArrowsOppositeDirectionX,
   ArrowsOppositeDirectionY,
   Calendar6,
   Facebook,
@@ -41,8 +42,13 @@ const NAV_AREAS: SidebarNavAreas<{
           //   href: `/${slug}/accounts${queryString}`,
           // },
           {
-            name: "Payouts",
+            name: "Invoices",
             icon: InvoiceDollar,
+            href: `/${slug}/invoices${queryString}`,
+          },
+          {
+            name: "Payouts",
+            icon: ArrowsOppositeDirectionX,
             href: `/${slug}/payouts${queryString}`,
           },
           {

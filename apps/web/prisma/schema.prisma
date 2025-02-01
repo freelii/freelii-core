@@ -12,150 +12,86 @@ datasource db {
 
 // User model
 model User {
-    id                Int                 @id @default(autoincrement())
-    createdAt         DateTime            @default(now())
-    updatedAt         DateTime            @updatedAt
-    hashedPin         String?
-    telegramId        String?             @unique
-    telegramUsername  String?
-    firstName         String?
-    middleName        String?
-    lastName          String?
-    assignedGAddress  String?
-    passkeyCAddress   String?
-    passkeyKey        String?
-    phone             String?             @unique
-    transfers         Transfer[]          @relation("UserTransfers")
-    AuthSession       AuthSession[]
-    OTPVerification   OTPVerification?
-    KYC               KYC[]
-    HostedDeposits    HostedDeposits[]
-    HostedWithdrawals HostedWithdrawals[]
-
-    @@index([telegramId], name: "telegram_idx")
-    @@index([phone], name: "phone_idx")
-    @@index([telegramUsername], name: "telegram_username_idx")
-    @@index([assignedGAddress], name: "assigned_g_address_idx")
-    @@index([passkeyCAddress], name: "passkey_c_address_idx")
-}
-
-model AuthSession {
-    id                Int                 @id @default(autoincrement())
-    userId            Int
-    user              User                @relation(fields: [userId], references: [id])
-    token             String?
-    publicKey         String
-    expiresAt         DateTime?
-    createdAt         DateTime            @default(now())
-    updatedAt         DateTime            @updatedAt
-    KYC               KYC[]
-    HostedDeposits    HostedDeposits[]
-    HostedWithdrawals HostedWithdrawals[]
-
-    @@index([userId], name: "user_idx")
-}
-
-model KYC {
-    id            Int         @id @default(autoincrement())
-    userId        Int
-    user          User        @relation(fields: [userId], references: [id])
-    authSessionId Int
-    authSession   AuthSession @relation(fields: [authSessionId], references: [id])
-    status        String
-    createdAt     DateTime    @default(now())
-    updatedAt     DateTime    @updatedAt
-    sep12Id       String?
-
-    @@index([userId], name: "kyc_user_idx")
-}
-
-model HostedDeposits {
-    id               Int          @id @default(autoincrement())
-    userId           Int
-    user             User         @relation(fields: [userId], references: [id])
-    amount           Decimal
-    destinationAsset String
-    sourceAsset      String
-    type             String
-    transferId       String
-    transfer         Transfer     @relation(fields: [transferId], references: [id])
-    AuthSession      AuthSession? @relation(fields: [authSessionId], references: [id])
-    authSessionId    Int?
-    sep6Id           String?
-
-    @@index([userId], name: "hosted_deposits_user_idx")
-    @@index([transferId], name: "hosted_deposits_transfer_idx")
-}
-
-model HostedWithdrawals {
-    id               Int          @id @default(autoincrement())
-    userId           Int
-    user             User         @relation(fields: [userId], references: [id])
-    amount           Decimal
-    destinationAsset String
-    sourceAsset      String
-    type             String
-    account_number   String
-    roting_number    String
-    transferId       String
-    transfer         Transfer     @relation(fields: [transferId], references: [id])
-    AuthSession      AuthSession? @relation(fields: [authSessionId], references: [id])
-    authSessionId    Int?
-    sep6Id           String?
-
-    @@index([userId], name: "hosted_withdrawals_user_idx")
-    @@index([transferId], name: "hosted_withdrawals_transfer_idx")
-}
-
-// Transfer model
-model Transfer {
-    createdAt              DateTime            @default(now())
-    updatedAt              DateTime            @updatedAt
-    id                     String              @id @default(cuid())
-    amount                 Decimal
-    currency               Currency
-    currencyType           CurrencyType
-    senderId               Int?
-    sender                 User?               @relation("UserTransfers", fields: [senderId], references: [id])
-    status                 TransferStatus      @default(PENDING)
-    OTPVerification        OTPVerification?    @relation(fields: [oTPVerificationId], references: [id])
-    recipientPhone         String
-    recipientName          String
-    recipientCountry       String?
-    senderAuthSessionId    Int?
-    receiverAuthSessionId  Int?
-    // Recipient Bank details
-    recipientAddress       String? // Address of the recipient
-    recipientBankName      String? // Name of the recipient's bank
-    recipientBankAddress   String? // Address of the recipient's bank
-    recipientAccountNumber String? // Recipient's bank account number
-    recipientIBAN          String? // International Bank Account Number (if applicable)
-    recipientSWIFTBIC      String? // SWIFT/BIC code of the recipient's bank
-    recipientRoutingNumber String? // Routing number (for US and Canada)
-    recipientTransitNumber String? // Routing number (for US and Canada)
-    recipientSortCode      String? // Sort code (for UK)
-    recipientCLABE         String? // CLABE (for Mexico)
-    oTPVerificationId      Int?
-    HostedWithdrawals      HostedWithdrawals[]
-    HostedDeposits         HostedDeposits[]
-
-    @@index([senderId], name: "sender_idx")
-    @@index([senderAuthSessionId], name: "sender_auth_session_idx")
-    @@index([receiverAuthSessionId], name: "receiver_auth_session_idx")
-}
-
-// OTPVerification model
-model OTPVerification {
     id        Int      @id @default(autoincrement())
-    userId    Int      @unique
-    otpCode   String
-    expiresAt DateTime
-    verified  Boolean  @default(false)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    user     User       @relation(fields: [userId], references: [id])
-    Transfer Transfer[]
+    // Relationships
+    generatedInvoices Invoice[] @relation("GeneratedInvoices")
+    receivedInvoices  Invoice[] @relation("ReceivedInvoices")
+    clients           Client[]
+}
+
+// Client model
+model Client {
+    id        Int      @id @default(autoincrement())
+    name      String
+    email     String?
+    address   String?
+    taxNumber String? // VAT/Tax ID
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    userId   Int
+    // Relationships
+    user     User      @relation(fields: [userId], references: [id])
+    invoices Invoice[] @relation("ClientInvoices")
+
+    @@index([userId])
+}
+
+// Invoice model
+model Invoice {
+    id            String   @id @default(uuid())
+    invoiceNumber String   @unique
+    poNumber      String? // Purchase Order number
+    currency      String // e.g., "PHP", "USD", "USDC"
+    subtotal      Float // Sum of line items before tax
+    taxRate       Float    @default(0) // Tax rate as percentage (e.g., 12 for 12%)
+    taxAmount     Float    @default(0) // Calculated tax amount
+    totalAmount   Float // Final amount including tax
+    status        String   @default("Pending") // "Paid", "Pending", "Overdue", "Cancelled"
+    dueDate       DateTime
+    description   String?
+    notes         String?
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    // Fields for invoice generation
+    generatorId Int?
+    generator   User?   @relation("GeneratedInvoices", fields: [generatorId], references: [id])
+    clientId    Int?
+    client      Client? @relation("ClientInvoices", fields: [clientId], references: [id])
+
+    // Fields for received invoices
+    receiverId  Int?
+    receiver    User?   @relation("ReceivedInvoices", fields: [receiverId], references: [id])
+    issuerName  String? // Name of external invoice issuer
+    issuerEmail String? // Email of external invoice issuer
+
+    // Relationship to line items
+    lineItems LineItem[]
+
+    @@index([generatorId])
+    @@index([clientId])
+    @@index([receiverId])
+}
+
+// New LineItem model
+model LineItem {
+    id          Int      @id @default(autoincrement())
+    description String
+    quantity    Float
+    unitPrice   Float
+    amount      Float // quantity * unitPrice
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relationship to invoice
+    invoiceId String
+    invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+    @@index([invoiceId])
 }
 
 model Waitlist {
@@ -165,22 +101,4 @@ model Waitlist {
     isEmail   Boolean  @default(false)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-}
-
-// Enum for transfer statuses
-enum TransferStatus {
-    PENDING
-    COMPLETED
-    CANCELLED
-}
-
-enum Currency {
-    USD
-    EUR
-    GBP
-    MXN
-}
-
-enum CurrencyType {
-    FIAT
 }

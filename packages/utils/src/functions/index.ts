@@ -1,6 +1,7 @@
 export * from "./cn";
 export * from "./construct-metadata";
 export * from "./fetcher";
+export * from "./format-currency";
 export * from "./mask";
 export * from "./nformatter";
 export * from "./noop";
