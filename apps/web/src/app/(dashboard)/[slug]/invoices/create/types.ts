@@ -17,6 +17,8 @@ export interface InvoiceFormData {
     notes?: string
     recurrence: "none" | "weekly" | "monthly" | "yearly"
     repeatSchedule: 'weekly' | 'monthly' | 'yearly' | null
+    ccEmail?: string
+    sendEmail?: boolean
 }
 
 export interface Client {

@@ -9,9 +9,7 @@ import { InvoiceForm } from "./invoice-form"
 import { InvoicePreview } from "./invoice-preview"
 import { type InvoiceFormData } from "./types"
 
-function suggestInvoiceNumber() {
-    return "INV-" + Math.floor(Math.random() * 1000000).toString().padStart(6, "0")
-}
+
 
 const initialFormData: InvoiceFormData = {
     clientId: "",
@@ -24,6 +22,7 @@ const initialFormData: InvoiceFormData = {
     lineItems: [{ description: "", quantity: 1, unitPrice: 0, amount: 0 }],
     notes: "",
     recurrence: "none",
+    repeatSchedule: null
 }
 
 
