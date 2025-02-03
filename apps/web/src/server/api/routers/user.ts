@@ -25,4 +25,22 @@ export const userRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             return await ctx.db.client.findMany({ where: { userId: input.userId }, include: { address: true } });
         }),
+    addClient: publicProcedure
+        .input(z.object({
+            userId: z.number(),
+            client: z.object({
+                name: z.string(),
+                email: z.string(),
+                address: z.object({
+                    street: z.string(),
+                    city: z.string(),
+                    state: z.string().optional(),
+                    country: z.string(),
+                    zipCode: z.string().optional(),
+                }),
+            }),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            return await ctx.db.client.create({ data: { userId: input.userId, name: input.client.name, email: input.client.email, address: { create: input.client.address } } });
+        }),
 });

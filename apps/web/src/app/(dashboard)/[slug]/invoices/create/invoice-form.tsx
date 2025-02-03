@@ -1,5 +1,6 @@
 "use client"
 
+import { api } from "@/trpc/react"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { NavSteps } from "@/ui/shared/nav-steps"
 import {
@@ -21,6 +22,7 @@ import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { ArrowLeft, ArrowRight, Clock, Plus } from "lucide-react"
 import { useState } from "react"
+import toast from "react-hot-toast"
 import { DatePicker } from "./date-picker"
 import { type Client, type InvoiceFormData, type LineItem } from "./types"
 
@@ -38,6 +40,7 @@ interface InvoiceFormProps {
     setNewClientData: (newClientData: Client | undefined) => void
     isNewClient: boolean
     newClientData: Client | undefined
+    handleAddClient: () => void
 }
 
 export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormProps) {
@@ -54,6 +57,38 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
             country: '',
         }
     })
+
+    // tRPC procedures
+    const ctx = api.useUtils();
+    const { mutate: addClient } = api.users.addClient.useMutation({
+        onSuccess: (newClient) => {
+            toast.success("Client created successfully")
+            console.log("newClient", newClient)
+            ctx.users.listClients.refetch();
+            // TODO formData.clientId = newClient.id;
+            // TODO onChange({ clientId: newClient.id });
+        },
+        onError: (error) => {
+            toast.error((error as unknown as Error)?.message ?? "Failed to create client")
+        }
+    });
+
+    const handleAddClient = async () => {
+        console.log("handleAddClient", newClientData)
+        const result = await addClient({
+            userId: 1,
+            client: {
+                name: newClientData?.name ?? "",
+                email: newClientData?.email ?? "",
+                address: {
+                    street: newClientData?.address?.street ?? "",
+                    city: newClientData?.address?.city ?? "",
+                    country: newClientData?.address?.country ?? "",
+                    zipCode: newClientData?.address?.zipCode ?? "",
+                }
+            }
+        })
+    }
 
     const addLineItem = () => {
         console.log("addLineItem", formData)
@@ -86,7 +121,7 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
     }
 
     const steps = [
-        { id: 0, name: "Client Selection", component: ClientStep, props: { formData, clients, onChange, setIsNewClient, setNewClientData, isNewClient, newClientData } },
+        { id: 0, name: "Client Selection", component: ClientStep, props: { formData, clients, onChange, setIsNewClient, setNewClientData, isNewClient, newClientData, handleAddClient } },
         { id: 1, name: "Invoice Details", component: InvoiceDetailsStep, props: { formData, onChange, invoiceTo: clients.find((client) => client.id === formData.clientId) } },
         { id: 2, name: "Line Items", component: LineItemsStep, props: { formData, onChange, addLineItem, updateLineItem, removeLineItem } },
         {
@@ -124,7 +159,8 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
                     setIsNewClient,
                     setNewClientData,
                     isNewClient,
-                    newClientData
+                    newClientData,
+                    handleAddClient
                 })}
             </div>
 
@@ -151,9 +187,7 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 }
 
 // Step Components
-function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientData, isNewClient, newClientData }: InvoiceFormProps) {
-
-
+function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientData, isNewClient, newClientData, handleAddClient }: InvoiceFormProps) {
     const handleClientChange = (value: string) => {
         if (value === 'new') {
             setIsNewClient(true)
@@ -214,17 +248,74 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                             }}
                         />
                     </div>
-                    <div>
-                        <Label>Address (Optional)</Label>
-                        <Textarea
-                            placeholder="Enter client address"
-                            value={newClientData?.address?.street}
-                            onChange={(e) => {
-                                const newAddress = { ...newClientData?.address, street: e.target.value }
-                                const newClient = { ...newClientData, address: newAddress }
-                                setNewClientData(newClient as Client)
-                            }}
-                        />
+                    <div className="space-y-4">
+                        <Label>Address Details</Label>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div>
+                                <Label className="text-sm text-gray-500">Street Address</Label>
+                                <Input
+                                    placeholder="Street address"
+                                    value={newClientData?.address?.street}
+                                    onChange={(e) => {
+                                        const newAddress = { ...newClientData?.address, street: e.target.value }
+                                        const newClient = { ...newClientData, address: newAddress }
+                                        setNewClientData(newClient as Client)
+                                    }}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-sm text-gray-500">City</Label>
+                                    <Input
+                                        placeholder="City"
+                                        value={newClientData?.address?.city}
+                                        onChange={(e) => {
+                                            const newAddress = { ...newClientData?.address, city: e.target.value }
+                                            const newClient = { ...newClientData, address: newAddress }
+                                            setNewClientData(newClient as Client)
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-sm text-gray-500">State/Province</Label>
+                                    <Input
+                                        placeholder="State/Province"
+                                        value={newClientData?.address?.state}
+                                        onChange={(e) => {
+                                            const newAddress = { ...newClientData?.address, state: e.target.value }
+                                            const newClient = { ...newClientData, address: newAddress }
+                                            setNewClientData(newClient as Client)
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <Label className="text-sm text-gray-500">Postal Code</Label>
+                                    <Input
+                                        placeholder="Postal code"
+                                        value={newClientData?.address?.zipCode}
+                                        onChange={(e) => {
+                                            const newAddress = { ...newClientData?.address, zipCode: e.target.value }
+                                            const newClient = { ...newClientData, address: newAddress }
+                                            setNewClientData(newClient as Client)
+                                        }}
+                                    />
+                                </div>
+                                <div>
+                                    <Label className="text-sm text-gray-500">Country</Label>
+                                    <Input
+                                        placeholder="Country"
+                                        value={newClientData?.address?.country}
+                                        onChange={(e) => {
+                                            const newAddress = { ...newClientData?.address, country: e.target.value }
+                                            const newClient = { ...newClientData, address: newAddress }
+                                            setNewClientData(newClient as Client)
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex gap-2">
@@ -232,17 +323,24 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                             variant="outline"
                             onClick={() => {
                                 setIsNewClient(false)
-                                setNewClientData({ name: '', email: '', address: undefined, id: '' })
+                                setNewClientData({
+                                    id: '',
+                                    name: '',
+                                    email: '',
+                                    address: {
+                                        street: '',
+                                        city: '',
+                                        state: '',
+                                        zipCode: '',
+                                        country: ''
+                                    }
+                                })
                             }}
                         >
                             Cancel
                         </Button>
                         <Button
-                            onClick={() => {
-                                // Here you would typically make an API call to create the client
-                                // For now, we'll just log the data
-                                console.log('Create client:', newClientData)
-                            }}
+                            onClick={handleAddClient}
                         >
                             Create Client
                         </Button>
@@ -405,9 +503,9 @@ function PaymentDetailsStep({
     const dueDateOptions = [
         { value: "today", label: "Today", subtext: "Due on receipt" },
         { value: "startOfMonth", label: "Start of Month", subtext: `Due on ${dayjs(formData.issueDate).add(1, 'month').startOf('month').format('MMMM D')}` },
-        { value: "next30", label: calculateFutureDate(formData.issueDate, 30), subtext: "Net 30" },
-        { value: "next60", label: calculateFutureDate(formData.issueDate, 60), subtext: "Net 60" },
-        { value: "next90", label: calculateFutureDate(formData.issueDate, 90), subtext: "Net 90" },
+        { value: "net30", label: calculateFutureDate(formData.issueDate, 30), subtext: "Net 30" },
+        { value: "net60", label: calculateFutureDate(formData.issueDate, 60), subtext: "Net 60" },
+        { value: "net90", label: calculateFutureDate(formData.issueDate, 90), subtext: "Net 90" },
         { value: "custom", label: "Custom...", subtext: "" },
     ]
 
@@ -422,7 +520,7 @@ function PaymentDetailsStep({
             ? new Date()
             : value === "startOfMonth"
                 ? new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
-                : new Date(Date.now() + parseInt(value.replace("next", "")) * 24 * 60 * 60 * 1000);
+                : new Date(Date.now() + parseInt(value.replace("net", "")) * 24 * 60 * 60 * 1000);
 
         onChange({ dueDate: date });
     }
@@ -571,7 +669,7 @@ function ReviewStep({ formData, onChange, invoiceTo }: InvoiceFormProps) {
                         <Label className="text-gray-700 flex items-center gap-2">Due Date
                             <Badge variant="gray" className=" text-xs flex items-center gap-2">
                                 <Clock className="h-3 w-3" />
-                                {dayjs(formData.dueDate).fromNow()}
+                                {dayjs(formData.dueDate).isSame(new Date(), 'day') ? "Today" : dayjs(formData.dueDate).fromNow()}
                             </Badge>
                         </Label>
                         <p className="text-sm text-gray-500">{dayjs(formData.dueDate).format('MMMM D, YYYY')}</p>
@@ -676,11 +774,11 @@ function getDueDateValue(date: Date | null): string {
         case 0:
             return "today";
         case 30:
-            return "next30";
+            return "net30";
         case 60:
-            return "next60";
+            return "net60";
         case 90:
-            return "next90";
+            return "net90";
         default:
             return "custom";
     }
