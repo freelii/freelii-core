@@ -1,41 +1,25 @@
 "use client"
 
-import LandingPage from "./_components/landing-page";
-
-const backgroundStyle = `
-  .bg-pattern {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      linear-gradient(to right, rgba(50,50,50,0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(50,50,50,0.02) 1px, transparent 1px);
-    background-size: 20px 20px;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .content {
-    position: relative;
-    z-index: 2;
-  }
-`
-
-
+import { cn } from "@freelii/utils"
+import LandingPage from "./_components/landing-page"
 
 export default function Home() {
   return (
-    <main
-      className="min-h-screen flex items-center justify-center"
-      style={{
-        background: "radial-gradient(circle at center, #daf0f9, #FFFFFF)",
-      }}
-    >
-      <LandingPage />
+    <main className="min-h-screen flex items-center justify-center relative">
+      {/* Gradient background */}
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-0",
+          "bg-[conic-gradient(from_32deg_at_center,#855AFC_0deg,#3A8BFD_72deg,#00FFF9_144deg,#5CFF80_198deg,#EAB308_261deg,#f00_360deg)]",
+          "opacity-15 blur-[75px]"
+        )}
+      />
 
+      {/* Content */}
+      <div className="relative z-10">
+        <LandingPage />
+      </div>
     </main>
-  );
+  )
 }
 

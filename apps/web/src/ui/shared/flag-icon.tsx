@@ -11,8 +11,6 @@ export function FlagIcon({ currencyCode, size = 16, className }: { currencyCode?
             />
         )
     }
-    console.log(currency.flag)
-
     return (
         <Image
             src={currency.flag}

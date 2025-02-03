@@ -17,7 +17,7 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen flex bg-white text-black">
             {/* Left side */}
-            <div className="flex-1 p-8 relative">
+            <div className="flex-1 p-8 relative hidden md:block">
                 <div
                     className={cn(
                         "pointer-events-none absolute inset-0",
@@ -44,11 +44,6 @@ export default function LoginPage() {
                         </div>
                     </div>
                 </div>
-                <span className="absolute bottom-8 left-8 text-xs text-muted-foreground">
-                    © 2025 Freelii, LLC. All rights reserved.{' • '}
-                    <Link href="/terms" className="text-gray-400 hover:text-blue-400">Terms</Link>{' • '}
-                    <Link href="/privacy" className="text-gray-400 hover:text-blue-400">Privacy</Link>
-                </span>
             </div>
 
             {/* Right side */}
@@ -135,6 +130,11 @@ export default function LoginPage() {
                         </Link>
                     </p>
                 </div>
+                <span className="absolute bottom-8 left-8 text-xs text-muted-foreground">
+                    © 2025 Freelii, LLC. All rights reserved.{' • '}
+                    <Link href="/terms" className="text-gray-400 hover:text-blue-400">Terms</Link>{' • '}
+                    <Link href="/privacy" className="text-gray-400 hover:text-blue-400">Privacy</Link>
+                </span>
             </div>
         </div>
     )

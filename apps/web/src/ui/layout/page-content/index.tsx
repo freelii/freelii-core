@@ -24,7 +24,7 @@ export function PageContent({
   const hasDescription = description !== undefined;
 
   return (
-    <div className={cn("bg-neutral-100 md:bg-white", className)}>
+    <div className={cn("bg-neutral-100 md:bg-transparent", className)}>
       <MaxWidthWrapper
         className={cn(
           "mt-1",

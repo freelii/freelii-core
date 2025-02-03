@@ -18,7 +18,13 @@ const config = {
             },
         ],
     },
-    pageExtensions: ['ts', 'tsx']
+    pageExtensions: ['ts', 'tsx'],
+    transpilePackages: [
+        'passkey-kit',
+        'passkey-factory-sdk',
+        'passkey-kit-sdk',
+        'sac-sdk',
+    ]
 };
 
 export default config;

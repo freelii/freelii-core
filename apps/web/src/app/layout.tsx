@@ -1,10 +1,9 @@
-import "@/styles/globals.css";
 import { geistMono, inter, satoshi } from "@/styles/fonts";
-import { type Metadata } from "next";
-import { cn } from "@freelii/utils";
+import "@/styles/globals.css";
 import { TRPCReactProvider } from "@/trpc/react";
-import { ClerkProvider } from '@clerk/nextjs';
-import { Toaster } from 'react-hot-toast'
+import { cn } from "@freelii/utils";
+import { type Metadata } from "next";
+import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: "Freelii",
@@ -17,20 +16,18 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
-    lang="en"
-    className={cn(
-      satoshi.variable,
+      lang="en"
+      className={cn(
+        satoshi.variable,
         inter.variable,
         geistMono.variable,
       )}
-      >
+    >
       <body>
-          <ClerkProvider>
-            <TRPCReactProvider>
-              <Toaster />
-              {children}
-            </TRPCReactProvider>
-          </ClerkProvider>
+        <TRPCReactProvider>
+          <Toaster />
+          {children}
+        </TRPCReactProvider>
       </body>
     </html>
   );

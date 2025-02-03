@@ -72,6 +72,7 @@ export const authConfig = {
     adapter: PrismaAdapter(db),
     callbacks: {
         async signIn({ account, profile }: { account: Account | null; profile?: any | undefined; }) {
+            console.log("signIn", account, profile);
             const isAccount = account && profile
             if (isAccount && account.provider === "google") {
                 // return profile.email_verified && profile.email.endsWith("@example.com")

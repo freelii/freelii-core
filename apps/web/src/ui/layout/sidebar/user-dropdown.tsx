@@ -1,18 +1,14 @@
 "use client";
 
 import { Avatar, type Icon, Popover } from "@freelii/ui";
-import { cn, noop } from "@freelii/utils";
+import { cn } from "@freelii/utils";
 import { LogOut } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import { type ComponentPropsWithoutRef, type ElementType, useState } from "react";
 
 export default function UserDropdown() {
-  const session = {
-    user: {
-      name: 'Jose',
-      email: 'jose@freelii.app',
-      referralLinkId: '123',
-    }
-  };
+  const { data: session } = useSession();
+
   const [openPopover, setOpenPopover] = useState(false);
 
   return (
@@ -55,7 +51,7 @@ export default function UserDropdown() {
             type="button"
             label="Logout"
             icon={LogOut}
-            onClick={noop}
+            onClick={() => signOut({ redirectTo: "/login" })}
           />
         </div>
       }

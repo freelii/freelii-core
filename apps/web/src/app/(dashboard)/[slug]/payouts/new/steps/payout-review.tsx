@@ -4,8 +4,10 @@ import { useFixtures } from "@/fixtures/useFixtures"
 import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
+import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
+import { fromStroops, shortAddress } from "@freelii/utils/functions"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, ChevronRight, Download, Edit2 } from "lucide-react"
 import { useState } from "react"
@@ -15,14 +17,9 @@ interface PaymentDetails {
     recipient: Recipient;
     originAccount: {
         id: string
-        name: string
-        accountNumber: string
-        currency: {
-            shortName: string
-            name: string
-            symbol: string
-        }
-        balance: number
+        alias: string
+        address: string,
+        network: string,
     }
     fees: {
         processingFee: number
@@ -43,7 +40,8 @@ interface PayoutReviewProps {
 const DEMO_RECIPIENT_ID = 21;
 
 export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReviewProps) {
-    const { recipients, usdcAccount, addDemoPayment } = useFixtures();
+    const { transfer, account } = useWallet();
+    const { recipients, addDemoPayment } = useFixtures();
     const { searchParams } = useRouterStuff();
 
     const recipientId = searchParams.get('recipientId') ?? DEMO_RECIPIENT_ID;
@@ -74,7 +72,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
 
     const [paymentDetails] = useState<PaymentDetails>({
         recipient,
-        originAccount: usdcAccount,
+        originAccount: account,
         fees: {
             processingFee: 1.00,
             serviceCharge: 10.00
@@ -91,7 +89,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
     const handleConfirm = async () => {
         setIsProcessing(true)
         // Simulate processing delay
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await transfer({ to: paymentDetails.recipient.bankingDetails!.accountNumber, amount: Number(searchParams.get('amount')) })
         setIsProcessing(false)
         setIsConfirmed(true)
         onConfirm?.()
@@ -179,9 +177,9 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                 <h4 className="text-sm font-medium mb-3">Paying From</h4>
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-medium">{paymentDetails.originAccount.name}</span>
+                                        <span className="text-sm font-medium">{paymentDetails.originAccount?.alias}</span>
                                         <span className="text-xs text-gray-500">
-                                            {paymentDetails.originAccount.accountNumber}
+                                            {shortAddress(paymentDetails.originAccount?.address)}
                                         </span>
                                     </div>
 
@@ -191,11 +189,11 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                         <div className="flex flex-col items-end">
                                             <div className="flex items-center gap-1">
                                                 <FlagIcon
-                                                    currencyCode={paymentDetails.originAccount.currency.shortName}
+                                                    currencyCode={CURRENCIES.USDC?.shortName}
                                                     className="size-3"
                                                 />
                                                 <span className="text-sm font-medium">
-                                                    {paymentDetails.originAccount.balance.toLocaleString()}
+                                                    {fromStroops(account?.balances[0]?.amount, 2)}
                                                 </span>
                                             </div>
                                             <span className="text-[10px] text-gray-500">Available balance</span>
@@ -237,7 +235,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                             <div className="flex items-center gap-2">
                                                 <div className="flex">
                                                     <FlagIcon
-                                                        currencyCode={paymentDetails.originAccount.currency.shortName}
+                                                        currencyCode={CURRENCIES.USDC?.shortName}
                                                         className="size-4 rounded-full border-2 border-white"
                                                     />
                                                     <FlagIcon

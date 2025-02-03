@@ -7,12 +7,11 @@
  * need to use are documented accordingly near the end.
  */
 
-import { getAuth } from "@clerk/nextjs/server";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { env } from "@/env";
+import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 
 /**
@@ -28,19 +27,10 @@ import { db } from "@/server/db";
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { userId } = getAuth({
-    headers: opts.headers,
-  }, {
-    secretKey: env.CLERK_SECRET_KEY
-  }
-  );
-  console.log(userId)
-
+  const session = await auth();
   return {
     db,
-    userId,
+    session,
     ...opts,
   };
 };
@@ -119,6 +109,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
 
+
 /**
  * Protected (authenticated) procedure
  *
@@ -127,15 +118,17 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  *
  * @see https://trpc.io/docs/procedures
  */
-const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.userId) {
-    throw new TRPCError({ code: "UNAUTHORIZED" });
-  }
-  return next({
-    ctx: {
-      userId: ctx.userId,
-    },
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        // infers the `session` as non-nullable
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
   });
-});
 
-export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);

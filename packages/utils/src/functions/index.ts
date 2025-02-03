@@ -7,5 +7,8 @@ export * from "./nformatter";
 export * from "./noop";
 export * from "./pluralize";
 export * from "./quick-fx-quote";
+export * from "./shortAddress";
 export * from "./stable-sort";
+export * from "./stroops";
 export * from "./urls";
+

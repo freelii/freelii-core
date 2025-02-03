@@ -5,8 +5,11 @@ import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
+import { useWallet } from "@/wallet/useWallet"
 import { Button, Collapsible, CollapsibleContent, CollapsibleTrigger, ExpandingArrow, Separator } from "@freelii/ui"
 import { cn, CURRENCIES, maskFirstDigits, noop } from "@freelii/utils"
+import { USDC_SAC } from "@freelii/utils/constants"
+import { fromStroops, toStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { ArrowDownRight, ArrowUpRight, ChevronDown, RefreshCw, Wallet } from "lucide-react"
@@ -174,6 +177,7 @@ function TransactionDetails({
 
 export default function PageClient() {
   const { usdcAccount, getBalance, fiatAccounts, transactions } = useFixtures()
+  const { account, fundWallet, transfer, isFunding, connect } = useWallet();
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetails | null>(null)
 
   const handleTransactionClick = (transaction: TransactionDetails) => {
@@ -203,9 +207,20 @@ export default function PageClient() {
                 </div>
                 <div className="text-2xl font-semibold">
                   {CURRENCIES.USDC?.symbol}
-                  {usdcAccount.balance.toLocaleString()}
+                  {fromStroops(account?.balances[0]?.amount, 2)}
                 </div>
-                <div className="text-sm text-gray-500">Available balance</div>
+                <div className="text-sm text-gray-500">Available balance {fromStroops(account?.balances[1]?.amount, 2)}</div>
+                <Button disabled={isFunding} variant="outline" className="text-xs" onClick={() => fundWallet(account?.address)}>
+                  <Wallet className="size-3 mr-2" />
+                  <span>{isFunding ? 'Funding...' : 'Add Funds'}</span>
+                </Button>
+                <Button variant="outline" className="text-xs" onClick={() => transfer({ to: '', amount: 1 })}>
+                  <Wallet className="size-3 mr-2" />
+                  <span>Quick Transfer</span>
+                </Button>
+                <Button variant="outline" className="text-xs" onClick={() => transfer({ to: '', amount: toStroops(1), sacAddress: USDC_SAC })}>
+                  <span>Transfer USDC</span>
+                </Button>
               </div>
 
               <Separator />

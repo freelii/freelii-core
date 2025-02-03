@@ -1,18 +1,17 @@
 "use client";
 
 import { cn } from "@freelii/utils";
-import { sha256 } from "js-sha256";
 import { useState } from "react";
 
 type User = {
   id?: string | null | undefined;
   name?: string | null | undefined;
   email?: string | null | undefined;
-  image?: string | null | undefined;
+  avatarUrl?: string | null | undefined;
 };
 
 export function getUserAvatarUrl(user?: User | null) {
-  if (user?.image) return user.image;
+  if (user?.avatarUrl) return user.avatarUrl;
 
   return `https://avatar.vercel.sh/${encodeURIComponent(user?.id ?? user?.email ?? user?.name ?? "freelii")}`;
 }

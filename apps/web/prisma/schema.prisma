@@ -55,6 +55,7 @@ model User {
     clients           Client[]
     Account           Account[]
     Session           Session[]
+    wallets           Wallet[]
 }
 
 // Client model
@@ -157,4 +158,43 @@ model Address {
 
     @@index([userId])
     @@index([clientId])
+}
+
+// Wallet model
+model Wallet {
+    id                 String   @id @default(uuid())
+    alias              String? // Custom name for the wallet
+    keyId              String? // Key ID for the wallet
+    address            String? // Blockchain address for crypto wallets
+    network            String? // Network/chain for crypto wallets (e.g., "ETH", "SOL")
+    networkEnvironment String? // Mainnet, Testnet, etc.
+    isDefault          Boolean  @default(false)
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
+
+    // Relationships
+    userId   Int
+    user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    balances WalletBalance[]
+
+    @@unique([userId, alias])
+    @@unique([address, network])
+    @@index([userId])
+}
+
+// WalletBalance model
+model WalletBalance {
+    id        String   @id @default(uuid())
+    address   String
+    amount    Int      @default(0)
+    currency  String // e.g., "ETH", "USDC", "USD"
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relationship with Wallet
+    walletId String
+    wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+    @@unique([walletId, currency])
+    @@index([walletId])
 }

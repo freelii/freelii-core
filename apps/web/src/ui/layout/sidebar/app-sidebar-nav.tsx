@@ -14,6 +14,7 @@ import {
 import { useParams, usePathname } from "next/navigation";
 import { type ReactNode, useMemo } from "react";
 import { SidebarNav, type SidebarNavAreas } from "./sidebar-nav";
+import { WalletDropdown } from "./wallet-dropdown";
 
 const NAV_AREAS: SidebarNavAreas<{
   slug: string;
@@ -224,7 +225,7 @@ export function AppSidebarNav({
       }}
       toolContent={toolContent}
       newsContent={newsContent}
-      // switcher={<WorkspaceDropdown />}
+      switcher={<WalletDropdown />}
       bottom={
         <>
           {/* TODO <UserSurveyButton /> */}
