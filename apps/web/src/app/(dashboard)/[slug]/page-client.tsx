@@ -1,6 +1,7 @@
 "use client"
 
 import { useFixtures } from "@/fixtures/useFixtures"
+import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
@@ -177,8 +178,11 @@ function TransactionDetails({
 
 export default function PageClient() {
   const { usdcAccount, getBalance, fiatAccounts, transactions } = useFixtures()
-  const { account, fundWallet, transfer, isFunding, connect } = useWallet();
+  const { account, fundWallet, transfer, isFunding } = useWallet();
+  const { wallets } = useWalletStore();
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetails | null>(null)
+  const [isTransferring, setIsTransferring] = useState(false)
+  const [selectedRecipient, setSelectedRecipient] = useState('')
 
   const handleTransactionClick = (transaction: TransactionDetails) => {
     // Toggle details if clicking the same transaction
@@ -186,6 +190,26 @@ export default function PageClient() {
       setSelectedTransaction(null)
     } else {
       setSelectedTransaction(transaction)
+    }
+  }
+
+  const handleInternalTransfer = async () => {
+    if (!selectedRecipient) return
+    setIsTransferring(true)
+    try {
+      console.log('selectedRecipient', selectedRecipient)
+      const address = wallets.find(wallet => wallet.id === selectedRecipient)?.address;
+      if (!address) {
+        throw new Error('No address found')
+      }
+      await transfer({
+        to: address,
+        amount: toStroops(1),
+        sacAddress: USDC_SAC
+      })
+    } finally {
+      setIsTransferring(false)
+      setSelectedRecipient('')
     }
   }
 
@@ -214,11 +238,11 @@ export default function PageClient() {
                   <Wallet className="size-3 mr-2" />
                   <span>{isFunding ? 'Funding...' : 'Add Funds'}</span>
                 </Button>
-                <Button variant="outline" className="text-xs" onClick={() => transfer({ to: '', amount: 1 })}>
+                <Button variant="outline" className="text-xs" onClick={() => transfer({ to: 'GDUDPV3UBLHL2ZUC7XTERLVE5LPFNRK4DOU3GFM7U4AJEB3L7UMH3PPW', amount: 1 })}>
                   <Wallet className="size-3 mr-2" />
                   <span>Quick Transfer</span>
                 </Button>
-                <Button variant="outline" className="text-xs" onClick={() => transfer({ to: '', amount: toStroops(1), sacAddress: USDC_SAC })}>
+                <Button variant="outline" className="text-xs" onClick={() => transfer({ to: 'GDUDPV3UBLHL2ZUC7XTERLVE5LPFNRK4DOU3GFM7U4AJEB3L7UMH3PPW', amount: toStroops(1), sacAddress: USDC_SAC })}>
                   <span>Transfer USDC</span>
                 </Button>
               </div>
@@ -284,6 +308,31 @@ export default function PageClient() {
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
+              </div>
+
+              <div className="space-y-2">
+                <select
+                  value={selectedRecipient}
+                  onChange={(e) => setSelectedRecipient(e.target.value)}
+                  className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
+                >
+                  <option value="">Select recipient account</option>
+                  {wallets.map((wallet) => (
+                    <option key={wallet.id} value={wallet.id}>
+                      {wallet.alias}
+                    </option>
+                  ))}
+                </select>
+
+                <Button
+                  variant="outline"
+                  className="text-xs w-full"
+                  disabled={!selectedRecipient || isTransferring}
+                  onClick={handleInternalTransfer}
+                >
+                  <Wallet className="size-3 mr-2" />
+                  <span>{isTransferring ? 'Transferring...' : 'Transfer Between Accounts'}</span>
+                </Button>
               </div>
             </div>
           </div>

@@ -99,7 +99,7 @@ export function useWallet() {
         const asset = sac.getSACClient(sacAddress ?? XLM_SAC);
         const at = await asset.transfer({
             from: address,
-            to: 'GDUDPV3UBLHL2ZUC7XTERLVE5LPFNRK4DOU3GFM7U4AJEB3L7UMH3PPW',
+            to,
             amount: BigInt(amount),
         });
 
