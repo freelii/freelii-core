@@ -6,7 +6,7 @@ export interface LineItem {
 }
 
 export interface InvoiceFormData {
-    clientId: string
+    clientId?: number
     invoiceNumber: string
     poNumber?: string
     currency: string
@@ -21,15 +21,3 @@ export interface InvoiceFormData {
     sendEmail?: boolean
 }
 
-export interface Client {
-    id: string
-    name: string
-    email: string
-    address?: {
-        street: string
-        city: string
-        state?: string
-        country: string
-        zipCode?: string
-    }
-}

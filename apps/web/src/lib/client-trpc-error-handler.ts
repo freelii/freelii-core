@@ -1,5 +1,5 @@
-import { TRPCClientErrorLike } from "@trpc/client";
-import { AnyClientTypes } from "@trpc/server/unstable-core-do-not-import";
+import { type TRPCClientErrorLike } from "@trpc/client";
+import { type AnyClientTypes } from "@trpc/server/unstable-core-do-not-import";
 import { toast } from "react-hot-toast";
 
 export function ClientTRPCErrorHandler<T extends AnyClientTypes>(

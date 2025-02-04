@@ -173,9 +173,11 @@ model Wallet {
     updatedAt          DateTime @updatedAt
 
     // Relationships
-    userId   Int
-    user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-    balances WalletBalance[]
+    userId        Int
+    user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    balances      WalletBalance[] @relation("WalletToBalance")
+    mainBalanceId String?
+    mainBalance   WalletBalance?  @relation("MainBalance", fields: [mainBalanceId], references: [id])
 
     @@unique([userId, alias])
     @@unique([address, network])
@@ -191,9 +193,10 @@ model WalletBalance {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    // Relationship with Wallet
-    walletId String
-    wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+    // Relationships
+    walletId       String
+    wallet         Wallet   @relation("WalletToBalance", fields: [walletId], references: [id], onDelete: Cascade)
+    mainForWallets Wallet[] @relation("MainBalance")
 
     @@unique([walletId, currency])
     @@index([walletId])

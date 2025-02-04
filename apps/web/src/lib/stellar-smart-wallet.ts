@@ -3,6 +3,7 @@ import { env } from "@/env";
 import { Account, Keypair, StrKey } from "@stellar/stellar-sdk/minimal";
 import { basicNodeSigner } from "@stellar/stellar-sdk/minimal/contract";
 import { Server } from "@stellar/stellar-sdk/minimal/rpc";
+import { noop } from "@tanstack/react-table";
 import { PasskeyKit, PasskeyServer, SACClient } from "passkey-kit";
 
 
@@ -41,7 +42,7 @@ console.log('Environment check:', {
 export const mockPubkey = StrKey.encodeEd25519PublicKey(Buffer.alloc(32))
 export const mockSource = new Account(mockPubkey, '0')
 
-export const fundKeypair = new Promise<Keypair>(async (resolve) => {
+export const fundKeypair = async () => {
     const now = new Date();
 
     now.setMinutes(0, 0, 0);
@@ -53,12 +54,14 @@ export const fundKeypair = new Promise<Keypair>(async (resolve) => {
 
     rpc.getAccount(publicKey)
         .catch(() => rpc.requestAirdrop(publicKey))
-        .catch(() => { })
+        .catch(noop)
 
-    resolve(keypair)
-})
-export const fundPubkey = (await fundKeypair).publicKey()
-export const fundSigner = basicNodeSigner(await fundKeypair, env.NEXT_PUBLIC_NETWORK_PASSPHRASE)
+    return keypair
+}
+
+
+export const fundPubkey = (await fundKeypair()).publicKey()
+export const fundSigner = basicNodeSigner(await fundKeypair(), env.NEXT_PUBLIC_NETWORK_PASSPHRASE)
 
 
 export const sac = new SACClient({

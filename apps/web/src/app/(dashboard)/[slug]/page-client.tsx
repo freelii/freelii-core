@@ -231,9 +231,9 @@ export default function PageClient() {
                 </div>
                 <div className="text-2xl font-semibold">
                   {CURRENCIES.USDC?.symbol}
-                  {fromStroops(account?.balances[0]?.amount, 2)}
+                  {fromStroops(account?.mainBalance?.amount, 2)}
                 </div>
-                <div className="text-sm text-gray-500">Available balance {fromStroops(account?.balances[1]?.amount, 2)}</div>
+                <div className="text-sm text-gray-500">Available balance {fromStroops(account?.balances?.find(b => b.currency === 'XLM')?.amount, 2)}</div>
                 <Button disabled={isFunding} variant="outline" className="text-xs" onClick={() => fundWallet(account?.address)}>
                   <Wallet className="size-3 mr-2" />
                   <span>{isFunding ? 'Funding...' : 'Add Funds'}</span>

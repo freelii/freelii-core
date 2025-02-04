@@ -8,8 +8,8 @@ import {
   useScrollProgress
 } from "@freelii/ui";
 import { cn } from "@freelii/utils";
-import { ChevronsUpDown, Plus, Wallet } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { type Wallet, type WalletBalance } from '@prisma/client';
+import { ChevronsUpDown, Plus, Wallet as WalletIcon } from "lucide-react";
 import {
   useRef,
   useState
@@ -19,14 +19,14 @@ export function WalletDropdown() {
   const {
     isLoading,
     wallets,
-    getSelectedWallet
+    selectedWalletId
   } = useWalletStore();
 
   const [openPopover, setOpenPopover] = useState(false);
 
   // Query wallets with TRPC
+  const { data: wallet } = api.wallet.getAccount.useQuery({ walletId: String(selectedWalletId) }, { enabled: !!selectedWalletId });
 
-  const selected = getSelectedWallet();
 
   if (isLoading) {
     return <WalletDropdownSkeleton />;
@@ -37,7 +37,7 @@ export function WalletDropdown() {
       <Popover
         content={
           <WalletList
-            selected={selected}
+            selected={wallet}
             wallets={wallets || []}
             setOpenPopover={setOpenPopover}
           />
@@ -53,22 +53,19 @@ export function WalletDropdown() {
             "outline-none focus-visible:ring-2 focus-visible:ring-black/50",
           )}
         >
-          {selected ? (
+          {wallet ? (
             <div className="flex min-w-0 items-center gap-x-2.5 pr-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100">
-                <Wallet className="h-4 w-4 text-blue-600" />
+                <WalletIcon className="h-4 w-4 text-blue-600" />
               </div>
               <div className="min-w-0 block">
                 <div className="truncate text-sm font-medium leading-5 text-neutral-900">
-                  {selected.alias}
+                  {wallet.alias}
                 </div>
                 <div className="flex items-center gap-1">
-                  {selected.balances?.map((balance, index) => (
-                    <span key={balance.currency} className="text-xs text-gray-500">
-                      {index > 0 && "• "}
-                      {balance.amount} {balance.currency}
-                    </span>
-                  ))}
+                  <span className="text-xs text-gray-500">
+                    {wallet.mainBalance?.amount} {wallet.mainBalance?.currency}
+                  </span>
                 </div>
               </div>
             </div>
@@ -105,11 +102,10 @@ function WalletList({
   wallets,
   setOpenPopover,
 }: {
-  selected: ReturnType<typeof getSelectedWallet>;
-  wallets: Awaited<ReturnType<typeof api.wallet.getAll.query>>;
+  selected: (Wallet & { balances?: WalletBalance[]; mainBalance?: WalletBalance | null }) | undefined;
+  wallets: Wallet[];
   setOpenPopover: (open: boolean) => void;
 }) {
-  const pathname = usePathname();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { scrollProgress, updateScrollProgress } = useScrollProgress(scrollRef);
 
@@ -144,19 +140,16 @@ function WalletList({
                   )}
                 >
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100">
-                    <Wallet className="h-4 w-4 text-blue-600" />
+                    <WalletIcon className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
                     <span className="block truncate text-sm leading-5 text-neutral-900">
                       {wallet.alias}
                     </span>
                     <div className="flex items-center gap-1">
-                      {wallet.balances.map((balance, index) => (
-                        <span key={balance.currency} className="text-xs text-gray-500">
-                          {index > 0 && "• "}
-                          {balance.amount} {balance.currency}
-                        </span>
-                      ))}
+                      <span className="text-xs text-gray-500">
+                        {selected?.mainBalance?.amount} {selected?.mainBalance?.currency}
+                      </span>
                     </div>
                   </div>
                 </button>

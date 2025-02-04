@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { Account, type DefaultSession, type NextAuthOptions } from "next-auth";
+import { type Account, type DefaultSession, type NextAuthConfig } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 
@@ -71,7 +71,7 @@ export const authConfig = {
     ],
     adapter: PrismaAdapter(db),
     callbacks: {
-        async signIn({ account, profile }: { account: Account | null; profile?: any | undefined; }) {
+        async signIn({ account, profile }: { account: Account | null; profile?: object | undefined; }) {
             console.log("signIn", account, profile);
             const isAccount = account && profile
             if (isAccount && account.provider === "google") {
@@ -88,4 +88,4 @@ export const authConfig = {
             },
         }),
     },
-} satisfies NextAuthOptions;
+} satisfies NextAuthConfig;

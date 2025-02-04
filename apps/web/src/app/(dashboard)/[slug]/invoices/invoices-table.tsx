@@ -10,15 +10,12 @@ import {
     TableRow,
 } from "@freelii/ui"
 import { formatCurrency } from "@freelii/utils/functions"
-import { type Invoice } from "@prisma/client"
+import { type Client, type Invoice } from "@prisma/client"
 import dayjs from "dayjs"
 
 interface InvoicesTableProps {
     invoices?: (Invoice & {
-        client: {
-            name: string
-            email: string | null
-        } | null
+        client?: Client | null
     })[]
     isLoading?: boolean
 }

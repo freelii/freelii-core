@@ -8,6 +8,7 @@ import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { fromStroops, shortAddress } from "@freelii/utils/functions"
+import { Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, ChevronRight, Download, Edit2 } from "lucide-react"
 import { useState } from "react"
@@ -15,12 +16,7 @@ import { Recipient } from "./recipients-table"
 
 interface PaymentDetails {
     recipient: Recipient;
-    originAccount: {
-        id: string
-        alias: string
-        address: string,
-        network: string,
-    }
+    originAccount: Wallet;
     fees: {
         processingFee: number
         serviceCharge: number
@@ -41,7 +37,7 @@ const DEMO_RECIPIENT_ID = 21;
 
 export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReviewProps) {
     const { transfer, account } = useWallet();
-    const { recipients, addDemoPayment } = useFixtures();
+    const { recipients } = useFixtures();
     const { searchParams } = useRouterStuff();
 
     const recipientId = searchParams.get('recipientId') ?? DEMO_RECIPIENT_ID;
@@ -72,7 +68,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
 
     const [paymentDetails] = useState<PaymentDetails>({
         recipient,
-        originAccount: account,
+        originAccount: account!,
         fees: {
             processingFee: 1.00,
             serviceCharge: 10.00
@@ -83,23 +79,32 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
         }
     })
 
+
     const [isConfirmed, setIsConfirmed] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
 
+
+
     const handleConfirm = async () => {
         setIsProcessing(true)
-        // Simulate processing delay
-        await transfer({ to: paymentDetails.recipient.bankingDetails!.accountNumber, amount: Number(searchParams.get('amount')) })
+        await transfer({
+            to: paymentDetails.recipient.bankingDetails!.accountNumber,
+            amount: Number(searchParams.get('amount'))
+        })
         setIsProcessing(false)
         setIsConfirmed(true)
         onConfirm?.()
-        addDemoPayment(Number(searchParams.get('amount')), paymentDetails.recipient.bankingDetails!.currency.shortName, Number(recipientId))
     }
 
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
     const fxRate = CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.rate ?? 1
     const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
     const totalCost = Number(searchParams.get('amount')) + totalFees;
+
+    // TODO: No me encanta esto
+    if (!account) {
+        return <div>No account found</div>
+    }
 
     return (
         <div className="w-full relative space-y-6">
@@ -193,7 +198,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                                     className="size-3"
                                                 />
                                                 <span className="text-sm font-medium">
-                                                    {fromStroops(account?.balances[0]?.amount, 2)}
+                                                    {fromStroops(account.balances[0]?.amount ?? 0, 2)}
                                                 </span>
                                             </div>
                                             <span className="text-[10px] text-gray-500">Available balance</span>

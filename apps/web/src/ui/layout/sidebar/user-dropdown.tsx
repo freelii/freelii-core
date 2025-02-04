@@ -18,7 +18,7 @@ export default function UserDropdown() {
           {session?.user ? (
             <div className="p-2">
               <p className="truncate text-sm font-medium text-neutral-900">
-                {session.user.name || session.user.email?.split("@")[0]}
+                {session.user.name ?? session.user.email?.split("@")[0]}
               </p>
               <p className="truncate text-sm text-neutral-500">
                 {session.user.email}

@@ -4,6 +4,7 @@ import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
 import { MaxWidthWrapper } from "@freelii/ui"
 import { cn } from "@freelii/utils/functions"
+import { noop } from "@tanstack/react-table"
 import { useState } from "react"
 import { InvoiceForm } from "./invoice-form"
 import { InvoicePreview } from "./invoice-preview"
@@ -12,7 +13,7 @@ import { type InvoiceFormData } from "./types"
 
 
 const initialFormData: InvoiceFormData = {
-    clientId: "",
+    clientId: undefined,
     invoiceNumber: "", // ,suggestInvoiceNumber(),
     poNumber: "",
     currency: "USD",
@@ -34,7 +35,7 @@ export default function CreateInvoicePage() {
         setFormData(prev => ({ ...prev, ...data }))
     }
 
-    const client = clients?.find(c => c.id === formData.clientId)
+    const client = clients?.find(c => Number(c.id) === Number(formData.clientId))
 
     return (
         <PageContent
@@ -56,9 +57,10 @@ export default function CreateInvoicePage() {
                             formData={formData}
                             clients={clients}
                             onChange={handleFormChange}
-                            addLineItem={() => { }}
-                            updateLineItem={() => { }}
-                            removeLineItem={() => { }}
+                            addLineItem={noop}
+                            updateLineItem={noop}
+                            removeLineItem={noop}
+                            setIsNewClient={noop}
                         />
                     </div>
 

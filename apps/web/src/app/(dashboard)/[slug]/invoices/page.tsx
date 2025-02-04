@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { InvoicesTable } from "./invoices-table"
 
-function useDebounce<T>(value: T, delay: number = 300): T {
+function useDebounce<T>(value: T, delay = 300): T {
     const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
     useEffect(() => {

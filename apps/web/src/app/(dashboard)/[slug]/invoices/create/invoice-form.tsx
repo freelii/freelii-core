@@ -18,37 +18,37 @@ import {
     Textarea
 } from "@freelii/ui"
 import { CURRENCIES } from "@freelii/utils"
+import { Address, Client } from "@prisma/client"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { ArrowLeft, ArrowRight, Clock, Plus } from "lucide-react"
 import { useState } from "react"
 import toast from "react-hot-toast"
 import { DatePicker } from "./date-picker"
-import { type Client, type InvoiceFormData, type LineItem } from "./types"
+import { type InvoiceFormData, type LineItem } from "./types"
 
 dayjs.extend(relativeTime)
 
 interface InvoiceFormProps {
     formData: InvoiceFormData
     clients?: Client[] // Replace with proper client type
-    invoiceTo: Client | undefined
+    invoiceTo: Partial<Client> | undefined
     onChange: (data: Partial<InvoiceFormData>) => void
-    addLineItem: () => void
-    updateLineItem: (index: number, data: Partial<LineItem>) => void
-    removeLineItem: (index: number) => void
-    setIsNewClient: (isNewClient: boolean) => void
-    setNewClientData: (newClientData: Client | undefined) => void
-    isNewClient: boolean
-    newClientData: Client | undefined
-    handleAddClient: () => void
+    addLineItem?: () => void
+    updateLineItem?: (index: number, data: Partial<LineItem>) => void
+    removeLineItem?: (index: number) => void
+    setIsNewClient?: (isNewClient: boolean) => void
+    setNewClientData?: (newClientData: Partial<Client & { address: Partial<Address> }> | undefined) => void
+    isNewClient?: boolean
+    newClientData?: Partial<Client & { address: Partial<Address> }> | undefined
+    handleAddClient?: () => Promise<void>
 }
 
 export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormProps) {
     const [currentStep, setCurrentStep] = useState(0);
     const [showCustomDueDate, setShowCustomDueDate] = useState(false);
     const [isNewClient, setIsNewClient] = useState(false)
-    const [newClientData, setNewClientData] = useState<Client | undefined>({
-        id: '',
+    const [newClientData, setNewClientData] = useState<Partial<Client & { address: Partial<Address> }> | undefined>({
         name: '',
         email: '',
         address: {
@@ -60,11 +60,11 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 
     // tRPC procedures
     const ctx = api.useUtils();
-    const { mutate: addClient } = api.users.addClient.useMutation({
+    const { mutateAsync: addClient } = api.users.addClient.useMutation({
         onSuccess: (newClient) => {
             toast.success("Client created successfully")
             console.log("newClient", newClient)
-            ctx.users.listClients.refetch();
+            void ctx.users.listClients.refetch();
             // TODO formData.clientId = newClient.id;
             // TODO onChange({ clientId: newClient.id });
         },
@@ -105,11 +105,12 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 
     const updateLineItem = (index: number, data: Partial<LineItem>) => {
         const newLineItems = [...formData.lineItems]
+        const currentItem = newLineItems[index]!
         newLineItems[index] = {
-            ...newLineItems[index],
-            ...data,
-            amount: (data.quantity ?? newLineItems[index].quantity) *
-                (data.unitPrice ?? newLineItems[index].unitPrice)
+            description: data.description ?? currentItem.description,
+            quantity: data.quantity ?? currentItem.quantity,
+            unitPrice: data.unitPrice ?? currentItem.unitPrice,
+            amount: (data.quantity ?? currentItem.quantity) * (data.unitPrice ?? currentItem.unitPrice)
         }
         onChange({ lineItems: newLineItems })
     }
@@ -190,11 +191,11 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientData, isNewClient, newClientData, handleAddClient }: InvoiceFormProps) {
     const handleClientChange = (value: string) => {
         if (value === 'new') {
-            setIsNewClient(true)
+            setIsNewClient?.(true)
             onChange({ clientId: undefined })
         } else {
-            setIsNewClient(false)
-            onChange({ clientId: value })
+            setIsNewClient?.(false)
+            onChange({ clientId: Number(value) })
         }
     }
 
@@ -202,7 +203,7 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
         <div className="space-y-4">
             <Label>New invoice for</Label>
             <Select
-                value={formData.clientId || (isNewClient ? 'new' : '')}
+                value={formData.clientId?.toString() ?? (isNewClient ? 'new' : '')}
                 onValueChange={handleClientChange}
             >
                 <SelectTrigger>
@@ -210,7 +211,7 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                 </SelectTrigger>
                 <SelectContent>
                     {clients?.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
+                        <SelectItem key={client.id} value={client.id.toString()}>
                             {client.name}
                         </SelectItem>
                     ))}
@@ -232,7 +233,7 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                             value={newClientData?.name}
                             onChange={(e) => {
                                 const newClient = { ...newClientData, name: e.target.value }
-                                setNewClientData(newClient as Client)
+                                setNewClientData?.(newClient as Client)
                             }}
                         />
                     </div>
@@ -241,10 +242,10 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                         <Input
                             type="email"
                             placeholder="client@example.com"
-                            value={newClientData?.email}
+                            value={newClientData?.email ?? ''}
                             onChange={(e) => {
                                 const newClient = { ...newClientData, email: e.target.value }
-                                setNewClientData(newClient as Client)
+                                setNewClientData?.(newClient as Client)
                             }}
                         />
                     </div>
@@ -255,11 +256,11 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                 <Label className="text-sm text-gray-500">Street Address</Label>
                                 <Input
                                     placeholder="Street address"
-                                    value={newClientData?.address?.street}
+                                    value={newClientData?.address?.street ?? ''}
                                     onChange={(e) => {
                                         const newAddress = { ...newClientData?.address, street: e.target.value }
                                         const newClient = { ...newClientData, address: newAddress }
-                                        setNewClientData(newClient as Client)
+                                        setNewClientData?.(newClient as Client)
                                     }}
                                 />
                             </div>
@@ -272,7 +273,7 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                         onChange={(e) => {
                                             const newAddress = { ...newClientData?.address, city: e.target.value }
                                             const newClient = { ...newClientData, address: newAddress }
-                                            setNewClientData(newClient as Client)
+                                            setNewClientData?.(newClient as Client)
                                         }}
                                     />
                                 </div>
@@ -280,11 +281,11 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                     <Label className="text-sm text-gray-500">State/Province</Label>
                                     <Input
                                         placeholder="State/Province"
-                                        value={newClientData?.address?.state}
+                                        value={newClientData?.address?.state ?? ''}
                                         onChange={(e) => {
                                             const newAddress = { ...newClientData?.address, state: e.target.value }
                                             const newClient = { ...newClientData, address: newAddress }
-                                            setNewClientData(newClient as Client)
+                                            setNewClientData?.(newClient as Client)
                                         }}
                                     />
                                 </div>
@@ -294,11 +295,11 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                     <Label className="text-sm text-gray-500">Postal Code</Label>
                                     <Input
                                         placeholder="Postal code"
-                                        value={newClientData?.address?.zipCode}
+                                        value={newClientData?.address?.zipCode ?? ''}
                                         onChange={(e) => {
                                             const newAddress = { ...newClientData?.address, zipCode: e.target.value }
                                             const newClient = { ...newClientData, address: newAddress }
-                                            setNewClientData(newClient as Client)
+                                            setNewClientData?.(newClient as Client)
                                         }}
                                     />
                                 </div>
@@ -310,7 +311,7 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                         onChange={(e) => {
                                             const newAddress = { ...newClientData?.address, country: e.target.value }
                                             const newClient = { ...newClientData, address: newAddress }
-                                            setNewClientData(newClient as Client)
+                                            setNewClientData?.(newClient as Client)
                                         }}
                                     />
                                 </div>
@@ -322,9 +323,9 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                         <Button
                             variant="outline"
                             onClick={() => {
-                                setIsNewClient(false)
-                                setNewClientData({
-                                    id: '',
+                                setIsNewClient?.(false)
+                                setNewClientData?.({
+                                    id: undefined,
                                     name: '',
                                     email: '',
                                     address: {
@@ -358,8 +359,8 @@ function InvoiceDetailsStep({ formData, onChange, invoiceTo }: InvoiceFormProps)
             {invoiceTo && (
                 <div className="flex items-center gap-2 border-none p-2 rounded-lg bg-gray-100">
                     <BlurImage
-                        src={invoiceTo.email ?? invoiceTo.name}
-                        alt={invoiceTo.name}
+                        src={invoiceTo.email ?? invoiceTo.name ?? ''}
+                        alt={invoiceTo.name ?? ''}
                         width={32}
                         height={32}
                         className="rounded-full"
@@ -430,7 +431,7 @@ function LineItemsStep({ formData, addLineItem, updateLineItem, removeLineItem, 
                             <Input
                                 placeholder="Description"
                                 value={item.description}
-                                onChange={(e) => updateLineItem(index, { description: e.target.value })}
+                                onChange={(e) => updateLineItem?.(index, { description: e.target.value })}
                             />
                         </div>
                         <div className="col-span-2">
@@ -439,7 +440,7 @@ function LineItemsStep({ formData, addLineItem, updateLineItem, removeLineItem, 
                                 type="number"
                                 placeholder="Qty"
                                 value={item.quantity}
-                                onChange={(e) => updateLineItem(index, { quantity: Number(e.target.value) })}
+                                onChange={(e) => updateLineItem?.(index, { quantity: Number(e.target.value) })}
                             />
                         </div>
                         <div className="col-span-3">
@@ -450,7 +451,7 @@ function LineItemsStep({ formData, addLineItem, updateLineItem, removeLineItem, 
                                 type="number"
                                 placeholder="Price"
                                 value={item.unitPrice}
-                                onChange={(e) => updateLineItem(index, { unitPrice: e.target.value ? Number(e.target.value) : 0 })}
+                                onChange={(e) => updateLineItem?.(index, { unitPrice: e.target.value ? Number(e.target.value) : 0 })}
                             />
                         </div>
 
@@ -459,7 +460,7 @@ function LineItemsStep({ formData, addLineItem, updateLineItem, removeLineItem, 
                                 <Button
                                     variant="ghost"
                                     className="text-red-700"
-                                    onClick={() => removeLineItem(index)}
+                                    onClick={() => removeLineItem?.(index)}
                                 >
                                     x
                                 </Button>
@@ -640,8 +641,8 @@ function ReviewStep({ formData, onChange, invoiceTo }: InvoiceFormProps) {
                     <div className="flex items-center gap-2 border-none p-2 rounded-lg bg-gray-100 justify-between">
                         <div className="flex items-center gap-2">
                             <BlurImage
-                                src={invoiceTo.email ?? invoiceTo.name}
-                                alt={invoiceTo.name}
+                                src={invoiceTo.email ?? invoiceTo.name ?? ''}
+                                alt={invoiceTo.name ?? ''}
                                 width={32}
                                 height={32}
                                 className="rounded-full"
@@ -698,7 +699,7 @@ function ReviewStep({ formData, onChange, invoiceTo }: InvoiceFormProps) {
                         <Input
                             type="email"
                             placeholder="email@example.com"
-                            value={formData.ccEmail || ''}
+                            value={formData.ccEmail ?? ''}
                             onChange={(e) => onChange({ ccEmail: e.target.value })}
                         />
                         <p className="text-sm text-gray-500 mt-1">

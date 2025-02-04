@@ -2,12 +2,12 @@
 
 import { useWallet } from "@/wallet/useWallet";
 import { Button, Input } from "@freelii/ui";
+import Link from "next/link";
 import { Logo } from "node_modules/@freelii/ui/src/logo";
 import { useState } from "react";
 
 export function WalletOnboarding() {
     const [loading, setLoading] = useState(false);
-    const [step, setStep] = useState(1);
     const [walletName, setWalletName] = useState("Main Wallet");
     const { create } = useWallet();
 
@@ -27,40 +27,38 @@ export function WalletOnboarding() {
                         <Logo className="h-8 w-8" />
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
-                        Let's set up your secure account protected by your device's fingerprint or face recognition
+                        Let&apos;s set up your secure account protected by your device&apos;s fingerprint or face recognition
                     </p>
                 </div>
 
-                {step === 1 && (
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <label htmlFor="walletName" className="block text-sm font-medium text-gray-700">
-                                Give your account a name
-                            </label>
-                            <Input
-                                id="walletName"
-                                type="text"
-                                placeholder="Main Wallet"
-                                value={walletName}
-                                onChange={(e) => setWalletName(e.target.value)}
-                            />
-                            <p className="text-xs text-gray-500">
-                                Your account will be protected by biometric authentication for maximum security{" "}
-                                <a href="/security" className="text-blue-600 hover:text-blue-800 hover:underline">
-                                    Learn more
-                                </a>
-                            </p>
-                        </div>
-
-                        <Button
-                            className="w-full"
-                            onClick={handleCreateWallet}
-                            disabled={loading}
-                        >
-                            {loading ? "Creating..." : "Create Wallet"}
-                        </Button>
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <label htmlFor="walletName" className="block text-sm font-medium text-gray-700">
+                            Give your account a name
+                        </label>
+                        <Input
+                            id="walletName"
+                            type="text"
+                            placeholder="Main Wallet"
+                            value={walletName}
+                            onChange={(e) => setWalletName(e.target.value)}
+                        />
+                        <p className="text-xs text-gray-500">
+                            Your account will be protected by biometric authentication for maximum security{" "}
+                            <Link href="/security" className="text-blue-600 hover:text-blue-800 hover:underline">
+                                Learn more
+                            </Link>
+                        </p>
                     </div>
-                )}
+
+                    <Button
+                        className="w-full"
+                        onClick={handleCreateWallet}
+                        disabled={loading}
+                    >
+                        {loading ? "Creating..." : "Create Wallet"}
+                    </Button>
+                </div>
             </div>
         </div>
     );

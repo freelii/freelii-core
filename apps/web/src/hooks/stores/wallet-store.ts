@@ -1,16 +1,6 @@
+import type { Wallet } from 'prisma/prisma-client'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-export type Wallet = {
-  id: string
-  alias: string
-  type: string
-  currency: string
-  balance: number
-  isDefault: boolean
-  address?: string
-  network?: string
-}
 
 interface WalletState {
   isLoading: boolean

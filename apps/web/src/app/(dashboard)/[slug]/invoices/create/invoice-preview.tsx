@@ -2,14 +2,15 @@
 
 import { Button } from "@freelii/ui/button"
 import { formatCurrency } from "@freelii/utils/functions"
+import { Address, Client } from "@prisma/client"
 import dayjs from "dayjs"
 import { Minus, Plus } from "lucide-react"
 import { useState } from "react"
-import { Client, type InvoiceFormData } from "./types"
+import { type InvoiceFormData } from "./types"
 
 interface InvoicePreviewProps {
     data: InvoiceFormData
-    client?: Client
+    client?: Partial<Client> & { address?: Partial<Address> | null } | null
 }
 
 export function InvoicePreview({ data, client }: InvoicePreviewProps) {
