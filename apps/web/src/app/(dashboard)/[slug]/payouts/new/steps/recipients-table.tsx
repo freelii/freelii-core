@@ -551,7 +551,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
             ref={detailsCardRef}
             className="animate-in slide-in-from-right duration-300"
           >
-            <div className="p-6 bg-white rounded-lg border border-gray-200">
+            <div className="p-6 bg-white h-full border-l border-gray-200">
               <RecipientDetails recipient={selectedRecipient} />
             </div>
           </div>
@@ -560,7 +560,7 @@ export default function RecipientsTable({ mode = 'default', onNext, onBack }: Re
         {/* Payment details panel - always shown in payout mode */}
         {mode === 'payout' && (
           <div className="animate-in slide-in-from-right duration-300">
-            <div className="p-6 bg-white rounded-lg border border-gray-200">
+            <div className="p-6 bg-white border-l border-gray-200">
               <div className="space-y-6">
                 <div>
                   <h3 className="font-medium text-lg">New Payment</h3>

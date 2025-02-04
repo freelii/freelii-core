@@ -5,6 +5,7 @@ import {
   ArrowsOppositeDirectionX,
   ArrowsOppositeDirectionY,
   Calendar6,
+  CreditCard,
   Facebook,
   GreekTemple,
   InvoiceDollar,
@@ -61,6 +62,11 @@ const NAV_AREAS: SidebarNavAreas<{
             name: "Withdrawals",
             icon: ArrowsOppositeDirectionY,
             href: `/${slug}/withdrawals${queryString}`,
+          },
+          {
+            name: "Cards",
+            icon: CreditCard,
+            href: `/${slug}/cards${queryString}`,
           },
           // {
           //   name: "Deposits",

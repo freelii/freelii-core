@@ -55,8 +55,8 @@ export function WalletDropdown() {
         >
           {wallet ? (
             <div className="flex min-w-0 items-center gap-x-2.5 pr-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100">
-                <WalletIcon className="h-4 w-4 text-blue-600" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4ab3e8]">
+                <WalletIcon className="h-4 w-4 text-white" />
               </div>
               <div className="min-w-0 block">
                 <div className="truncate text-sm font-medium leading-5 text-neutral-900">
@@ -139,8 +139,8 @@ function WalletList({
                     isActive && "bg-neutral-200/50"
                   )}
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100">
-                    <WalletIcon className="h-4 w-4 text-blue-600" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4ab3e8]">
+                    <WalletIcon className="h-4 w-4 text-white" />
                   </div>
                   <div>
                     <span className="block truncate text-sm leading-5 text-neutral-900">

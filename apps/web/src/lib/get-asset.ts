@@ -1,6 +1,7 @@
 import { Asset } from "@stellar/stellar-sdk/minimal";
 
-export function getSacBalance(sac: string): Asset {
+export function getAsset(sac: string): Asset {
+    if (sac === "XLM") return Asset.native();
     const [code, issuer] = sac.split('-') as [string, string];
     if (!code || !issuer) {
         throw new Error('Invalid SAC format');

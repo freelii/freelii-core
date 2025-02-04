@@ -16,8 +16,6 @@ export function useWallet() {
     const { data: wallets } = api.wallet.getAll.useQuery();
     const { data: account } = api.wallet.getAccount.useQuery({ walletId: String(selectedWalletId) }, {
         enabled: !!selectedWalletId,
-        refetchIntervalInBackground: true,
-        refetchInterval: 7000,
     });
 
 
