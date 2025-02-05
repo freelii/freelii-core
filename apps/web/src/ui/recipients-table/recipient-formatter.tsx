@@ -1,7 +1,11 @@
-import { Client, VerificationStatus } from "@prisma/client";
+import { Address, BlockchainAccount, Client, FiatAccount, VerificationStatus } from "@prisma/client";
 import { Recipient } from "./recipients-table";
 
-export function recipientFormatter(client: Client): Recipient {
+export function recipientFormatter(client: Client & {
+    address?: Address | null,
+    fiat_accounts?: FiatAccount[] | null,
+    blockchain_accounts?: BlockchainAccount[] | null
+}): Recipient {
     return {
         id: client.id,
         isVerified: client.verification_status === VerificationStatus.VERIFIED,
