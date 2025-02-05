@@ -18,10 +18,6 @@ import { useState } from "react"
 
 dayjs.extend(relativeTime)
 
-const truncateAddress = (address: string) => {
-  if (!address) return '';
-  return `${address.slice(0, 4)}...${address.slice(-4)}`;
-};
 
 export default function PageClient() {
   const { usdcAccount, getBalance, fiatAccounts, transactions } = useFixtures()
@@ -166,13 +162,12 @@ export default function PageClient() {
                     <div>
                       <div className="text-sm text-gray-500 mb-2">Account Address</div>
                       <div className="flex items-center gap-2 bg-white/50 p-2 rounded-md">
-                        <code className="text-xs text-gray-600">{truncateAddress(account?.address)}</code>
+                        <code className="text-xs text-gray-600">{shortAddress(account?.address)}</code>
                         <Button
                           variant="ghost"
-                          size="icon"
                           className="h-6 w-6"
                           onClick={() => {
-                            navigator.clipboard.writeText(account?.address || '');
+                            void copyToClipboard(account?.address);
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -229,7 +224,6 @@ export default function PageClient() {
               <div className="flex items-center justify-between mb-6">
                 <Button
                   variant="ghost"
-                  size="icon"
                   onClick={() => setIsQuickActionsOpen(false)}
                 >
                   <X className="h-5 w-5" />
@@ -285,7 +279,6 @@ export default function PageClient() {
                         <div className="text-sm text-gray-500">Last Updated</div>
                         <Button
                           variant="ghost"
-                          size="sm"
                           className="h-6 text-xs"
                           onClick={getBalance}
                         >

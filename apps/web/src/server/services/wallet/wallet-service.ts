@@ -68,6 +68,11 @@ export class WalletService extends BaseService {
         return updatedWallet;
     }
 
+    /**
+     * Get the account for a wallet
+     * @param walletId - The ID of the wallet
+     * @returns The account for the wallet
+     */
     async getAccount(walletId: string) {
         const wallet = await this.db.wallet.findUniqueOrThrow({
             where: { id: walletId, userId: Number(this.session.user.id) },

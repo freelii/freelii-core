@@ -66,7 +66,7 @@ export default function NewRecipientPage() {
                     <div className="grid grid-cols-12 gap-6">
                         <div className="col-span-8">
                             <div className="bg-white p-6 rounded-lg shadow-sm">
-                                {steps[currentStep].component({ formData, setFormData })}
+                                {steps[currentStep]?.component({ formData, setFormData })}
                             </div>
                         </div>
 

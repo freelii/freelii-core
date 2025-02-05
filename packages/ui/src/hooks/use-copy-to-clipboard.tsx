@@ -1,10 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
+/**
+ * Hook to copy text to clipboard
+ * @param timeout - The timeout for the toast notification
+ * @returns [copied, copyToClipboard]
+ */
 export const useCopyToClipboard = (
   timeout: number = 3000,
-): [boolean, (value: string | ClipboardItem) => Promise<void>] => {
+): [boolean, (value: string | ClipboardItem | null | undefined, silent?: boolean) => Promise<void>] => {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -16,7 +22,10 @@ export const useCopyToClipboard = (
   };
 
   const copyToClipboard = useCallback(
-    async (value: string | ClipboardItem) => {
+    async (value: string | ClipboardItem | null | undefined, silent: boolean = true) => {
+      if (!value) {
+        return;
+      }
       clearTimer();
       try {
         if (typeof value === "string") {
@@ -25,6 +34,9 @@ export const useCopyToClipboard = (
           await navigator.clipboard.write([value]);
         }
         setCopied(true);
+        if (!silent) {
+          toast.success("Copied to clipboard");
+        }
 
         // Ensure timeout is a non-negative finite number
         if (Number.isFinite(timeout) && timeout >= 0) {
@@ -41,6 +53,7 @@ export const useCopyToClipboard = (
   useEffect(() => {
     return () => clearTimer();
   }, []);
+
 
   return [copied, copyToClipboard];
 };

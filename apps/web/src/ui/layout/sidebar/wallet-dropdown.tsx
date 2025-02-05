@@ -102,7 +102,7 @@ function WalletList({
   wallets,
   setOpenPopover,
 }: {
-  selected: (Wallet & { balances?: WalletBalance[]; mainBalance?: WalletBalance | null }) | undefined;
+  selected: (Wallet & { balances?: WalletBalance[] | null; mainBalance?: WalletBalance | null }) | undefined | null;
   wallets: Wallet[];
   setOpenPopover: (open: boolean) => void;
 }) {

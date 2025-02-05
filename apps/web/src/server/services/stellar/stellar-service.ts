@@ -1,9 +1,10 @@
 import { getAsset } from "@/lib/get-asset";
 import { MAINNET, TESTNET } from "@freelii/utils/constants/stellar-sac";
-import { Wallet } from "@prisma/client";
+import { Wallet, WalletBalance } from "@prisma/client";
 import { Asset, Horizon, rpc, StrKey } from "@stellar/stellar-sdk";
+
 interface StellarServiceOptions {
-    wallet: Wallet;
+    wallet: Wallet & { balances?: WalletBalance[], mainBalance?: WalletBalance | null };
 }
 
 export class StellarService {
@@ -11,7 +12,7 @@ export class StellarService {
 
     readonly network: string;
     readonly networkPassphrase: string;
-    readonly wallet: Wallet;
+    readonly wallet: Wallet & { balances?: WalletBalance[], mainBalance?: WalletBalance | null };
 
     constructor(options: StellarServiceOptions) {
         this.wallet = options.wallet;
@@ -69,7 +70,7 @@ export class StellarService {
             // Filter transactions that involve the specified contract
             const filteredTransactions = response.transactions.filter(tx => {
                 // Check if the transaction has operations involving the contract
-                if (tx.envelopeXdr && tx.status === 'SUCCESS') {
+                if (tx.envelopeXdr && tx.status === rpc.Api.GetTransactionStatus.SUCCESS) {
                     // const operations = tx.envelopeXdr.v1().tx().operations();
 
                     // Look through operations for contract interactions
@@ -131,8 +132,6 @@ export class StellarService {
         // Usage:
 
         try {
-            const events = await
-                console.log('events', events);
             // const transactions = await this.getAllContractTransactions(this.wallet.address);
             // console.log(`Found ${transactions.length} transactions for contract`);
 
@@ -185,7 +184,7 @@ export class StellarService {
                     this.wallet.mainBalance = {
                         ...this.wallet.mainBalance,
                         amount
-                    }
+                    } as WalletBalance;
                 }
             });
         }

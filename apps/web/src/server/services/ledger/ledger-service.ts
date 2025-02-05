@@ -16,7 +16,7 @@ export class LedgerService extends BaseService {
     }
 
     async getTransactions() {
-        const wallet = await this.db.wallet.findUniqueOrThrow({ where: { id: this.walletId } });
+        const wallet = await this.db.wallet.findUniqueOrThrow({ where: { id: this.walletId }, include: { balances: true, mainBalance: true } });
         console.log('ledger.wallet', wallet);
         if (wallet.network === "stellar") {
             const stellar = new StellarService({ wallet });

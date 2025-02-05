@@ -198,7 +198,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                                     className="size-3"
                                                 />
                                                 <span className="text-sm font-medium">
-                                                    {fromStroops(account.balances[0]?.amount ?? 0, 2)}
+                                                    {fromStroops(account.mainBalance?.amount ?? 0, 2)}
                                                 </span>
                                             </div>
                                             <span className="text-[10px] text-gray-500">Available balance</span>
