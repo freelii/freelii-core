@@ -2,14 +2,15 @@ import { InstantBadge } from '@/ui/shared/badges/instant-badge'
 import { StatusBadge } from '@/ui/shared/badges/status-badge'
 import { FlagIcon } from '@/ui/shared/flag-icon'
 import { cn, CURRENCIES } from '@freelii/utils'
+import { Transactions } from '@prisma/client'
 import dayjs from 'dayjs'
-import { ArrowDownRight, ArrowUpRight } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, InboxIcon } from 'lucide-react'
 import { ITransactionDetails } from './transaction-details'
-
+import { formatTransaction } from './transaction-formatter'
 
 interface TransactionsTableProps {
     isLoading?: boolean
-    transactions: ITransactionDetails[]
+    transactions: Transactions[]
     onRowClick: (transaction: ITransactionDetails) => void
     selectedRowId?: string
 }
@@ -20,11 +21,23 @@ export default function TransactionsTable({
     selectedRowId,
     isLoading = false
 }: TransactionsTableProps) {
-
+    if (!transactions.length) {
+        return (
+            <div className="animate-in fade-in duration-500 p-8 flex flex-col items-center justify-center text-center">
+                <div className="bg-gray-50 p-3 rounded-full">
+                    <InboxIcon className="h-6 w-6 text-gray-400" />
+                </div>
+                <h3 className="mt-4 text-sm font-medium text-gray-900">No transactions yet</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                    Your transactions will appear here once you start sending or receiving payments.
+                </p>
+            </div>
+        )
+    }
 
     return (
         <div className="animate-in fade-in duration-500 p-2">
-            {transactions.slice(0, 5).map((transaction) => (
+            {transactions.map(formatTransaction).slice(0, 5).map((transaction) => (
                 <div
                     key={transaction.id}
                     data-transaction-row

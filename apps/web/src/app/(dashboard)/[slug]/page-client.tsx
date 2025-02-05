@@ -1,6 +1,5 @@
 "use client"
 
-import { useFixtures } from "@/fixtures/useFixtures"
 import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { api } from "@/trpc/react"
 import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
@@ -13,17 +12,16 @@ import { USDC_SAC } from "@freelii/utils/constants"
 import { fromStroops, shortAddress, toStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { ChevronDown, Copy, Menu, RefreshCw, X } from "lucide-react"
+import { ChevronDown, Copy, Menu, X } from "lucide-react"
+import Link from "next/link"
 import { useState } from "react"
-
 dayjs.extend(relativeTime)
 
 
 export default function PageClient() {
-  const { usdcAccount, transactions } = useFixtures()
   const { account, fundWallet, transfer, isFunding, isLoadingAccount } = useWallet();
   const [, copyToClipboard] = useCopyToClipboard();
-  const { wallets } = useWalletStore();
+  const { wallets, selectedWalletId } = useWalletStore();
   const [isTransferring, setIsTransferring] = useState(false)
   const [selectedRecipient, setSelectedRecipient] = useState('')
   const [selectedTransaction, setSelectedTransaction] = useState<ITransactionDetails | null>(null)
@@ -104,7 +102,7 @@ export default function PageClient() {
                 <p className="text-3xl font-semibold mt-1">
 
                   {CURRENCIES.USDC?.symbol}
-                  {fromStroops(account?.mainBalance?.amount, 2)}
+                  {fromStroops(account?.main_balance?.amount, 2)}
                 </p>
               </div>
               <div>
@@ -119,10 +117,11 @@ export default function PageClient() {
               <Button disabled={isFunding} variant="outline" onClick={() => fundWallet(account?.address)}>
                 {isFunding ? 'Funding...' : 'Add Funds'}
               </Button>
-              <Button variant="secondary" onClick={refreshBalance}>
-                <RefreshCw className="size-3 mr-2" />
-                Refresh Balance
-              </Button>
+              <Link href="/dashboard/payouts/new">
+                <Button disabled={isFunding} variant="outline" onClick={() => fundWallet(account?.address)}>
+                  Transfer
+                </Button>
+              </Link>
             </div>
           </div>
 
@@ -133,7 +132,7 @@ export default function PageClient() {
             </div>
             <TransactionsTable
               isLoading={isLoadingTx}
-              transactions={transactions || []}
+              transactions={txs ?? []}
               onRowClick={handleTransactionClick}
               selectedRowId={selectedTransaction?.id}
             />
@@ -177,7 +176,7 @@ export default function PageClient() {
                           variant="ghost"
                           className="h-6 w-6"
                           onClick={() => {
-                            void copyToClipboard(account?.address);
+                            void copyToClipboard(account?.address, false);
                           }}
                         >
                           <Copy className="h-3 w-3" />
@@ -259,7 +258,7 @@ export default function PageClient() {
                       <Button
                         variant="ghost"
                         className="h-6 w-6"
-                        onClick={() => copyToClipboard(String(account.address))}
+                        onClick={() => copyToClipboard(String(account.address), false)}
                       >
                         <Copy className="h-3 w-3" />
                       </Button>
@@ -300,7 +299,7 @@ export default function PageClient() {
 
                     {/* Description */}
                     <div className="text-sm text-gray-600 pt-2 border-t border-gray-200">
-                      Your funds are held as USDC on the {usdcAccount.blockchain} network,
+                      Your funds are held as USDC on the {account?.network} network,
                       ensuring fast and cost-effective transactions while maintaining full
                       regulatory compliance.
                     </div>

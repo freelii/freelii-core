@@ -1,8 +1,12 @@
 "use client";
 
+import { useWalletStore } from "@/hooks/stores/wallet-store";
+import { api } from "@/trpc/react";
 import { useWallet } from "@/wallet/useWallet";
-import { Button, Input } from "@freelii/ui";
+import { Button, Input, LoadingDots } from "@freelii/ui";
+import { cn } from "@freelii/utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Logo } from "node_modules/@freelii/ui/src/logo";
 import { useState } from "react";
 
@@ -10,12 +14,22 @@ export function WalletOnboarding() {
     const [loading, setLoading] = useState(false);
     const [walletName, setWalletName] = useState("Main Wallet");
     const { create } = useWallet();
+    const { setSelectedWalletId } = useWalletStore();
+    const router = useRouter();
+
+    // tRPC
+    const trpcUtils = api.useUtils();
 
 
     const handleCreateWallet = async () => {
         setLoading(true);
-        await create(walletName);
+        const newWallet = await create(walletName);
+        await trpcUtils.wallet.getAll.invalidate();
+        if (newWallet) {
+            setSelectedWalletId(newWallet.id);
+        }
         setLoading(false);
+        router.push("/dashboard");
     };
 
     return (
@@ -52,11 +66,13 @@ export function WalletOnboarding() {
                     </div>
 
                     <Button
-                        className="w-full"
+                        className={cn("w-full", loading && "py-3")}
                         onClick={handleCreateWallet}
                         disabled={loading}
                     >
-                        {loading ? "Creating..." : "Create Wallet"}
+                        {loading ?
+                            <LoadingDots className="w-4 h-full" color="white" />
+                            : "Create Wallet"}
                     </Button>
                 </div>
             </div>

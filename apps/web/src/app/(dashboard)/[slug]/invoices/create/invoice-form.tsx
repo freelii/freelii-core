@@ -84,7 +84,7 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
                     street: newClientData?.address?.street ?? "",
                     city: newClientData?.address?.city ?? "",
                     country: newClientData?.address?.country ?? "",
-                    zipCode: newClientData?.address?.zipCode ?? "",
+                    zipCode: newClientData?.address?.zip_code ?? "",
                 }
             }
         })
@@ -295,9 +295,9 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                     <Label className="text-sm text-gray-500">Postal Code</Label>
                                     <Input
                                         placeholder="Postal code"
-                                        value={newClientData?.address?.zipCode ?? ''}
+                                        value={newClientData?.address?.zip_code ?? ''}
                                         onChange={(e) => {
-                                            const newAddress = { ...newClientData?.address, zipCode: e.target.value }
+                                            const newAddress = { ...newClientData?.address, zip_code: e.target.value }
                                             const newClient = { ...newClientData, address: newAddress }
                                             setNewClientData?.(newClient as Client)
                                         }}
@@ -332,7 +332,7 @@ function ClientStep({ formData, clients, onChange, setIsNewClient, setNewClientD
                                         street: '',
                                         city: '',
                                         state: '',
-                                        zipCode: '',
+                                        zip_code: '',
                                         country: ''
                                     }
                                 })

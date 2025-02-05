@@ -5,6 +5,7 @@ import { Button, Google, Input } from '@freelii/ui'
 import { cn } from '@freelii/utils'
 import { ArrowLeft } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Logo } from 'node_modules/@freelii/ui/src/logo'
 import { useState } from 'react'
@@ -75,7 +76,9 @@ export default function LoginPage() {
                 <div className="w-full max-w-sm space-y-6">
                     <div>
                         <h2 className="text-2xl font-semibold mb-2">Log in to your account</h2>
-                        <p className="text-muted-foreground">Connect to Freelii with:</p>
+                        <p className="text-muted-foreground flex items-center gap-2">Connect to <span className="flex items-center gap-2">
+                            <Image src="/logo.png" alt="Freelii" width={80} height={80} />
+                        </span> with:</p>
                     </div>
 
                     {/* OAuth Providers */}

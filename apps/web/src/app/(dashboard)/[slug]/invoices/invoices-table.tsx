@@ -76,29 +76,29 @@ export function InvoicesTable({ invoices = [], isLoading }: InvoicesTableProps) 
                     invoices.map((invoice) => (
                         <TableRow key={invoice.id}>
                             <TableCell className="font-medium">
-                                {invoice.invoiceNumber}
-                                {invoice.poNumber && (
+                                {invoice.invoice_number}
+                                {invoice.po_number && (
                                     <span className="ml-2 text-xs text-gray-500">
-                                        PO: {invoice.poNumber}
+                                        PO: {invoice.po_number}
                                     </span>
                                 )}
                             </TableCell>
                             <TableCell>
-                                {invoice.client?.name ?? invoice.issuerName ?? "N/A"}
-                                {(invoice.client?.email ?? invoice.issuerEmail) && (
+                                {invoice.client?.name ?? invoice.issuer_name ?? "N/A"}
+                                {(invoice.client?.email ?? invoice.issuer_email) && (
                                     <div className="text-xs text-gray-500">
-                                        {invoice.client?.email ?? invoice.issuerEmail}
+                                        {invoice.client?.email ?? invoice.issuer_email}
                                     </div>
                                 )}
                             </TableCell>
                             <TableCell>
-                                {dayjs(invoice.createdAt).format("MMM D, YYYY")}
+                                {dayjs(invoice.created_at).format("MMM D, YYYY")}
                             </TableCell>
                             <TableCell>
-                                {dayjs(invoice.dueDate).format("MMM D, YYYY")}
+                                {dayjs(invoice.due_date).format("MMM D, YYYY")}
                             </TableCell>
                             <TableCell>
-                                {formatCurrency(invoice.totalAmount, invoice.currency)}
+                                {formatCurrency(invoice.total_amount, invoice.currency)}
                             </TableCell>
                             <TableCell>
                                 <InvoiceStatus status={invoice.status} />

@@ -24,7 +24,7 @@ export const userRouter = createTRPCRouter({
                 data: {
                     contact: input.contact,
                     name: input.name,
-                    isEmail,
+                    is_email: isEmail,
                 },
             });
             return user;
@@ -34,7 +34,10 @@ export const userRouter = createTRPCRouter({
             userId: z.number(),
         }))
         .query(async ({ ctx, input }) => {
-            return await ctx.db.client.findMany({ where: { userId: input.userId }, include: { address: true } });
+            return await ctx.db.client.findMany({
+                where: { user_id: input.userId },
+                include: { address: true }
+            });
         }),
     addClient: publicProcedure
         .input(z.object({
@@ -52,6 +55,13 @@ export const userRouter = createTRPCRouter({
             }),
         }))
         .mutation(async ({ ctx, input }) => {
-            return await ctx.db.client.create({ data: { userId: input.userId, name: input.client.name, email: input.client.email, address: { create: input.client.address } } });
+            return await ctx.db.client.create({
+                data: {
+                    user_id: input.userId,
+                    name: input.client.name,
+                    email: input.client.email,
+                    address: { create: input.client.address }
+                }
+            });
         }),
 });

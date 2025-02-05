@@ -1,7 +1,6 @@
 "use client";
 
 import { useWalletStore } from '@/hooks/stores/wallet-store';
-import { api } from "@/trpc/react";
 import {
   Popover,
   Skeleton,
@@ -12,6 +11,7 @@ import { fromStroops } from '@freelii/utils/functions';
 import { type Wallet, type WalletBalance } from '@prisma/client';
 import { ChevronsUpDown, Plus, Wallet as WalletIcon } from "lucide-react";
 import {
+  useEffect,
   useRef,
   useState
 } from "react";
@@ -20,14 +20,19 @@ export function WalletDropdown() {
   const {
     isLoading,
     wallets,
-    selectedWalletId
+    selectedWalletId,
+    getSelectedWallet
   } = useWalletStore();
 
   const [openPopover, setOpenPopover] = useState(false);
 
   // Query wallets with TRPC
-  const { data: wallet } = api.wallet.getAccount.useQuery({ walletId: String(selectedWalletId) }, { enabled: !!selectedWalletId });
+  const wallet = getSelectedWallet();
 
+
+  useEffect(() => {
+    console.log('WalletDropdown.wallet', wallet)
+  }, [wallet])
 
   if (isLoading) {
     return <WalletDropdownSkeleton />;
@@ -65,7 +70,7 @@ export function WalletDropdown() {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500">
-                    {fromStroops(wallet.mainBalance?.amount ?? 0, 2)} {wallet.mainBalance?.currency}
+                    {fromStroops(wallet.main_balance?.amount ?? 0, 2)} {wallet.main_balance?.currency}
                   </span>
                 </div>
               </div>
@@ -103,8 +108,8 @@ function WalletList({
   wallets,
   setOpenPopover,
 }: {
-  selected: (Wallet & { balances?: WalletBalance[] | null; mainBalance?: WalletBalance | null }) | undefined | null;
-  wallets: (Wallet & { balances?: WalletBalance[] | null; mainBalance?: WalletBalance | null })[];
+  selected: (Wallet & { balances?: WalletBalance[] | null; main_balance?: WalletBalance | null }) | undefined | null;
+  wallets: (Wallet & { balances?: WalletBalance[] | null; main_balance?: WalletBalance | null })[];
   setOpenPopover: (open: boolean) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -120,13 +125,12 @@ function WalletList({
         <div className="p-2">
           <div className="flex items-center justify-between pb-1">
             <p className="px-1 text-xs font-medium text-neutral-500">
-              My Walletsa
+              My Wallets
             </p>
           </div>
           <div className="flex flex-col gap-0.5">
             {wallets.map((wallet) => {
               const isActive = selected?.id === wallet.id;
-              console.log('wallet:', wallet);
               return (
                 <button
                   key={wallet.id}
@@ -150,7 +154,7 @@ function WalletList({
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-gray-500">
-                        {fromStroops(wallet?.mainBalance?.amount ?? 0, 2)} {wallet?.mainBalance?.currency}
+                        {fromStroops(wallet?.main_balance?.amount ?? 0, 2)} {wallet?.main_balance?.currency}
                       </span>
                     </div>
                   </div>

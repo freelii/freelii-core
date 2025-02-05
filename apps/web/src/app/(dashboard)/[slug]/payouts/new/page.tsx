@@ -27,7 +27,9 @@ export default function NewPaymentPage() {
         <NavSteps currentStep={step} steps={steps} setStep={setStep} />
         <div className="">
           {/* Step content will be rendered here */}
-          {step === stepIds.recipient && <SetupRecipients onNext={() => setStep(stepIds.confirm)} onBack={() => setStep(stepIds.recipient)} />}
+          {step === stepIds.recipient &&
+            <SetupRecipients onNext={() => setStep(stepIds.confirm)} onBack={() => setStep(stepIds.recipient)} />
+          }
           {step === stepIds.confirm && (
             <PayoutPreview onEdit={() => setStep(stepIds.recipient)} />
           )}

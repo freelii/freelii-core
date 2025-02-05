@@ -5,7 +5,7 @@ export class InvoiceService extends BaseService {
     async search(query: string) {
         const invoices = await this.db.invoice.findMany({
             where: {
-                OR: [{ invoiceNumber: { contains: query } }, { description: { contains: query } }]
+                OR: [{ invoice_number: { contains: query } }, { description: { contains: query } }]
             }
         });
         console.log(invoices);

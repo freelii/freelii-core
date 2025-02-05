@@ -4,7 +4,7 @@ export function getAsset(sac: string): Asset {
     if (sac === "XLM") return Asset.native();
     const [code, issuer] = sac.split('-') as [string, string];
     if (!code || !issuer) {
-        throw new Error('Invalid SAC format');
+        throw new Error(`Invalid SAC format ${sac}`);
     }
     return new Asset(code, issuer);
 }

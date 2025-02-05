@@ -51,7 +51,7 @@ export const authConfig = {
                     id: profile.sub,
                     email: profile?.email,
                     name: profile?.name,
-                    avatarUrl: profile?.picture,
+                    avatar_url: profile?.picture,
                 };
             },
         }),

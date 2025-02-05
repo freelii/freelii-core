@@ -118,7 +118,7 @@ export function InvoicePreview({ data, client }: InvoicePreviewProps) {
                                             <p className="font-medium">{client.name}</p>
                                             <p>{client.address?.street}</p>
                                             <span className="flex flex-wrap gap-1">
-                                                {client.address?.zipCode && <p>{client.address?.zipCode},</p>}
+                                                {client.address?.zip_code && <p>{client.address?.zip_code},</p>}
                                                 {client.address?.city && <p>{client.address?.city}, </p>}
                                                 {client.address?.state && <p>{client.address?.state},</p>}
                                             </span>

@@ -6,6 +6,8 @@ export const ledgerRouter = createTRPCRouter({
     transactions: protectedProcedure
         .input(z.object({
             walletId: z.string().min(1),
+            limit: z.number().min(1).max(100).optional().default(10),
+            offset: z.number().min(0).optional().default(0),
         }))
         .query(async ({ ctx, input }) => {
             const ledgerService = new LedgerService({
@@ -13,6 +15,9 @@ export const ledgerRouter = createTRPCRouter({
                 walletId: input.walletId,
                 session: ctx.session
             });
-            return ledgerService.getTransactions();
+            return ledgerService.getTransactions({
+                limit: input.limit,
+                offset: input.offset
+            });
         }),
 });

@@ -2,16 +2,16 @@
 
 import { useFixtures } from "@/fixtures/useFixtures"
 import { InstantBadge } from "@/ui/shared/badges/instant-badge"
-import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
-import { Badge, BlurImage, Button, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
+import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
-import { fromStroops, shortAddress } from "@freelii/utils/functions"
+import { fromStroops, hasEnoughBalance, shortAddress } from "@freelii/utils/functions"
 import { Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
-import { Building2, Check, ChevronRight, Download, Edit2 } from "lucide-react"
+import { Building2, Check, Download, Edit2 } from "lucide-react"
 import { useState } from "react"
+import { toast } from "react-hot-toast"
 import { Recipient } from "./recipients-table"
 
 interface PaymentDetails {
@@ -86,6 +86,14 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
 
 
     const handleConfirm = async () => {
+        if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0)) {
+            toast.error("Insufficient balance")
+            return;
+        } else if (Number(searchParams.get('amount')) <= 0) {
+            toast.error("Invalid amount for payment")
+            return;
+        }
+
         setIsProcessing(true)
         await transfer({
             to: paymentDetails.recipient.bankingDetails!.accountNumber,
@@ -189,7 +197,6 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     </div>
 
                                     <div className="flex items-start justify-between gap-3">
-                                        <StatusBadge text="Active" />
 
                                         <div className="flex flex-col items-end">
                                             <div className="flex items-center gap-1">
@@ -198,10 +205,12 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                                     className="size-3"
                                                 />
                                                 <span className="text-sm font-medium">
-                                                    {fromStroops(account.mainBalance?.amount ?? 0, 2)}
+                                                    {fromStroops(account.main_balance?.amount ?? 0, 2)}
                                                 </span>
                                             </div>
-                                            <span className="text-[10px] text-gray-500">Available balance</span>
+                                            {hasEnoughBalance(account.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0) ?
+                                                <span className="text-[10px] text-gray-500">Available balance</span> :
+                                                <span className="text-[10px] text-red-500">Insufficient balance</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -295,6 +304,10 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     <div className="flex justify-between text-sm font-medium">
                                         <span>Total cost</span>
                                         <span className="flex items-center gap-1">
+                                            <FlagIcon
+                                                currencyCode={account.main_balance?.currency}
+                                                size={16}
+                                            />
                                             ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
@@ -363,11 +376,17 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                         <div className="flex items-center gap-2">
                             <Button variant="outline" onClick={onEdit} className="gap-2 text-xs">
                                 <Edit2 className="size-4" />
-                                Edit Payment
+                                Edit
                             </Button>
-                            <Button onClick={handleConfirm} className="gap-2">
-                                Confirm Payment
-                                <ChevronRight className="size-4" />
+                            <Button disabled={isProcessing} onClick={handleConfirm}
+                                className={cn(
+                                    "gap-2",
+                                    isProcessing && "opacity-50 py-3 px-6 w-full"
+                                )}
+                            >
+                                {isProcessing ?
+                                    <LoadingDots className="size-4" color="white" /> :
+                                    "Confirm Payment"}
                             </Button>
                         </div>
                     </div>

@@ -4,7 +4,7 @@ import { Wallet, WalletBalance } from "@prisma/client";
 import { Asset, Horizon, rpc, StrKey } from "@stellar/stellar-sdk";
 
 interface StellarServiceOptions {
-    wallet: Wallet & { balances?: WalletBalance[], mainBalance?: WalletBalance | null };
+    wallet: Wallet & { balances?: WalletBalance[], main_balance?: WalletBalance | null };
 }
 
 export class StellarService {
@@ -12,12 +12,12 @@ export class StellarService {
 
     readonly network: string;
     readonly networkPassphrase: string;
-    readonly wallet: Wallet & { balances?: WalletBalance[], mainBalance?: WalletBalance | null };
+    readonly wallet: Wallet & { balances?: WalletBalance[], main_balance?: WalletBalance | null };
 
     constructor(options: StellarServiceOptions) {
         this.wallet = options.wallet;
         this.network = options.wallet.network ?? "";
-        this.networkPassphrase = options.wallet.networkEnvironment === "testnet" ? TESTNET.PASSPHRASE : MAINNET.PASSPHRASE;
+        this.networkPassphrase = options.wallet.network_environment === "testnet" ? TESTNET.PASSPHRASE : MAINNET.PASSPHRASE;
         this.horizon = new Horizon.Server("https://horizon-testnet.stellar.org");
     }
 
@@ -60,9 +60,9 @@ export class StellarService {
                     balancesToUpdate.push(walletBalance);
                 }
 
-                if (walletBalance.id === this.wallet.mainBalanceId) {
-                    this.wallet.mainBalance = {
-                        ...this.wallet.mainBalance,
+                if (walletBalance.id === this.wallet.main_balance_id) {
+                    this.wallet.main_balance = {
+                        ...this.wallet.main_balance,
                         amount: newAmount
                     } as WalletBalance;
                 }

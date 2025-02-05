@@ -45,7 +45,6 @@ export function useWallet() {
         try {
 
             const result = await smartWallet.createWallet("Freelii", alias);
-            console.log('Create wallet result:', result);
 
             const {
                 contractId: cid,
@@ -64,7 +63,7 @@ export function useWallet() {
                 keyId: keyIdBase64,
             })
             setSelectedWalletId(walletRes.id);
-            console.log('walletRes', walletRes);
+            return walletRes;
             // await fundWallet(cid),
             //     await getWalletSigners(),
             //     console.log('initWallet done', cid);
@@ -83,8 +82,8 @@ export function useWallet() {
             console.log('No account found', account);
             throw new Error('No account found');
         }
-        const { address, keyId } = account;
-        if (!address || !keyId) {
+        const { address, key_id } = account;
+        if (!address || !key_id) {
             throw new Error('No address or keyId found');
         }
 
@@ -98,9 +97,9 @@ export function useWallet() {
         });
 
         console.log('at', at.options);
-        console.log('keyId', keyId);
+        console.log('keyId', key_id);
 
-        const signedTx = await smartWallet.sign(at.built!, { keyId });
+        const signedTx = await smartWallet.sign(at.built!, { keyId: key_id });
 
         try {
             await server.send(signedTx);
@@ -155,8 +154,8 @@ export function useWallet() {
     }
 
     const connect = async () => {
-        if (!!account?.keyId) {
-            await smartWallet.connectWallet({ keyId: account?.keyId });
+        if (!!account?.key_id) {
+            await smartWallet.connectWallet({ keyId: account?.key_id });
         }
     }
 

@@ -6,14 +6,14 @@ export const walletRouter = createTRPCRouter({
     getAll: protectedProcedure.query(async ({ ctx }) => {
         const wallets = await ctx.db.wallet.findMany({
             where: {
-                userId: Number(ctx.session.user.id),
+                user_id: Number(ctx.session.user.id),
             },
             include: {
                 balances: true,
-                mainBalance: true,
+                main_balance: true,
             },
             orderBy: {
-                createdAt: "desc",
+                created_at: "desc",
             },
         });
         return wallets;

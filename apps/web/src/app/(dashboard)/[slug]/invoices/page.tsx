@@ -32,7 +32,7 @@ export default function InvoicesPage() {
             titleControls={
                 <Button onClick={() => router.push("./invoices/create")}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create Invoice
+                    Create invoice
                 </Button>
             }
         >

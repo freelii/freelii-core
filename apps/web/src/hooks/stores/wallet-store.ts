@@ -1,4 +1,4 @@
-import type { Wallet } from 'prisma/prisma-client'
+import type { Wallet, WalletBalance } from 'prisma/prisma-client'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -8,7 +8,7 @@ interface WalletState {
   selectedWalletId: string | null
   setSelectedWalletId: (id: string) => void
   setWallets: (wallets: Wallet[]) => void
-  getSelectedWallet: () => Wallet | undefined
+  getSelectedWallet: () => (Wallet & { main_balance?: WalletBalance | null }) | undefined
 }
 
 export const useWalletStore = create<WalletState>()(
@@ -24,12 +24,10 @@ export const useWalletStore = create<WalletState>()(
 
       setWallets: (wallets) => {
         set({ wallets })
-        // If no wallet is selected, select the default one
-        if (!get().selectedWalletId) {
-          const defaultWallet = wallets.find(w => w.isDefault)
-          if (defaultWallet) {
-            get().setSelectedWalletId(defaultWallet.id)
-          }
+        // Always select the default wallet
+        const defaultWallet = wallets.find(w => w.is_default)
+        if (defaultWallet) {
+          get().setSelectedWalletId(defaultWallet.id)
         }
       },
 
@@ -41,10 +39,8 @@ export const useWalletStore = create<WalletState>()(
     }),
     {
       name: 'wallet-storage',
-      // Only persist these fields
-      partialize: (state) => ({
-        selectedWalletId: state.selectedWalletId
-      }),
+      // Remove selectedWalletId from persistence
+      partialize: (state) => ({}),
     }
   )
 ) 

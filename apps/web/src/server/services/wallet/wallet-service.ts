@@ -23,12 +23,12 @@ export class WalletService extends BaseService {
         const wallet = await this.db.wallet.create({
             data: {
                 alias: input.alias,
-                isDefault: input.isDefault,
-                userId: Number(this.session.user.id),
-                keyId: input.keyId,
+                is_default: input.isDefault,
+                user_id: Number(this.session.user.id),
+                key_id: input.keyId,
                 address: input.address,
                 network: 'stellar',
-                networkEnvironment: 'testnet',
+                network_environment: 'testnet',
                 balances: {
                     create: [
                         {
@@ -37,7 +37,7 @@ export class WalletService extends BaseService {
                             amount: 0,
                         },
                         {
-                            address: input.network === "mainnet" ? MAINNET.USDC_SAC : TESTNET.USDC_SAC,
+                            address: input.network === "mainnet" ? MAINNET.USDC : TESTNET.USDC,
                             currency: "USDC",
                             amount: 0,
                         }
@@ -58,11 +58,11 @@ export class WalletService extends BaseService {
         const updatedWallet = await this.db.wallet.update({
             where: { id: wallet.id },
             data: {
-                mainBalanceId: usdcBalance.id,
+                main_balance_id: usdcBalance.id,
             },
             include: {
                 balances: true,
-                mainBalance: true,
+                main_balance: true,
             },
         });
         return updatedWallet;
@@ -75,13 +75,12 @@ export class WalletService extends BaseService {
      */
     async getAccount(walletId: string) {
         const wallet = await this.db.wallet.findUniqueOrThrow({
-            where: { id: walletId, userId: Number(this.session.user.id) },
+            where: { id: walletId, user_id: Number(this.session.user.id) },
             include: {
                 balances: true,
-                mainBalance: true,
+                main_balance: true,
             },
         });
-        console.log('wallet.getAccount', wallet);
         if (wallet.network === "stellar") {
             const stellar = new StellarService({ wallet });
             const { wallet: stellarWallet, balancesToUpdate } = await stellar.getAccount();
