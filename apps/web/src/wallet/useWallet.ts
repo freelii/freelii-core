@@ -14,7 +14,7 @@ export function useWallet() {
     // tRPC procedures
     const trpcUtils = api.useUtils();
     const { data: wallets } = api.wallet.getAll.useQuery();
-    const { data: account } = api.wallet.getAccount.useQuery({ walletId: String(selectedWalletId) }, {
+    const { data: account, status: accountStatus, isLoading: isLoadingAccount } = api.wallet.getAccount.useQuery({ walletId: String(selectedWalletId) }, {
         enabled: !!selectedWalletId,
     });
 
@@ -22,10 +22,9 @@ export function useWallet() {
 
     const { mutateAsync: createWallet } = api.wallet.create.useMutation({
         onError: ClientTRPCErrorHandler,
-        onSuccess: (data) => {
-            console.log('Wallet created:', data);
+        onSuccess: () => {
             toast.success('Wallet created successfully');
-            void trpcUtils.wallet.invalidate();
+            void trpcUtils.wallet.getAccount.invalidate();
         }
     });
 
@@ -168,5 +167,6 @@ export function useWallet() {
         isFunding,
         fundWallet,
         connect,
+        isLoadingAccount: isLoadingAccount || accountStatus === 'pending'
     }
 }

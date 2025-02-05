@@ -20,7 +20,7 @@ export class LedgerService extends BaseService {
         console.log('ledger.wallet', wallet);
         if (wallet.network === "stellar") {
             const stellar = new StellarService({ wallet });
-            return stellar.getTransactions();
+            return []
         }
         return [];
     }

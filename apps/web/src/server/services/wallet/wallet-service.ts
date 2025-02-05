@@ -84,7 +84,18 @@ export class WalletService extends BaseService {
         console.log('wallet.getAccount', wallet);
         if (wallet.network === "stellar") {
             const stellar = new StellarService({ wallet });
-            return stellar.getAccount();
+            const { wallet: stellarWallet, balancesToUpdate } = await stellar.getAccount();
+            if (balancesToUpdate.length > 0) {
+                await this.db.$transaction(
+                    balancesToUpdate.map(balance =>
+                        this.db.walletBalance.update({
+                            where: { id: balance.id },
+                            data: { amount: balance.amount }
+                        })
+                    )
+                );
+            }
+            return stellarWallet;
         }
         return null;
     }

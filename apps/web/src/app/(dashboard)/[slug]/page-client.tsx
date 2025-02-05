@@ -7,7 +7,7 @@ import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
 import TransactionDetails, { ITransactionDetails } from "@/ui/transactions-table/transaction-details"
 import TransactionsTable from "@/ui/transactions-table/transactions-table"
 import { useWallet } from "@/wallet/useWallet"
-import { Button, useCopyToClipboard } from "@freelii/ui"
+import { Button, LoadingSpinner, useCopyToClipboard } from "@freelii/ui"
 import { CURRENCIES } from "@freelii/utils"
 import { USDC_SAC } from "@freelii/utils/constants"
 import { fromStroops, shortAddress, toStroops } from "@freelii/utils/functions"
@@ -20,8 +20,8 @@ dayjs.extend(relativeTime)
 
 
 export default function PageClient() {
-  const { usdcAccount, getBalance, fiatAccounts, transactions } = useFixtures()
-  const { account, fundWallet, transfer, isFunding } = useWallet();
+  const { usdcAccount, transactions } = useFixtures()
+  const { account, fundWallet, transfer, isFunding, isLoadingAccount } = useWallet();
   const [, copyToClipboard] = useCopyToClipboard();
   const { wallets } = useWalletStore();
   const [isTransferring, setIsTransferring] = useState(false)
@@ -31,9 +31,14 @@ export default function PageClient() {
   const [isNetworkDetailsOpen, setIsNetworkDetailsOpen] = useState(false)
 
   // tRPC procedures
+  const trpcUtils = api.useUtils();
   const { data: txs, isLoading: isLoadingTx } = api.ledger.transactions.useQuery({
     walletId: String(account?.id)
   }, { enabled: !!account?.id })
+
+  const refreshBalance = async () => {
+    await trpcUtils.wallet.getAccount.invalidate();
+  }
 
 
   const handleInternalTransfer = async () => {
@@ -91,8 +96,13 @@ export default function PageClient() {
 
             <div className="grid grid-cols-2 gap-6 mb-6">
               <div>
-                <p className="text-sm text-gray-500">Available Balance</p>
+                <span className="text-sm text-gray-500 flex items-center">Available Balance
+                  {isLoadingAccount && (
+                    <LoadingSpinner className="h-4 w-4 ml-2 text-gray-400" />
+                  )}
+                </span>
                 <p className="text-3xl font-semibold mt-1">
+
                   {CURRENCIES.USDC?.symbol}
                   {fromStroops(account?.mainBalance?.amount, 2)}
                 </p>
@@ -109,7 +119,7 @@ export default function PageClient() {
               <Button disabled={isFunding} variant="outline" onClick={() => fundWallet(account?.address)}>
                 {isFunding ? 'Funding...' : 'Add Funds'}
               </Button>
-              <Button variant="secondary" onClick={getBalance}>
+              <Button variant="secondary" onClick={refreshBalance}>
                 <RefreshCw className="size-3 mr-2" />
                 Refresh Balance
               </Button>
@@ -190,7 +200,7 @@ export default function PageClient() {
                         <Button
                           variant="ghost"
                           className="h-6 text-xs"
-                          onClick={getBalance}
+                          onClick={refreshBalance}
                         >
                           Update now
                         </Button>
@@ -200,7 +210,7 @@ export default function PageClient() {
 
                     {/* Description */}
                     <div className="text-xs text-gray-600 pt-2 border-t border-gray-200">
-                      Your funds are held as USDC on the {usdcAccount.blockchain} network,
+                      Your funds are held as USDC on the {account?.network} network,
                       ensuring fast and cost-effective transactions while maintaining full
                       regulatory compliance.
                     </div>
@@ -280,7 +290,7 @@ export default function PageClient() {
                         <Button
                           variant="ghost"
                           className="h-6 text-xs"
-                          onClick={getBalance}
+                          onClick={refreshBalance}
                         >
                           Update now
                         </Button>

@@ -8,6 +8,7 @@ import {
   useScrollProgress
 } from "@freelii/ui";
 import { cn } from "@freelii/utils";
+import { fromStroops } from '@freelii/utils/functions';
 import { type Wallet, type WalletBalance } from '@prisma/client';
 import { ChevronsUpDown, Plus, Wallet as WalletIcon } from "lucide-react";
 import {
@@ -64,7 +65,7 @@ export function WalletDropdown() {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500">
-                    {wallet.mainBalance?.amount} {wallet.mainBalance?.currency}
+                    {fromStroops(wallet.mainBalance?.amount ?? 0, 2)} {wallet.mainBalance?.currency}
                   </span>
                 </div>
               </div>
@@ -103,7 +104,7 @@ function WalletList({
   setOpenPopover,
 }: {
   selected: (Wallet & { balances?: WalletBalance[] | null; mainBalance?: WalletBalance | null }) | undefined | null;
-  wallets: Wallet[];
+  wallets: (Wallet & { balances?: WalletBalance[] | null; mainBalance?: WalletBalance | null })[];
   setOpenPopover: (open: boolean) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -119,12 +120,13 @@ function WalletList({
         <div className="p-2">
           <div className="flex items-center justify-between pb-1">
             <p className="px-1 text-xs font-medium text-neutral-500">
-              My Wallets
+              My Walletsa
             </p>
           </div>
           <div className="flex flex-col gap-0.5">
             {wallets.map((wallet) => {
               const isActive = selected?.id === wallet.id;
+              console.log('wallet:', wallet);
               return (
                 <button
                   key={wallet.id}
@@ -148,7 +150,7 @@ function WalletList({
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-gray-500">
-                        {selected?.mainBalance?.amount} {selected?.mainBalance?.currency}
+                        {fromStroops(wallet?.mainBalance?.amount ?? 0, 2)} {wallet?.mainBalance?.currency}
                       </span>
                     </div>
                   </div>
@@ -177,11 +179,3 @@ function WalletList({
   );
 }
 
-const getPlanColor = (plan: string) =>
-  plan === "enterprise"
-    ? "text-purple-700"
-    : plan.startsWith("business")
-      ? "text-blue-900"
-      : plan === "pro"
-        ? "text-cyan-900"
-        : "text-neutral-500";
