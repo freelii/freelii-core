@@ -1,19 +1,21 @@
-export function LoadingDots() {
+import { cn } from "@freelii/utils";
+
+export function LoadingDots({ className, color = "white" }: { className?: string, color?: string }) {
   return (
-    <span className="inline-flex items-center">
+    <span className={cn("inline-flex items-center")}>
       {[...Array(3)].map((_, i) => (
         <span
           key={i}
           style={{
             animationDelay: `${0.2 * i}s`,
-            backgroundColor: "black",
+            backgroundColor: color,
             width: "5px",
             height: "5px",
             borderRadius: "50%",
             display: "inline-block",
             margin: "0 1px",
           }}
-          className="animate-blink"
+          className={cn("animate-blink", className)}
         />
       ))}
     </span>

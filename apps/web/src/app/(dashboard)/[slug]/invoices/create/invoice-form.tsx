@@ -31,7 +31,7 @@ dayjs.extend(relativeTime)
 
 interface InvoiceFormProps {
     formData: InvoiceFormData
-    clients?: Client[] // Replace with proper client type
+    clients?: Client[]
     invoiceTo: Partial<Client> | undefined
     onChange: (data: Partial<InvoiceFormData>) => void
     addLineItem?: () => void
@@ -60,38 +60,33 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 
     // tRPC procedures
     const ctx = api.useUtils();
-    const { mutateAsync: addClient } = api.users.addClient.useMutation({
+    const { mutate: addClient } = api.clients.create.useMutation({
         onSuccess: (newClient) => {
             toast.success("Client created successfully")
-            console.log("newClient", newClient)
-            void ctx.users.listClients.refetch();
-            // TODO formData.clientId = newClient.id;
-            // TODO onChange({ clientId: newClient.id });
+            void ctx.clients.search.refetch();
+            formData.clientId = newClient.id;
+            onChange({ clientId: newClient.id });
+            setCurrentStep(step => step + 1);
         },
         onError: (error) => {
             toast.error((error as unknown as Error)?.message ?? "Failed to create client")
         }
     });
 
-    const handleAddClient = async () => {
-        console.log("handleAddClient", newClientData)
-        const result = await addClient({
-            userId: 1,
-            client: {
-                name: newClientData?.name ?? "",
-                email: newClientData?.email ?? "",
-                address: {
-                    street: newClientData?.address?.street ?? "",
-                    city: newClientData?.address?.city ?? "",
-                    country: newClientData?.address?.country ?? "",
-                    zipCode: newClientData?.address?.zip_code ?? "",
-                }
-            }
+    const handleAddClient = () => {
+        addClient({
+            type: "company",
+            name: newClientData?.name ?? "",
+            email: newClientData?.email ?? "",
+            street: newClientData?.address?.street ?? "",
+            city: newClientData?.address?.city ?? "",
+            country: newClientData?.address?.country ?? "",
+            zipCode: newClientData?.address?.zip_code ?? "",
+
         })
     }
 
     const addLineItem = () => {
-        console.log("addLineItem", formData)
         const newLineItem: LineItem = {
             description: "",
             quantity: 1,

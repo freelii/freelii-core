@@ -2,6 +2,7 @@ export * from "./cn";
 export * from "./construct-metadata";
 export * from "./fetcher";
 export * from "./format-currency";
+export * from "./has-enough-balance";
 export * from "./mask";
 export * from "./nformatter";
 export * from "./noop";
@@ -11,4 +12,3 @@ export * from "./shortAddress";
 export * from "./stable-sort";
 export * from "./stroops";
 export * from "./urls";
-

@@ -1,18 +1,19 @@
 "use client"
 
-import { useFixtures } from "@/fixtures/useFixtures"
+import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
+import { api } from "@/trpc/react"
+import { Recipient } from "@/ui/recipients-table/recipients-table"
 import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
-import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useRouterStuff } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
-import { fromStroops, hasEnoughBalance, shortAddress } from "@freelii/utils/functions"
+import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useCopyToClipboard, useRouterStuff } from "@freelii/ui"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
+import { fromStroops, hasEnoughBalance, shortAddress, toStroops } from "@freelii/utils/functions"
 import { Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
-import { Building2, Check, Download, Edit2 } from "lucide-react"
-import { useState } from "react"
+import { Building2, Check, Copy, Download, Edit2, XCircle } from "lucide-react"
+import { useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
-import { Recipient } from "./recipients-table"
 
 interface PaymentDetails {
     recipient: Recipient;
@@ -35,39 +36,25 @@ interface PayoutReviewProps {
 
 const DEMO_RECIPIENT_ID = 21;
 
-export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReviewProps) {
+export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     const { transfer, account } = useWallet();
-    const { recipients } = useFixtures();
     const { searchParams } = useRouterStuff();
+    const [, copyToClipboard] = useCopyToClipboard();
 
-    const recipientId = searchParams.get('recipientId') ?? DEMO_RECIPIENT_ID;
-    const transferToFreelii = searchParams.get('transferToFreelii') === 'true';
-    const recipient = transferToFreelii ? {
-        id: 24,
-        isVerified: true,
-        name: recipients.get(Number(recipientId))?.name ?? "Freelii USDC Account",
-        email: recipients.get(Number(recipientId))?.email ?? "payments@freelii.com",
-        recipientType: recipients.get(Number(recipientId))?.recipientType ?? "business",
-        bankingDetails: {
-            id: "bd_24",
-            name: "Freelii USDC Account",
-            accountNumber: "1234567890",
-            routingNumber: "1234567890",
-            bankName: "Freelii Digital Currency Account",
-            bankAddress: "1234567890",
-            bankCity: "San Francisco",
-            bankState: "CA",
-            bankZip: "94101",
-            currency: {
-                shortName: "USDC",
-                name: "USDC",
-                symbol: "USDC",
-            }
-        }
-    } as Recipient : recipients.get(Number(recipientId)) as Recipient;
+    const recipientId = searchParams.get('recipientId');
+    const selectedAccount = searchParams.get('recipientAccount');
+    const transferToFreelii = searchParams.get('transferToFreelii') !== 'false' && true;
 
-    const [paymentDetails] = useState<PaymentDetails>({
-        recipient,
+    // tRPC procedures
+    const registerPayment = api.ledger.registerPayment.useMutation({
+        onError: ClientTRPCErrorHandler
+    });
+    const { data: client, isLoading: isLoadingClient } = api.clients.get.useQuery({ id: Number(recipientId) }, {
+        enabled: !!recipientId
+    })
+
+    const paymentDetails = useMemo<PaymentDetails>(() => ({
+        recipient: client!,
         originAccount: account!,
         fees: {
             processingFee: 1.00,
@@ -77,42 +64,114 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
             rate: 0.018,
             margin: 0.5
         }
-    })
-
+    }), [client, account])
 
     const [isConfirmed, setIsConfirmed] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
 
 
+    const recipientAccount = useMemo(() => {
+        if (client) {
+            return client.blockchain_accounts?.find(acc => acc.id === selectedAccount)
+        }
+        return null;
+    }, [client, selectedAccount])
+
+    // Check if we have all required data
+    const isLoading = isLoadingClient || !account
+    const hasRequiredData = !!client && !!recipientAccount && !!account
+
+    // Show loading state if data is being fetched
+    if (isLoading) {
+        return (
+            <div className="w-full h-[600px] flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <LoadingSpinner className="size-8" />
+                    <p className="text-sm text-gray-500">Loading payment details...</p>
+                </div>
+            </div>
+        )
+    }
+
+    // Show error state if required data is missing
+    if (!hasRequiredData) {
+        return (
+            <div className="w-full h-[600px] flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <div className="size-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+                        <XCircle className="size-6 text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <p className="font-medium">Invalid Payment Details</p>
+                        <p className="text-sm text-gray-500">
+                            {!client ? "Recipient not found. " : ""}
+                            {!recipientAccount ? "Payment method not selected. " : ""}
+                            {!account ? "Wallet not connected. " : ""}
+                            Please try again.
+                        </p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        onClick={onEdit}
+                        className="mt-4"
+                    >
+                        Go Back
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+
 
     const handleConfirm = async () => {
-        if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0)) {
-            toast.error("Insufficient balance")
-            return;
-        } else if (Number(searchParams.get('amount')) <= 0) {
-            toast.error("Invalid amount for payment")
-            return;
-        }
+        try {
+            if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0)) {
+                toast.error("Insufficient balance")
+                return;
+            } else if (Number(searchParams.get('amount')) <= 0) {
+                toast.error("Invalid amount for payment")
+                return;
+            }
 
-        setIsProcessing(true)
-        await transfer({
-            to: paymentDetails.recipient.bankingDetails!.accountNumber,
-            amount: Number(searchParams.get('amount'))
-        })
-        setIsProcessing(false)
-        setIsConfirmed(true)
-        onConfirm?.()
+            if (!recipientAccount?.address) {
+                toast.error("Recipient account not found")
+                return;
+            }
+
+            setIsProcessing(true)
+            const at = await transfer({
+                to: recipientAccount.address,
+                amount: toStroops(Number(searchParams.get('amount'))),
+                sacAddress: TESTNET.USDC_SAC
+            })
+
+            console.log('trasnfer res', at, at.txId, at.txHash)
+
+
+            registerPayment.mutate({
+                walletId: account.id,
+                txId: at.txHash,
+                txHash: at.txHash,
+                senderId: account.user_id,
+                recipientId: client.id,
+                amount: toStroops(Number(searchParams.get('amount'))),
+                currency: "USDC"
+            });
+
+            setIsProcessing(false)
+            setIsConfirmed(true)
+            onConfirm?.()
+        } catch (error) {
+            toast.error("Error processing payment")
+            setIsProcessing(false)
+            console.error(error)
+        }
     }
 
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
-    const fxRate = CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.rate ?? 1
+    const fxRate = CURRENCIES.USDC?.rate ?? 1
     const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
     const totalCost = Number(searchParams.get('amount')) + totalFees;
-
-    // TODO: No me encanta esto
-    if (!account) {
-        return <div>No account found</div>
-    }
 
     return (
         <div className="w-full relative space-y-6">
@@ -135,7 +194,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                         <p className="font-medium">{paymentDetails.recipient.name}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <Building2 className="size-3 text-gray-500" />
-                                            <span className="text-xs text-gray-500">{paymentDetails.recipient.bankingDetails!.bankName}</span>
+                                            <span className="text-xs text-gray-500">{recipientAccount?.network}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -146,7 +205,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Will receive</span>
                                         <span className="font-medium">
-                                            {CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.symbol}
+                                            {CURRENCIES.USDC?.symbol}
                                             {(recipientAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
@@ -154,10 +213,10 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                         <span className="text-gray-600">Currency</span>
                                         <div className="flex items-center gap-2">
                                             <FlagIcon
-                                                currencyCode={paymentDetails.recipient.bankingDetails!.currency.shortName}
+                                                currencyCode="USDC"
                                                 className="size-4"
                                             />
-                                            <span>{paymentDetails.recipient.bankingDetails!.currency.name}</span>
+                                            <span>{CURRENCIES.USDC?.name}</span>
                                         </div>
                                     </div>
                                     <div className="flex justify-between text-sm">
@@ -169,15 +228,20 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                 </div>
 
                                 <div className="mt-4 space-y-3">
-                                    <h4 className="text-sm font-medium">Bank Account Details</h4>
+                                    <h4 className="text-sm font-medium">Recipient Account</h4>
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Account holder</span>
-                                            <span>{paymentDetails.recipient.bankingDetails!.name}</span>
+                                            <span className="text-gray-600">Network</span>
+                                            <span>{recipientAccount?.network}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Account number</span>
-                                            <span>{paymentDetails.recipient.bankingDetails!.accountNumber}</span>
+                                            <span className="text-gray-600">Address</span>
+                                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                                                {shortAddress(recipientAccount?.address)}
+                                                <Button onClick={() => copyToClipboard(recipientAccount?.address, false)} variant="ghost" className="text-xs text-gray-500">
+                                                    <Copy className="size-3" />
+                                                </Button>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -236,7 +300,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Recipient will receive</span>
                                         <span className="font-medium flex items-center gap-1">
-                                            {paymentDetails.recipient.bankingDetails!.currency.symbol}
+                                            {CURRENCIES.USDC?.symbol}
                                             {recipientAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
@@ -253,7 +317,7 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                                         className="size-4 rounded-full border-2 border-white"
                                                     />
                                                     <FlagIcon
-                                                        currencyCode={paymentDetails.recipient.bankingDetails!.currency.shortName}
+                                                        currencyCode={"USDC"}
                                                         className="size-4 -ml-2 rounded-full border-2 border-white"
                                                     />
 
@@ -263,22 +327,14 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                             <span className="flex items-center gap-2 font-medium">
                                                 <Badge className="flex items-center gap-1.5 py-0.5 pl-1 pr-2">
                                                     <FlagIcon
-                                                        currencyCode={paymentDetails.recipient.bankingDetails!.currency.shortName}
+                                                        currencyCode={"USDC"}
                                                         className="size-4"
                                                     />
-                                                    {CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.symbol}
-                                                    {CURRENCIES[paymentDetails.recipient.bankingDetails!.currency.shortName]?.rate}
+                                                    {CURRENCIES.USDC?.symbol}
+                                                    {CURRENCIES.USDC?.rate}
                                                 </Badge>
                                             </span>
                                         </div>
-                                        {/* <div className="text-xs text-gray-500 flex justify-between">
-                                            <span>Mid-market rate</span>
-                                            <span>{(paymentDetails.fx.rate * (1 - paymentDetails.fx.margin / 100)).toFixed(2)} {paymentDetails.recipient.bankingDetails.currency.symbol}</span>
-                                        </div>
-                                        <div className="text-xs text-gray-500 flex justify-between">
-                                            <span>FX Margin ({paymentDetails.fx.margin}%)</span>
-                                            <span>+ {(paymentDetails.fx.rate * (paymentDetails.fx.margin / 100)).toFixed(2)} {paymentDetails.recipient.bankingDetails.currency.symbol}</span>
-                                        </div> */}
                                     </div>
 
                                     {/* Fees */}
@@ -352,7 +408,10 @@ export default function PayoutReview({ onBack, onEdit, onConfirm }: PayoutReview
                                                 {transferToFreelii && <InstantBadge />}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                To {paymentDetails.recipient.bankingDetails!.bankName}
+                                                To {shortAddress(recipientAccount?.address)}
+                                                <Button onClick={() => copyToClipboard(recipientAccount?.address, false)} variant="ghost" className="text-xs text-gray-500">
+                                                    <Copy className="size-3" />
+                                                </Button>
                                             </p>
                                         </div>
                                     </div>

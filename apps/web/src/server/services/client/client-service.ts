@@ -2,6 +2,7 @@ import { FiatAccountType, Prisma, RecipientType } from "@prisma/client";
 import { z } from "zod";
 import { BaseService } from "../base-service";
 import { ClientCreateSchema } from "./schemas/client-create.schema";
+import { ClientGetSchema } from "./schemas/client-get.schema";
 import { ClientSearchSchema } from "./schemas/client-search.schema";
 
 export class ClientService extends BaseService {
@@ -15,6 +16,7 @@ export class ClientService extends BaseService {
         const skip = (page - 1) * limit;
         const where: Prisma.ClientWhereInput = {
             user_id: Number(this.session.user.id),
+            is_archived: false,
         };
         if (query) {
             where.name = {
@@ -79,11 +81,8 @@ export class ClientService extends BaseService {
                     !accountNumber ||
                     !routingNumber ||
                     !accountType ||
-                    !accountHolderName ||
-                    !street ||
-                    !city ||
-                    !state ||
-                    !zipCode) {
+                    !accountHolderName
+                ) {
                     throw new Error("Missing required fields");
                 }
                 const fiatAccount = await tx.fiatAccount.create({
@@ -95,10 +94,10 @@ export class ClientService extends BaseService {
                         account_type: accountType === "checking" ? FiatAccountType.CHECKING : FiatAccountType.SAVINGS,
                         account_holder_name: accountHolderName,
                         bank_name: bankName,
-                        bank_address: street,
-                        bank_city: city,
-                        bank_state: state,
-                        bank_zip: zipCode,
+                        bank_address: street ?? "",
+                        bank_city: city ?? "",
+                        bank_state: state ?? "",
+                        bank_zip: zipCode ?? "",
                         iso_currency: "USD",
                     },
                 });
@@ -118,6 +117,32 @@ export class ClientService extends BaseService {
                 console.log('Blockchain account created', blockchainAccount);
             }
             return client;
+        });
+    }
+
+    async getClient(input: z.infer<typeof ClientGetSchema>) {
+        const { id } = input;
+        const client = await this.db.client.findUnique({
+            where: { id, is_archived: false },
+            include: {
+                address: true,
+                fiat_accounts: true,
+                blockchain_accounts: true,
+            }
+        });
+        if (client?.user_id !== Number(this.session.user.id)) {
+            throw new Error("Unauthorized");
+        }
+        return client;
+    }
+
+    async archiveClient(input: z.infer<typeof ClientGetSchema>) {
+        const { id } = input;
+        await this.db.client.update({
+            where: { id, is_archived: false },
+            data: {
+                is_archived: true,
+            }
         });
     }
 

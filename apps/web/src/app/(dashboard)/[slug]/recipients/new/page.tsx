@@ -4,7 +4,8 @@ import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
 import { NavSteps } from "@/ui/shared/nav-steps"
-import { Button, ExpandingArrow, Input, MaxWidthWrapper } from "@freelii/ui"
+import { Button, ExpandingArrow, Input, LoadingDots, MaxWidthWrapper, useRouterStuff } from "@freelii/ui"
+import { cn } from "@freelii/utils"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 
@@ -29,6 +30,7 @@ interface FormData {
 }
 
 export default function NewRecipientPage() {
+    const { router, searchParams } = useRouterStuff();
     const [currentStep, setCurrentStep] = useState(0)
     const [formData, setFormData] = useState<FormData>({
         type: "person",
@@ -59,8 +61,13 @@ export default function NewRecipientPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         console.log(formData)
-        await createRecipient.mutateAsync(formData);
-        // TODO: Implement the API call to create a new recipient
+        const newRecipient = await createRecipient.mutateAsync(formData);
+        // If comes from payments, redirect to payments
+        if (searchParams.get("from") === "payments") {
+            void router.push(`/dashboard/payouts/new?recipientId=${newRecipient.id}`)
+        } else {
+            void router.push(`/dashboard/recipients`)
+        }
     }
 
     const steps = [
@@ -115,8 +122,11 @@ export default function NewRecipientPage() {
                                     <Button
                                         variant="outline"
                                         onClick={handleSubmit}
+                                        className={cn(createRecipient.isPending && "opacity-50 cursor-not-allowed py-3")}
                                     >
-                                        Save Recipient
+                                        {createRecipient.isPending ?
+                                            <LoadingDots className="h-4 w-4" color="white" />
+                                            : "Save Recipient"}
                                     </Button>
                                 )}
                             </div>

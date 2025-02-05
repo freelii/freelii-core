@@ -1,5 +1,6 @@
 "use client"
 
+import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { PageContent } from "@/ui/layout/page-content"
 import { NavSteps } from "@/ui/shared/nav-steps"
 import { MaxWidthWrapper } from "@freelii/ui"
@@ -15,6 +16,7 @@ const stepIds = {
 
 export default function NewPaymentPage() {
   const [step, setStep] = React.useState(1)
+  const { getSelectedWallet } = useWalletStore()
 
   const steps = [
     { id: stepIds.recipient, name: 'Setup new payment' },
@@ -24,6 +26,7 @@ export default function NewPaymentPage() {
   return (
     <PageContent titleBackButtonLink="/dashboard/payouts" title="New Payment">
       <MaxWidthWrapper>
+        SelectedWalletId: {JSON.stringify(getSelectedWallet()?.alias)}
         <NavSteps currentStep={step} steps={steps} setStep={setStep} />
         <div className="">
           {/* Step content will be rendered here */}

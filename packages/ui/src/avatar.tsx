@@ -7,11 +7,11 @@ type User = {
   id?: string | null | undefined;
   name?: string | null | undefined;
   email?: string | null | undefined;
-  avatarUrl?: string | null | undefined;
+  avatar_url?: string | null | undefined;
 };
 
 export function getUserAvatarUrl(user?: User | null) {
-  if (user?.avatarUrl) return user.avatarUrl;
+  if (user?.avatar_url) return user.avatar_url;
 
   return `https://avatar.vercel.sh/${encodeURIComponent(user?.id ?? user?.email ?? user?.name ?? "freelii")}`;
 }

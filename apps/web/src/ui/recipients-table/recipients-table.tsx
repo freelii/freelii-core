@@ -1,37 +1,16 @@
 import { Badge, Button, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
 import { cn } from "@freelii/utils/functions";
+import { Address, BlockchainAccount, Client, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
 import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import { Building2, CheckCircle2, Clock, CreditCard, UserPlus } from "lucide-react";
+import { Building2, CheckCircle2, Clock, CreditCard, UserPlus, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { FlagIcon } from "../shared/flag-icon";
 
-export type BankingDetails = {
-    id: string
-    name: string
-    accountNumber: string
-    routingNumber: string
-    bankName: string
-    bankAddress: string
-    bankCity: string
-    bankState: string
-    bankZip: string
-    currency: {
-        shortName: string
-        symbol: string
-        name: string
-        flag: string
-    }
-}
-
-export type Recipient = {
-    id: number
-    isVerified: boolean
-    name: string
-    email: string
-    notes?: string
-    bankingDetails?: BankingDetails
-    recipientType: string
+export type Recipient = Client & {
+    address?: Address | null
+    fiat_accounts?: FiatAccount[]
+    blockchain_accounts?: BlockchainAccount[]
 }
 
 export const columns: ColumnDef<Recipient>[] = [
@@ -44,7 +23,7 @@ export const columns: ColumnDef<Recipient>[] = [
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                         <div>{recipient.name}</div>
-                        {recipient.isVerified ? (
+                        {recipient.verification_status === VerificationStatus.VERIFIED ? (
                             <HoverCard>
                                 <HoverCardTrigger asChild>
                                     <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100 cursor-help">
@@ -93,35 +72,37 @@ export const columns: ColumnDef<Recipient>[] = [
         },
     },
     {
-        accessorKey: "recipientType",
+        accessorKey: "recipient_type",
         header: "Type",
         cell: ({ row }) => {
-            const type = row.original.recipientType
+            const type = row.original.recipient_type
             return (
                 <Badge
                     className={cn(
                         "flex items-center gap-1",
-                        type === 'business'
+                        type === RecipientType.BUSINESS
                             ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
                             : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
                     )}
                 >
-                    {type === 'business' ? (
+                    {type === RecipientType.BUSINESS ? (
                         <Building2 className="h-3 w-3" />
                     ) : (
                         <UserPlus className="h-3 w-3" />
                     )}
-                    <span className="text-xs capitalize">{type}</span>
+                    <span className="text-xs capitalize">{type.toLowerCase()}</span>
                 </Badge>
             )
         },
     },
     {
-        accessorKey: "bankingDetails",
-        header: "Banking Details",
+        accessorKey: "fiat_accounts",
+        header: "Fiat Accounts",
         cell: ({ row }) => {
-            const bankingDetails = row.original.bankingDetails
-            if (!bankingDetails) {
+            const recipient = row.original
+            const hasFiatAccounts = recipient.fiat_accounts && recipient.fiat_accounts.length > 0
+
+            if (!hasFiatAccounts) {
                 return (
                     <div className="text-sm text-gray-500 flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
@@ -131,26 +112,61 @@ export const columns: ColumnDef<Recipient>[] = [
             }
 
             return (
-                <div className="flex items-center gap-2">
-                    <div className="flex flex-col">
-                        <div className="text-sm font-medium flex items-center gap-1">
-                            <Building2 className="h-4 w-4 text-gray-500" />
-                            {bankingDetails.bankName}
+                <div className="space-y-2">
+                    {recipient.fiat_accounts?.map((account) => (
+                        <div key={account.id} className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                                <div className="text-xs font-medium flex items-center gap-1 capitalize">
+                                    {account.bank_name}
+                                </div>
+                                <div className="text-xs text-gray-500 flex items-center gap-1">
+                                    <FlagIcon
+                                        currencyCode={account.iso_currency}
+                                        size={16}
+                                    />
+                                    {account.iso_currency}
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                            {bankingDetails?.currency && (
-                                <FlagIcon
-                                    currencyCode={bankingDetails.currency.shortName}
-                                    size={16}
-                                />
-                            )}
-                            {bankingDetails?.currency?.name}
-                        </div>
-                    </div>
+                    ))}
                 </div>
             )
         },
-    }
+    },
+    {
+        accessorKey: "blockchain_accounts",
+        header: "Digital Accounts",
+        cell: ({ row }) => {
+            const recipient = row.original
+            const hasBlockchainAccounts = recipient.blockchain_accounts && recipient.blockchain_accounts.length > 0
+
+            if (!hasBlockchainAccounts) {
+                return (
+                    <div className="text-xs text-gray-500 flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        <span>Not provided</span>
+                    </div>
+                )
+            }
+
+            return (
+                <div className="space-y-2">
+                    {recipient.blockchain_accounts?.map((account) => (
+                        <div key={account.id} className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                                <div className="text-xs font-medium flex items-center gap-1 capitalize">
+                                    {account.network}
+                                </div>
+                                <div className="text-xs text-gray-500 font-mono">
+                                    {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )
+        },
+    },
 ];
 
 interface RecipientsTableProps {

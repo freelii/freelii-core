@@ -24,10 +24,13 @@ export const useWalletStore = create<WalletState>()(
 
       setWallets: (wallets) => {
         set({ wallets })
-        // Always select the default wallet
-        const defaultWallet = wallets.find(w => w.is_default)
-        if (defaultWallet) {
-          get().setSelectedWalletId(defaultWallet.id)
+        // Only set default wallet if no wallet is currently selected
+        const { selectedWalletId } = get()
+        if (!selectedWalletId) {
+          const defaultWallet = wallets.find(w => w.is_default)
+          if (defaultWallet) {
+            get().setSelectedWalletId(defaultWallet.id)
+          }
         }
       },
 

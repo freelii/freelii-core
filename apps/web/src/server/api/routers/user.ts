@@ -29,39 +29,4 @@ export const userRouter = createTRPCRouter({
             });
             return user;
         }),
-    listClients: publicProcedure
-        .input(z.object({
-            userId: z.number(),
-        }))
-        .query(async ({ ctx, input }) => {
-            return await ctx.db.client.findMany({
-                where: { user_id: input.userId },
-                include: { address: true }
-            });
-        }),
-    addClient: publicProcedure
-        .input(z.object({
-            userId: z.number(),
-            client: z.object({
-                name: z.string(),
-                email: z.string(),
-                address: z.object({
-                    street: z.string(),
-                    city: z.string(),
-                    state: z.string().optional(),
-                    country: z.string(),
-                    zipCode: z.string().optional(),
-                }),
-            }),
-        }))
-        .mutation(async ({ ctx, input }) => {
-            return await ctx.db.client.create({
-                data: {
-                    user_id: input.userId,
-                    name: input.client.name,
-                    email: input.client.email,
-                    address: { create: input.client.address }
-                }
-            });
-        }),
 });

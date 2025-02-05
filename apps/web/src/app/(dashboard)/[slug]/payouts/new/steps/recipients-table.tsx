@@ -1,5 +1,6 @@
 "use client"
 
+import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
 import { recipientFormatter } from "@/ui/recipients-table/recipient-formatter"
 import { Recipient, RecipientsTable } from "@/ui/recipients-table/recipients-table"
@@ -8,22 +9,24 @@ import { useWallet } from "@/wallet/useWallet"
 import {
   Badge, BlurImage, Button,
   ExpandingArrow,
-  IconMenu, Input, Label, Logo, Popover,
+  Input, Label, Logo,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
   Separator,
-  Textarea, ThreeDots, ToggleGroup, ToggleGroupItem,
+  Textarea,
+  ToggleGroup, ToggleGroupItem,
   useRouterStuff
 } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
-import { Client } from "@prisma/client"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, shortAddress } from "@freelii/utils"
+import { Client, RecipientType, VerificationStatus } from "@prisma/client"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Building2, CheckCircle2, ClipboardCopy, Clock, CreditCard, Search, UserPlus, X } from "lucide-react"
+import { Building2, CheckCircle2, Clock, CreditCard, Search, UserPlus, X } from "lucide-react"
 import React, { useEffect, useRef } from "react"
+import toast from "react-hot-toast"
 
 dayjs.extend(relativeTime)
 
@@ -42,18 +45,22 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
   const [recipientTypeFilter, setRecipientTypeFilter] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [amount, setAmount] = React.useState<string>(searchParams.get('amount') ?? '')
+  const [selectedAccount, setSelectedAccount] = React.useState<string | null>(null)
 
   // tRPC procedures
+  const trpcUtils = api.useUtils()
+  const removeRecipient = api.clients.archive.useMutation({
+    onError: ClientTRPCErrorHandler,
+    onSuccess: () => {
+      trpcUtils.clients.search.invalidate()
+    }
+  })
   const { data: clients, isFetching: loading } = api.clients.search.useQuery({
     query: searchQuery,
     page: 1,
     limit: 10
   });
 
-  // Hardcoded for DEMO
-  const transferToFreelii = searchParams.get('transferToFreelii') === 'true';
-
-  // Initialize from URL params only once
 
   const filteredRecipients = React.useMemo(() => {
     let filtered: Array<Client> = clients ?? [];
@@ -83,6 +90,10 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
         setSelectedRecipient(recipientFormatter(recipient))
       }
     }
+    if (searchParams.get('recipientAccount')) {
+      const recipientAccount = searchParams.get('recipientAccount')
+      setSelectedAccount(recipientAccount)
+    }
   }, [searchParams, filteredRecipients])
 
   useEffect(() => {
@@ -103,6 +114,28 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
       }
     }
   }, [selectedRecipient])
+
+  const handleRemoveRecipient = async (id: number) => {
+    await removeRecipient.mutateAsync({ id })
+    trpcUtils.clients.search.invalidate()
+    setSelectedRecipient(null)
+    toast.success('Recipient archived')
+  }
+
+
+  // Helper function to get account details
+  const getSelectedAccountDetails = () => {
+    if (!selectedAccount) return null
+    if (selectedAccount === 'freelii') return { type: 'freelii' }
+
+    const fiatAccount = selectedRecipient?.fiat_accounts?.find(acc => acc.id === selectedAccount)
+    if (fiatAccount) return { type: 'fiat', details: fiatAccount }
+
+    const blockchainAccount = selectedRecipient?.blockchain_accounts?.find(acc => acc.id === selectedAccount)
+    if (blockchainAccount) return { type: 'blockchain', details: blockchainAccount }
+
+    return null
+  }
 
   return (
     <div className="w-full relative space-y-6 pb-10">
@@ -141,22 +174,22 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                   All
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                  value="business"
+                  value={RecipientType.BUSINESS}
                   aria-label="Show business recipients"
                   className={cn(
                     "text-xs px-3 py-1 gap-1",
-                    recipientTypeFilter === 'business' && "bg-blue-50 text-blue-700"
+                    recipientTypeFilter === RecipientType.BUSINESS && "bg-blue-50 text-blue-700"
                   )}
                 >
                   <Building2 className="h-3 w-3" />
                   Business
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                  value="personal"
+                  value={RecipientType.INDIVIDUAL}
                   aria-label="Show personal recipients"
                   className={cn(
                     "text-xs px-3 py-1 gap-1",
-                    recipientTypeFilter === 'personal' && "bg-purple-50 text-purple-700"
+                    recipientTypeFilter === RecipientType.INDIVIDUAL && "bg-purple-50 text-purple-700"
                   )}
                 >
                   <UserPlus className="h-3 w-3" />
@@ -188,7 +221,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
             className="animate-in slide-in-from-right duration-300"
           >
             <div className="p-6 bg-white h-full border-l border-gray-200">
-              <RecipientDetails recipient={selectedRecipient} />
+              <RecipientDetails recipient={selectedRecipient} onRemove={handleRemoveRecipient} />
             </div>
           </div>
         )}
@@ -232,31 +265,49 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                       <Label>Destination Account</Label>
 
                       {/* Switch Bank Account */}
-                      <Select defaultValue={transferToFreelii ? "usdc" : "bank"} onValueChange={(value) => {
-                        if (value === "usdc") {
-                          queryParams({ set: { transferToFreelii: "true" } })
-                        } else {
-                          queryParams({ set: { transferToFreelii: "false" } })
-                        }
-                      }}>
+                      <Select
+                        value={selectedAccount ?? undefined}
+                        onValueChange={(value) => {
+                          queryParams({ set: { recipientAccount: value } })
+                        }}
+                      >
                         <SelectTrigger className="w-full mt-3 bg-gray-50 rounded-md">
                           <SelectValue placeholder="Select payment method" />
                         </SelectTrigger>
                         <SelectContent>
-                          {selectedRecipient.bankingDetails && (
-                            <SelectItem value="bank" className="py-2 bg-white">
+                          {selectedRecipient?.fiat_accounts?.map((account) => (
+                            <SelectItem key={account.id} value={account.id} className="py-2 bg-white">
                               <div className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4 text-gray-500" />
                                 <div className="flex flex-col">
-                                  <span className="text-sm">{selectedRecipient.bankingDetails.bankName}</span>
+                                  <span className="flex text-sm">{account.bank_name}
+                                    <Badge className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      {account.iso_currency}
+                                    </Badge>
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {account.account_number}
+                                  </span>
                                 </div>
-                                <span className="text-xs text-gray-500">
-                                  ••••{selectedRecipient.bankingDetails.accountNumber.slice(-4)}
-                                </span>
                               </div>
                             </SelectItem>
-                          )}
-                          <SelectItem value="usdc" className="py-2 bg-white">
+                          ))}
+                          {selectedRecipient?.blockchain_accounts?.map((account) => (
+                            <SelectItem key={account.id} value={account.id} className="py-2 bg-white">
+                              <div className="flex items-center gap-2">
+                                <div className="flex flex-col">
+                                  <span className="flex text-sm">{account.network}
+                                    <Badge className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                      {account.network}
+                                    </Badge>
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {shortAddress(account.address)}
+                                  </span>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                          <SelectItem value="freelii" className="py-2 bg-white">
                             <div className="flex items-center gap-2">
                               <Logo className="h-4 w-4 text-gray-500 bg-gray-50 rounded-full" />
                               <div className="flex flex-col">
@@ -272,54 +323,91 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                         </SelectContent>
                       </Select>
 
-                      {transferToFreelii ? (
+                      {/* Update the account details preview */}
+                      {selectedAccount && (
                         <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Destination Account</span>
-                            <span className="font-medium">Freelii USDC Account</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Account</span>
-                            Digital Currency Account
+                          {(() => {
+                            const accountDetails = getSelectedAccountDetails()
 
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-gray-500">Currency</span>
-                            <div className="flex items-center gap-1.5">
-                              <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                USDC
-                              </Badge>
-                            </div>
-                          </div>
+                            switch (accountDetails?.type) {
+                              case 'freelii':
+                                return (
+                                  <>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Destination Account</span>
+                                      <span className="font-medium">Freelii USDC Account</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Account</span>
+                                      <span>Digital Currency Account</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Currency</span>
+                                      <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                        USDC
+                                      </Badge>
+                                    </div>
+                                  </>
+                                )
 
-                        </div>) : selectedRecipient.bankingDetails ? (
-                          <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs space-y-2">
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-500">Bank</span>
-                              <span className="font-medium">{selectedRecipient.bankingDetails.bankName}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-500">Account</span>
-                              <span className="font-medium">
-                                ••••{selectedRecipient.bankingDetails.accountNumber.slice(-4)}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-gray-500">Currency</span>
-                              <div className="flex items-center gap-1.5">
-                                <FlagIcon
-                                  currencyCode={selectedRecipient.bankingDetails.currency?.shortName}
-                                  size={14}
-                                />
-                                <span className="font-medium">
-                                  {selectedRecipient.bankingDetails.currency?.name}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs text-gray-500">
-                          No banking details provided
+                              case 'fiat':
+                                return (
+                                  <>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Bank</span>
+                                      <span className="font-medium">{accountDetails.details.bank_name}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Account</span>
+                                      <span className="font-medium">
+                                        ••••{accountDetails.details.account_number.slice(-4)}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Currency</span>
+                                      <div className="flex items-center gap-1.5">
+                                        <FlagIcon
+                                          currencyCode={accountDetails.details.iso_currency}
+                                          size={14}
+                                        />
+                                        <span className="font-medium">
+                                          {accountDetails.details.iso_currency}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </>
+                                )
+
+                              case 'blockchain':
+                                return (
+                                  <>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Network</span>
+                                      <span className="font-medium">{accountDetails.details?.network}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Address</span>
+                                      <span className="font-medium">
+                                        {shortAddress(accountDetails.details?.address)}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-gray-500">Settlement</span>
+                                      <Badge className="text-xs bg-green-50 text-green-700 border-green-200">
+                                        Instant
+                                      </Badge>
+                                    </div>
+                                  </>
+                                )
+
+                              default:
+                                return (
+                                  <div className="text-gray-500">
+                                    No account details available
+                                  </div>
+                                )
+                            }
+                          })()}
                         </div>
                       )}
                       <div className="space-y-4">
@@ -404,7 +492,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                       {filteredRecipients.length > 0 &&
                         <Button
                           className="mt-4"
-                          onClick={() => window.location.href = '/dashboard/recipients/new'}
+                          onClick={() => window.location.href = '/dashboard/recipients/new?from=payments'}
                         >
                           <UserPlus className="h-4 w-4 mr-2" />
                           New Recipient
@@ -436,15 +524,16 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
 
 interface RecipientDetailsProps {
   recipient: Recipient
+  onRemove: (id: number) => void
 }
 
-function RecipientDetails({ recipient }: RecipientDetailsProps) {
+function RecipientDetails({ recipient, onRemove }: RecipientDetailsProps) {
   return (
     <div className="transition-opacity duration-200 delay-150 opacity-100">
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <p className="text-base font-semibold">{recipient.name}</p>
-          {recipient.isVerified ? (
+          {recipient.verification_status === VerificationStatus.VERIFIED ? (
             <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
               <CheckCircle2 className="h-3 w-3" />
               <span className="text-xs">Verified</span>
@@ -517,7 +606,7 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="danger" className="p-2 text-xs">
+          <Button variant="danger" className="p-2 text-xs" onClick={() => onRemove(recipient.id)}>
             Remove Recipient
           </Button>
           <Button className="ml-auto">
@@ -529,40 +618,3 @@ function RecipientDetails({ recipient }: RecipientDetailsProps) {
   )
 }
 
-function ActionCell() {
-  const [openPopover, setOpenPopover] = React.useState(false)
-  return (
-    <Popover
-      openPopover={openPopover}
-      setOpenPopover={setOpenPopover}
-      align="end"
-      content={
-        <div className="w-full md:w-52">
-          <div className="grid gap-px p-2">
-            <button
-              onClick={() => {
-                setOpenPopover(false);
-              }}
-              className="w-full rounded-md p-2 hover:bg-gray-100 active:bg-gray-200"
-            >
-              <IconMenu
-                text="Copy Email"
-                icon={<ClipboardCopy className="h-4 w-4" />}
-              />
-            </button>
-          </div>
-        </div>
-      }
-    >
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          setOpenPopover(!openPopover)
-        }}
-        className="w-auto px-1.5"
-      >
-        <ThreeDots className="h-5 w-5 text-gray-500" />
-      </button>
-    </Popover>
-  )
-}

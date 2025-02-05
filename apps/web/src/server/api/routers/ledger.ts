@@ -20,4 +20,42 @@ export const ledgerRouter = createTRPCRouter({
                 offset: input.offset
             });
         }),
+    getTransaction: protectedProcedure
+        .input(z.object({
+            id: z.string().min(1),
+            walletId: z.string().min(1),
+        }))
+        .query(async ({ ctx, input }) => {
+            const ledgerService = new LedgerService({
+                db: ctx.db,
+                walletId: input.walletId,
+                session: ctx.session
+            });
+            return ledgerService.getTransaction(input.id);
+        }),
+    registerPayment: protectedProcedure
+        .input(z.object({
+            walletId: z.string().min(1),
+            txId: z.string().min(1),
+            txHash: z.string().min(1),
+            senderId: z.number().min(1),
+            recipientId: z.number().min(1),
+            amount: z.bigint(),
+            currency: z.string().min(1),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const ledgerService = new LedgerService({
+                db: ctx.db,
+                walletId: input.walletId,
+                session: ctx.session
+            });
+            return ledgerService.registerPayment({
+                txId: input.txId,
+                txHash: input.txHash,
+                senderId: input.senderId,
+                recipientId: input.recipientId,
+                amount: BigInt(input.amount),
+                currency: input.currency,
+            });
+        }),
 });

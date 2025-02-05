@@ -78,7 +78,7 @@ export default function PageClient() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-semibold">Account Balance</h2>
-                <p className="text-sm text-gray-500">Main Wallet</p>
+                <p className="text-sm text-gray-500">{account?.alias}</p>
               </div>
               <div className="flex items-center gap-3">
                 <USDCBadge className="bg-blue-50 text-blue-700 border-blue-200" />

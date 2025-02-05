@@ -1,14 +1,21 @@
-import { TransactionMovementType, Transactions, TransactionStatus, TransactionType } from "@prisma/client";
+import {
+    Client,
+    TransactionMovementType,
+    Transactions,
+    TransactionStatus,
+    TransactionType,
+    User
+} from "@prisma/client";
 import dayjs from "dayjs";
 import { ITransactionDetails } from "./transaction-details";
 
 
-export const formatTransaction = (transaction: Transactions): ITransactionDetails => {
-    const description = transaction.tx_type === TransactionType.ON_CHAIN_TRANSFER ? "On-chain transfer" : "Internal transfer";
+export const formatTransaction = (transaction: Transactions & { recipient?: Client | null, sender?: User | null }): ITransactionDetails => {
+
     return {
         id: transaction.id,
         type: transaction.movement_type === TransactionMovementType.IN ? "received" : "sent",
-        description: description,
+        description: getDescription(transaction),
         amount: Number(transaction.amount),
         date: dayjs(transaction.created_at).format("DD/MM/YYYY HH:mm"),
         status: transaction.status === TransactionStatus.COMPLETED ? "completed" : transaction.status === TransactionStatus.FAILED ? "failed" : "pending",
@@ -20,4 +27,14 @@ export const formatTransaction = (transaction: Transactions): ITransactionDetail
         accountNumber: "", // transaction.recipient?.account_number,
         failureReason: "", // transaction.failure_reason,
     }
+}
+
+function getDescription(transaction: Transactions & { recipient?: Client | null, sender?: User | null }) {
+    if (transaction.tx_type === TransactionType.ON_CHAIN_TRANSFER) {
+
+        if (transaction.recipient?.name) {
+            return `${transaction.recipient.name}`;
+        }
+    }
+    return "Payment";
 }

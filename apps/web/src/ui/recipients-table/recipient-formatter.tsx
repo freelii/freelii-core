@@ -1,33 +1,15 @@
-import { Address, BlockchainAccount, Client, FiatAccount, VerificationStatus } from "@prisma/client";
+import { Address, BlockchainAccount, Client, FiatAccount } from "@prisma/client";
 import { Recipient } from "./recipients-table";
 
 export function recipientFormatter(client: Client & {
     address?: Address | null,
-    fiat_accounts?: FiatAccount[] | null,
-    blockchain_accounts?: BlockchainAccount[] | null
+    fiat_accounts?: FiatAccount[],
+    blockchain_accounts?: BlockchainAccount[]
 }): Recipient {
     return {
-        id: client.id,
-        isVerified: client.verification_status === VerificationStatus.VERIFIED,
-        name: client.name,
-        email: client.email ?? "",
-        recipientType: client.recipient_type,
-        bankingDetails: {
-            id: "1",
-            name: client.name,
-            accountNumber: "1234567890",
-            routingNumber: "1234567890",
-            bankName: "Bank of America",
-            bankAddress: "123 Main St",
-            bankCity: "Anytown",
-            bankState: "CA",
-            bankZip: "12345",
-            currency: {
-                shortName: "USD",
-                symbol: "$",
-                name: "United States Dollar",
-                flag: "🇺🇸",
-            }
-        }
-    }
+        ...client,
+        address: client.address,
+        fiat_accounts: client.fiat_accounts,
+        blockchain_accounts: client.blockchain_accounts
+    };
 }   

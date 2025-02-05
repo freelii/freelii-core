@@ -21,6 +21,7 @@ export interface ITransactionDetails {
     bankName?: string
     accountNumber?: string
     failureReason?: string
+    invoice_id?: string
 }
 
 export default function TransactionDetails({

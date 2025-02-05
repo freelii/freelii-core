@@ -21,6 +21,7 @@ export * from "./unsplash";
 export * from "./x-logo";
 export * from "./youtube";
 
+export * from "./loading-dots";
 export * from "./loading-spinner";
 export * from "./three-dots";
 

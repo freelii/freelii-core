@@ -1,16 +1,15 @@
-import { InstantBadge } from '@/ui/shared/badges/instant-badge'
-import { StatusBadge } from '@/ui/shared/badges/status-badge'
 import { FlagIcon } from '@/ui/shared/flag-icon'
-import { cn, CURRENCIES } from '@freelii/utils'
-import { Transactions } from '@prisma/client'
+import { cn, CURRENCIES, fromStroops } from '@freelii/utils'
+import { Client, Transactions, User } from '@prisma/client'
 import dayjs from 'dayjs'
 import { ArrowDownRight, ArrowUpRight, InboxIcon } from 'lucide-react'
+import Link from 'next/link'
 import { ITransactionDetails } from './transaction-details'
 import { formatTransaction } from './transaction-formatter'
 
 interface TransactionsTableProps {
     isLoading?: boolean
-    transactions: Transactions[]
+    transactions: (Transactions & { recipient?: Client | null, sender?: User | null })[]
     onRowClick: (transaction: ITransactionDetails) => void
     selectedRowId?: string
 }
@@ -43,7 +42,7 @@ export default function TransactionsTable({
                     data-transaction-row
                     onClick={() => onRowClick(transaction)}
                     className={cn(
-                        "cursor-pointer hover:bg-gray-50 rounded-lg px-4 py-2 transition-colors",
+                        "cursor-pointer hover:bg-gray-50 rounded-lg px-4 py-2 transition-colors group",
                         selectedRowId === transaction.id && "bg-gray-50"
                     )}
                 >
@@ -67,25 +66,28 @@ export default function TransactionsTable({
                             <div>
                                 <div className="font-medium text-sm flex items-center gap-2">
                                     {transaction.description}
-                                    {transaction.currency === 'USDC' && (
-                                        <InstantBadge className="bg-green-50 text-green-700 border-green-200 gap-1 flex items-center py-0 h-4" />
-                                    )}
+
+
                                 </div>
                                 <div className="text-xs text-gray-500 flex items-center gap-2">
                                     {dayjs(transaction.date).format('MMM D, YYYY [at] h:mm A')}
                                     <span className="text-gray-300">•</span>
-                                    <span>{transaction.reference}</span>
+                                    <span>{transaction.reference}ref</span>
                                 </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="text-right">
-                                <div className="text-sm font-medium flex items-center gap-1 justify-end">
+                                <div className=" font-medium flex items-center gap-1 justify-end">
+                                    <Link href={`/dashboard/invoices/${transaction.invoice_id ?? 'create?tx_id=' + transaction.id}`}>
+                                        <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            {transaction.invoice_id ? "View Invoice" : "Generate Invoice"}
+                                        </span>
+                                    </Link>
                                     <FlagIcon currencyCode={transaction.currency} size={12} />
                                     {CURRENCIES[transaction.currency]?.symbol}
-                                    {transaction.amount.toLocaleString()}
+                                    {fromStroops(transaction.amount, 2)}
                                 </div>
-                                <StatusBadge text={transaction.status} useIcon />
                             </div>
                         </div>
                     </div>

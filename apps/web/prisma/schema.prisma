@@ -66,16 +66,16 @@ model User {
 
 // Client model
 model Client {
-    id                  Int                @id @default(autoincrement())
+    id                  Int                 @id @default(autoincrement())
     name                String
     email               String?
     address             Address?
-    verification_status VerificationStatus @default(PENDING)
-    recipient_type      RecipientType      @default(BUSINESS)
+    verification_status VerificationStatus  @default(PENDING)
+    recipient_type      RecipientType       @default(BUSINESS)
     tax_number          String? // VAT/Tax ID
-    created_at          DateTime           @default(now())
-    updated_at          DateTime           @updatedAt
-
+    created_at          DateTime            @default(now())
+    updated_at          DateTime            @updatedAt
+    is_archived         Boolean             @default(false)
     user_id             Int
     // Relationships
     user                User                @relation(fields: [user_id], references: [id])
@@ -115,10 +115,10 @@ model FiatAccount {
     account_type        FiatAccountType
     account_holder_name String
     bank_name           String
-    bank_address        String
-    bank_city           String
-    bank_state          String
-    bank_zip            String
+    bank_address        String?
+    bank_city           String?
+    bank_state          String?
+    bank_zip            String?
     iso_currency        String
 
     client_id Int

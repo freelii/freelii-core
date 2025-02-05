@@ -6,6 +6,7 @@ export * from "./hooks";
 export * from "./button";
 export * from "./card";
 export * from "./code";
+export * from "./logo";
 
 export * from './avatar';
 export * from './footer';
@@ -40,3 +41,4 @@ export * from "./tabs";
 export * from "./textarea";
 export * from "./toggle";
 export * from "./toggle-group";
+

@@ -10,6 +10,7 @@ import { cn } from "@freelii/utils";
 import { fromStroops } from '@freelii/utils/functions';
 import { type Wallet, type WalletBalance } from '@prisma/client';
 import { ChevronsUpDown, Plus, Wallet as WalletIcon } from "lucide-react";
+import Link from "next/link";
 import {
   useEffect,
   useRef,
@@ -161,16 +162,17 @@ function WalletList({
                 </button>
               );
             })}
-            <button
-              onClick={() => {
-                setOpenPopover(false);
-                // TODO: Add wallet creation modal
-              }}
-              className="group flex w-full cursor-pointer items-center gap-x-2 rounded-md p-2 text-neutral-700 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
-            >
-              <Plus className="mx-1.5 size-4 text-neutral-500" />
-              <span className="block truncate">Add new wallet</span>
-            </button>
+            <Link href="/dashboard/add-wallet">
+              <button
+                onClick={() => {
+                  setOpenPopover(false);
+                }}
+                className="group flex w-full cursor-pointer items-center gap-x-2 rounded-md p-2 text-neutral-700 transition-all duration-75 hover:bg-neutral-200/50 active:bg-neutral-200/80"
+              >
+                <Plus className="mx-1.5 size-4 text-neutral-500" />
+                <span className="block truncate">Add new wallet</span>
+              </button>
+            </Link>
           </div>
         </div>
       </div>

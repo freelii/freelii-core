@@ -77,7 +77,7 @@ export function useWallet() {
         }
     }
 
-    async function transfer({ to, amount, sacAddress }: { to: string, amount: number, sacAddress?: string }) {
+    async function transfer({ to, amount, sacAddress }: { to: string, amount: bigint, sacAddress?: string }) {
         if (!account) {
             console.log('No account found', account);
             throw new Error('No account found');
@@ -102,7 +102,9 @@ export function useWallet() {
         const signedTx = await smartWallet.sign(at.built!, { keyId: key_id });
 
         try {
-            await server.send(signedTx);
+            const res = await server.send(signedTx);
+            void trpcUtils.wallet.getAccount.invalidate();
+            return res;
         } catch (error) {
             console.error('Transfer error:', {
                 message: (error as Error).message,
@@ -124,7 +126,6 @@ export function useWallet() {
             toast.error(errorMessage);
         }
 
-        void trpcUtils.wallet.getAccount.invalidate();
     }
 
     const fundWallet = async (id?: string | null): Promise<void> => {
