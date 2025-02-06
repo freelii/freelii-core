@@ -24,7 +24,7 @@ export default function NetworkDetails() {
                         <div className="col-span-1">
                             <h3 className="text-sm font-medium text-gray-900 mb-3 flex items-center gap-2">
                                 <User className="h-4 w-4 text-gray-400" />
-                                Account
+                                {account?.alias}
                             </h3>
                             <div className="p-5 bg-white rounded-xl border border-gray-100 shadow-sm space-y-4">
                                 <div>
@@ -52,13 +52,13 @@ export default function NetworkDetails() {
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
                                                 <XLMIcon className="h-4 w-4" />
-                                                <div className="text-sm text-gray-700 capitalize">{account?.network || 'Not connected'}</div>
+                                                <div className="text-sm text-gray-700 capitalize">{account?.network ?? 'Not connected'}</div>
                                             </div>
                                             <Button
                                                 variant="ghost"
                                                 className="text-gray-500 hover:text-gray-700"
                                             >
-                                                Learn more about {account?.network || 'Stellar'}
+                                                Learn more about {account?.network ?? 'Stellar'}
                                             </Button>
                                         </div>
                                     )}

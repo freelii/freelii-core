@@ -13,6 +13,8 @@ export default function Home() {
     <main className="min-h-screen flex bg-white text-black">
       {/* Left side */}
       <div className="flex-1 p-8 relative">
+        <div className="w-[200%] h-[80%] rotate-[25deg] translate-x-[10%] translate-y-[-20%] h-full absolute top-0 left-0 bg-gradient-to-b from-white  to-transparent z-10" />
+
         <div className="flex items-center justify-between">
           <Image
             src="/logo.png"

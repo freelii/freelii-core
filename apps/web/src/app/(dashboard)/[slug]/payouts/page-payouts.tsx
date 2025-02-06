@@ -1,6 +1,7 @@
 "use client"
 
-import { useFixtures } from "@/fixtures/useFixtures"
+import { useWalletStore } from "@/hooks/stores/wallet-store"
+import { api } from "@/trpc/react"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, Download } from "@freelii/ui"
 import {
@@ -11,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop } from "@freelii/utils"
+import { cn, DICEBEAR_SOLID_AVATAR_URL, fromStroops, noop } from "@freelii/utils"
+import { VerificationStatus } from "@prisma/client"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -100,15 +102,17 @@ export const columns: ColumnDef<Payout>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+    size: 40,
   },
   {
     accessorKey: "nextPayment",
-    header: "Payout Date",
+    header: () => <div className="text-left">Payment Date</div>,
+    size: 100,
     cell: ({ row }) => {
       const date = new Date(row.getValue("nextPayment"))
       const relativeDate = dayjs(date).fromNow()
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-left">
           <div>{dayjs(date).format('MMM DD')}</div>
           <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
             {relativeDate}
@@ -120,6 +124,7 @@ export const columns: ColumnDef<Payout>[] = [
   {
     accessorKey: "amount",
     header: () => <div className="text-left">Amount</div>,
+    size: 160,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"))
       const currency = row.original.currency
@@ -128,7 +133,6 @@ export const columns: ColumnDef<Payout>[] = [
         currency: currency === "USDC" ? "USD" : currency,
       }).format(amount)
 
-      const currencyInfo = CURRENCIES[currency]
 
       return (
         <div className="flex items-center justify-start gap-2">
@@ -140,7 +144,8 @@ export const columns: ColumnDef<Payout>[] = [
   },
   {
     accessorKey: "recipients",
-    header: "Recipients",
+    header: () => <div className="text-left">Recipient</div>,
+    size: 300,
     cell: ({ row }) => {
       const recipients = row.original.recipients
       if (!recipients?.length) {
@@ -190,15 +195,34 @@ export const columns: ColumnDef<Payout>[] = [
   {
     accessorKey: "progress",
     header: "Payment frequency",
+    size: 160,
     cell: ({ row }) => {
       const progress = row.getValue("progress")
       return <div className="">{progress as string}</div>
     },
   },
+  {
+    accessorKey: "actions",
+    enableHiding: true,
+    header: () => null,
+    size: 120,
+    cell: ({ row }) => {
+      return (
+        <Link
+          href={`/dashboard/invoices/create?tx_id=${row.original.id}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out">
+            Generate Invoice
+          </span>
+        </Link>
+      )
+    },
+  },
 ]
 
 export default function PayoutsTable() {
-  const { getPayouts } = useFixtures()
+  const { selectedWalletId } = useWalletStore();
   const [payouts, setPayouts] = React.useState<Payout[]>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -229,18 +253,45 @@ export default function PayoutsTable() {
   })
   const detailsRef = useRef<HTMLDivElement>(null)
 
+  const { data: txs, isLoading } = api.ledger.getPayouts.useQuery({
+    walletId: String(selectedWalletId),
+    limit: 10,
+    offset: 0
+  }, {
+    enabled: !!selectedWalletId
+  })
+
   useEffect(() => {
-    getPayouts().then(setPayouts).catch(console.error)
-  }, [setPayouts])
+    if (txs) {
+      setPayouts(txs.map(tx => {
+        const recipient = tx.recipient
+        return {
+          id: tx.id,
+          amount: Number(fromStroops(tx.amount)),
+          currency: tx.currency,
+          label: tx.recipient.name,
+          nextPayment: tx.created_at,
+          recipients: [tx.recipient ? {
+            id: tx.recipient.id,
+            name: tx.recipient.name,
+            email: tx.recipient.email,
+            isVerified: tx.recipient.verification_status === VerificationStatus.VERIFIED,
+          } : null] as Recipient[],
+          progress: "One-time payment",
+        }
+      }))
+    }
+  }, [txs])
 
   useEffect(() => {
     if (selectedPayout) {
-      // hide progress column
-      console.log(table.getAllColumns().map(column => column.id))
+      // hide progress and actions columns
       table.getColumn('progress')?.toggleVisibility(false)
+      table.getColumn('actions')?.toggleVisibility(false)
     } else {
-      // show progress column
+      // show progress and actions columns
       table.getColumn('progress')?.toggleVisibility(true)
+      table.getColumn('actions')?.toggleVisibility(true)
     }
   }, [selectedPayout])
 
@@ -314,7 +365,7 @@ export default function PayoutsTable() {
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                     className={cn(
-                      "cursor-pointer hover:bg-gray-50",
+                      "cursor-pointer hover:bg-gray-50 group transition-all duration-300 ease-in-out",
                       selectedPayout?.id === row.original.id && "bg-gray-100"
                     )}
                     onClick={() => handlePaymentSelect(row.original)}

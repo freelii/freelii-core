@@ -178,7 +178,7 @@ export default function WithdrawalsRequestPage() {
                                                     size={16}
                                                 />
                                                 <span className="text-sm text-gray-500">
-                                                    {CURRENCIES["USDC"]?.symbol}
+                                                    {CURRENCIES.USDC?.symbol}
                                                 </span>
                                             </div>
                                             <Input

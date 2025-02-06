@@ -12,7 +12,6 @@ import { fromStroops, toStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import {
-  ArrowDownLeft,
   ArrowUpRight,
   CreditCard
 } from "lucide-react"
@@ -151,11 +150,11 @@ export default function PageClient() {
               label="Send Money"
               href="/dashboard/payouts/new"
             />
-            <QuickActionButton
+            {/* <QuickActionButton
               icon={<ArrowDownLeft className="h-4 w-4" />}
               label="Add Funds"
               href="/dashboard/funding/new"
-            />
+            /> */}
             <QuickActionButton
               icon={<CreditCard className="h-4 w-4" />}
               label="Cards"

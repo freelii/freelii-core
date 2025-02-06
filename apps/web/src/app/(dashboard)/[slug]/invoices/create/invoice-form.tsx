@@ -60,7 +60,7 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 
     // tRPC procedures
     const ctx = api.useUtils();
-    const { mutate: addClient } = api.clients.create.useMutation({
+    const { mutateAsync: addClient } = api.clients.create.useMutation({
         onSuccess: (newClient) => {
             toast.success("Client created successfully")
             void ctx.clients.search.refetch();
@@ -73,8 +73,8 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
         }
     });
 
-    const handleAddClient = () => {
-        addClient({
+    const handleAddClient = async () => {
+        await addClient({
             type: "company",
             name: newClientData?.name ?? "",
             email: newClientData?.email ?? "",

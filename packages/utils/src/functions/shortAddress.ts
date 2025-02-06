@@ -1,4 +1,4 @@
-export function shortAddress(address?: string | null | undefined) {
+export function shortAddress(address?: string | null | undefined, length = 4) {
     if (!address) return '';
-    return address.slice(0, 4) + '...' + address.slice(-4);
+    return address.slice(0, length) + '...' + address.slice(-length);
 }

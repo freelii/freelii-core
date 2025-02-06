@@ -2,8 +2,10 @@
 
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
+import { XLMIcon } from "@/ui/icons/xlm-icon"
 import { recipientFormatter } from "@/ui/recipients-table/recipient-formatter"
 import { Recipient, RecipientsTable } from "@/ui/recipients-table/recipients-table"
+import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
 import {
@@ -21,10 +23,11 @@ import {
   useRouterStuff
 } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, shortAddress } from "@freelii/utils"
-import { Client, RecipientType, VerificationStatus } from "@prisma/client"
+import { BlockchainAccount, Client, FiatAccount, RecipientType } from "@prisma/client"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Building2, CheckCircle2, Clock, CreditCard, Search, UserPlus, X } from "lucide-react"
+import { Building2, CheckCircle2, Search, UserPlus, X } from "lucide-react"
+import Link from "next/link"
 import React, { useEffect, useRef } from "react"
 import toast from "react-hot-toast"
 
@@ -52,7 +55,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
   const removeRecipient = api.clients.archive.useMutation({
     onError: ClientTRPCErrorHandler,
     onSuccess: () => {
-      trpcUtils.clients.search.invalidate()
+      void trpcUtils.clients.search.invalidate()
     }
   })
   const { data: clients, isFetching: loading } = api.clients.search.useQuery({
@@ -117,7 +120,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
 
   const handleRemoveRecipient = async (id: number) => {
     await removeRecipient.mutateAsync({ id })
-    trpcUtils.clients.search.invalidate()
+    void trpcUtils.clients.search.invalidate()
     setSelectedRecipient(null)
     toast.success('Recipient archived')
   }
@@ -208,7 +211,9 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                 queryParams({ del: ['recipientId'] })
               } else {
                 setSelectedRecipient(row)
-                row && queryParams({ set: { recipientId: row.id.toString() } })
+                if (row) {
+                  queryParams({ set: { recipientId: row.id.toString() } })
+                }
               }
             }}
             searchQuery={searchQuery} />
@@ -355,23 +360,23 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                                   <>
                                     <div className="flex items-center justify-between">
                                       <span className="text-gray-500">Bank</span>
-                                      <span className="font-medium">{accountDetails.details.bank_name}</span>
+                                      <span className="font-medium">{(accountDetails?.details as FiatAccount)?.bank_name}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                       <span className="text-gray-500">Account</span>
                                       <span className="font-medium">
-                                        ••••{accountDetails.details.account_number.slice(-4)}
+                                        ••••{(accountDetails?.details as FiatAccount)?.account_number.slice(-4)}
                                       </span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                       <span className="text-gray-500">Currency</span>
                                       <div className="flex items-center gap-1.5">
                                         <FlagIcon
-                                          currencyCode={accountDetails.details.iso_currency}
+                                          currencyCode={(accountDetails?.details as FiatAccount)?.iso_currency}
                                           size={14}
                                         />
                                         <span className="font-medium">
-                                          {accountDetails.details.iso_currency}
+                                          {(accountDetails?.details as FiatAccount)?.iso_currency}
                                         </span>
                                       </div>
                                     </div>
@@ -383,12 +388,12 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                                   <>
                                     <div className="flex items-center justify-between">
                                       <span className="text-gray-500">Network</span>
-                                      <span className="font-medium">{accountDetails.details?.network}</span>
+                                      <span className="font-medium">{(accountDetails?.details as BlockchainAccount)?.network}</span>
                                     </div>
                                     <div className="flex items-center justify-between">
                                       <span className="text-gray-500">Address</span>
                                       <span className="font-medium">
-                                        {shortAddress(accountDetails.details?.address)}
+                                        {shortAddress((accountDetails?.details as BlockchainAccount)?.address)}
                                       </span>
                                     </div>
                                     <div className="flex items-center justify-between">
@@ -533,84 +538,65 @@ function RecipientDetails({ recipient, onRemove }: RecipientDetailsProps) {
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <p className="text-base font-semibold">{recipient.name}</p>
-          {recipient.verification_status === VerificationStatus.VERIFIED ? (
-            <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-              <CheckCircle2 className="h-3 w-3" />
-              <span className="text-xs">Verified</span>
-            </Badge>
-          ) : (
-            <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
-              <Clock className="h-3 w-3" />
-              <span className="text-xs">Pending</span>
-            </Badge>
-          )}
+
         </div>
         <p className="text-xs text-gray-500">{recipient.email}</p>
       </div>
 
       <div className="space-y-6">
-        {recipient.bankingDetails ? (
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 className="h-4 w-4 text-gray-500" />
-              <h4 className="text-sm font-medium">Banking Details</h4>
+        {/* Fiat Accounts Section */}
+        {recipient.fiat_accounts && recipient.fiat_accounts.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium">Bank Accounts</h3>
+            <div className="space-y-2">
+              {recipient.fiat_accounts.map((account) => (
+                <div key={account.id} className="p-3 bg-gray-50 rounded-md space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium flex items-center gap-1">
+                      {account.bank_name}
+                      <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 px-1.5 py-0.5">
+                        <FlagIcon
+                          currencyCode={account.iso_currency}
+                          size={14}
+                        />
+                        {account.iso_currency}
+                      </Badge>
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Account: ••••{account.account_number.slice(-4)}
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-xs text-gray-500">Bank Name</div>
-                  <div className="text-sm font-medium">{recipient.bankingDetails.bankName}</div>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full">
-                  {recipient.bankingDetails?.currency && (
-                    <FlagIcon
-                      currencyCode={recipient.bankingDetails.currency.shortName}
-                      size={16}
-                    />
-                  )}
-                  <span className="text-xs text-gray-600">{recipient.bankingDetails?.currency?.name}</span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs text-gray-500">Account Number</div>
-                  <div className="text-sm font-medium">{recipient.bankingDetails.accountNumber}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500">Routing Number</div>
-                  <div className="text-sm font-medium">{recipient.bankingDetails.routingNumber}</div>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-xs text-gray-500">Bank Address</div>
-                <div className="text-sm font-medium">{recipient.bankingDetails.bankAddress}</div>
-                <div className="text-sm font-medium">{`${recipient.bankingDetails.bankCity}, ${recipient.bankingDetails.bankState} ${recipient.bankingDetails.bankZip}`}</div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-gray-500" />
-              <h4 className="text-sm font-medium">Banking Details</h4>
-            </div>
-            <p className="mt-2 text-xs text-gray-500">Not provided</p>
           </div>
         )}
 
-        <div>
-          <h4 className="text-sm font-medium mb-2">Notes</h4>
-          <p className="text-xs text-gray-600">{recipient.notes ?? 'No notes provided'}</p>
-        </div>
+        {/* Blockchain Accounts Section */}
+        {recipient.blockchain_accounts && recipient.blockchain_accounts.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium">Digital Accounts</h3>
+            <div className="space-y-2">
+              {recipient.blockchain_accounts.map((account) => (
+                <div key={account.id} className="p-3 bg-gray-50 rounded-md space-y-1">
+                  <span className="text-sm font-medium flex items-center gap-1 w-full justify-between">
+                    Digital US Dollar <USDCBadge />
+                  </span>
+                  <Link href={`https://stellar.expert/explorer/testnet/contract/${account.address}`}>
+                    <span className="px-2 pr-6 inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200">
+                      <XLMIcon className="h-3 w-3 mr-2" />
+                      {shortAddress(account.address)}
+                    </span>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2 pt-2">
           <Button variant="danger" className="p-2 text-xs" onClick={() => onRemove(recipient.id)}>
             Remove Recipient
-          </Button>
-          <Button className="ml-auto">
-            Edit Details
           </Button>
         </div>
       </div>

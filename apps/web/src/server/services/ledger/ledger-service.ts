@@ -46,6 +46,37 @@ export class LedgerService extends BaseService {
     }
 
     /**
+     * Get payouts for the current wallet
+     * @param limit - Number of payouts to return
+     * @param offset - Number of payouts to skip
+     * @returns Payouts
+     */
+    async getPayouts({ limit = 10, offset = 0, where }: {
+        limit?: number,
+        offset?: number,
+        where?: Partial<Transactions>
+    }) {
+
+        const transactions = await this.db.transactions.findMany({
+            where: {
+                wallet_id: this.walletId,
+                movement_type: TransactionMovementType.OUT,
+                ...where
+            },
+            orderBy: {
+                created_at: 'desc'
+            },
+            include: {
+                recipient: true,
+                sender: true
+            },
+            take: limit,
+            skip: offset
+        })
+        return transactions;
+    }
+
+    /**
      * Get a single transaction by id
      * @param id - The id of the transaction
      * @returns The transaction

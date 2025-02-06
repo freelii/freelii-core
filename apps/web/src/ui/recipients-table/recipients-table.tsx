@@ -60,9 +60,9 @@ export const columns: ColumnDef<Recipient>[] = [
                                 </HoverCardContent>
                             </HoverCard>
                         ) : (
-                            <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
+                            <Badge className="flex items-center gap-1 px-1 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100">
                                 <Clock className="h-3 w-3" />
-                                <span className="text-xs">Pending</span>
+                                <span className="text-xs">Pending verification</span>
                             </Badge>
                         )}
                     </div>
@@ -97,7 +97,7 @@ export const columns: ColumnDef<Recipient>[] = [
     },
     {
         accessorKey: "fiat_accounts",
-        header: "Fiat Accounts",
+        header: "Bank Accounts",
         cell: ({ row }) => {
             const recipient = row.original
             const hasFiatAccounts = recipient.fiat_accounts && recipient.fiat_accounts.length > 0
@@ -153,12 +153,10 @@ export const columns: ColumnDef<Recipient>[] = [
                 <div className="space-y-2">
                     {recipient.blockchain_accounts?.map((account) => (
                         <div key={account.id} className="flex items-center gap-2">
-                            <div className="flex flex-col">
-                                <div className="text-xs font-medium flex items-center gap-1 capitalize">
-                                    {account.network}
-                                </div>
+                            <div className="flex items-center gap-1">
+                                <FlagIcon currencyCode={"USDC"} size={16} />
                                 <div className="text-xs text-gray-500 font-mono">
-                                    {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                                    USDC
                                 </div>
                             </div>
                         </div>

@@ -1,5 +1,8 @@
-import { Badge } from "@freelii/ui"
-import { Calendar, CheckCircle2, Clock, Users } from "lucide-react"
+import { BlurImage, Separator } from "@freelii/ui"
+import { DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils/constants"
+import dayjs from "dayjs"
+import { Building2, Calendar } from "lucide-react"
+import Link from "next/link"
 import { useEffect, useRef } from "react"
 import { type Payout } from "./page-payouts"
 
@@ -42,90 +45,66 @@ export function PaymentDetails({
     >
       <div className="space-y-6">
         {/* Summary Section */}
+        <div className="flex items-center justify-between gap-4 mb-6 w-full">
+          <div className="flex items-center gap-2 justify-between">
+            <Calendar className="h-4 w-4 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              {payment.progress}
+            </span>
+          </div>
+          <span className="text-xs text-gray-500 text-left">
+            {dayjs(payment.nextPayment).format("MMM D, YYYY hh:mm")}
+          </span>
+        </div>
         <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-4">{payment.label}</h3>
+          <div className="">
+            <div className="flex items-start gap-3">
+              <BlurImage
+                src={`${DICEBEAR_SOLID_AVATAR_URL}${payment.recipients[0]?.name}`}
+                width={48}
+                height={48}
+                alt={payment.recipients[0]?.name ?? ""}
+                className="size-12 shrink-0 overflow-hidden rounded-full"
+              />
+              <div className="flex-1">
+                <p className="font-medium">{payment.recipients[0]?.name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <Building2 className="size-3 text-gray-500" />
+                  <span className="text-xs text-gray-500">{payment.recipients[0]?.email}</span>
+                </div>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <div className="text-sm text-gray-500">Total amount</div>
-              <div className="text-lg font-semibold">
+            <Separator className="my-4" />
+
+          </div>
+
+          <div className="gap-4 mb-6">
+            <div className="w-full">
+              <div className="text-sm text-gray-500 flex items-center justify-between w-full">
+                Payment amount
+                <Link
+                  href={`/dashboard/invoices/create?tx_id=${payment.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span className=" items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
+                    Generate Invoice
+                  </span>
+                </Link>
+              </div>
+              <div className="text-sm font-semibold">
                 {new Intl.NumberFormat("en-US", {
                   style: "currency",
                   currency: payment.currency === "USDC" ? "USD" : payment.currency,
                 }).format(totalAmount)}
               </div>
             </div>
-            <div>
-              <div className="text-sm text-gray-500">Per recipient</div>
-              <div className="text-lg font-semibold">
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: payment.currency === "USDC" ? "USD" : payment.currency,
-                }).format(payment.amount)}
-              </div>
-            </div>
           </div>
-
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">
-                {payment.recipients.length} recipients
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">
-                {payment.progress}
-              </span>
-            </div>
+          <div>
           </div>
         </div>
 
-        {/* Recipients Section */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-gray-500">Recipients</h4>
-            <div className="text-xs text-gray-500">
-              {verifiedCount} of {payment.recipients.length} verified
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {payment.recipients.map((recipient) => (
-              <div
-                key={recipient.id}
-                className="p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="font-medium">{recipient.name}</div>
-                    {recipient.isVerified ? (
-                      <Badge className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200">
-                        <CheckCircle2 className="h-3 w-3" />
-                        <span className="text-xs">Verified</span>
-                      </Badge>
-                    ) : (
-                      <Badge className="flex items-center gap-1 bg-gray-50 text-gray-600 border-gray-200">
-                        <Clock className="h-3 w-3" />
-                        <span className="text-xs">Pending</span>
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-sm font-medium">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: payment.currency === "USDC" ? "USD" : payment.currency,
-                    }).format(payment.amount)}
-                  </div>
-                </div>
-                <div className="text-sm text-gray-500">{recipient.email}</div>
-              </div>
-            ))}
-          </div>
-
-        </div>
       </div>
-    </div>
+    </div >
   )
 } 

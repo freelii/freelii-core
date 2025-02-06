@@ -2,6 +2,7 @@ import { TESTNET } from "@freelii/utils/constants";
 import { MAINNET } from "@freelii/utils/constants/stellar-sac";
 import { BaseService } from "../base-service";
 import { StellarService } from "../stellar/stellar-service";
+
 interface CreateWalletInput {
     alias: string;
     isDefault: boolean;

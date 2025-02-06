@@ -6,6 +6,10 @@ import { XLM_SAC } from "@freelii/utils/constants";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
+interface SignedTx {
+    txHash: string;
+}
+
 export function useWallet() {
     const [isFunding, setIsFunding] = useState(false);
     const { setSelectedWalletId, setWallets, selectedWalletId } = useWalletStore();
@@ -57,7 +61,7 @@ export function useWallet() {
             // setContractId(cid);
             const walletRes = await createWallet({
                 alias,
-                isDefault: true,
+                isDefault: wallets?.length === 0,
                 network: "testnet",
                 address: cid,
                 keyId: keyIdBase64,
@@ -99,10 +103,10 @@ export function useWallet() {
         console.log('at', at.options);
         console.log('keyId', key_id);
 
-        const signedTx = await smartWallet.sign(at.built!, { keyId: key_id });
+        const signedTx = await smartWallet.sign(at.built!, { keyId: key_id })
 
         try {
-            const res = await server.send(signedTx);
+            const res = await server.send(signedTx) as SignedTx;
             void trpcUtils.wallet.getAccount.invalidate();
             return res;
         } catch (error) {

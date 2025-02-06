@@ -145,18 +145,18 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                 sacAddress: TESTNET.USDC_SAC
             })
 
-            console.log('trasnfer res', at, at.txId, at.txHash)
 
-
-            registerPayment.mutate({
-                walletId: account.id,
-                txId: at.txHash,
-                txHash: at.txHash,
-                senderId: account.user_id,
-                recipientId: client.id,
-                amount: toStroops(Number(searchParams.get('amount'))),
-                currency: "USDC"
-            });
+            if (at?.txHash) {
+                registerPayment.mutate({
+                    walletId: account.id,
+                    txId: at?.txHash,
+                    txHash: at?.txHash,
+                    senderId: account.user_id,
+                    recipientId: client.id,
+                    amount: toStroops(Number(searchParams.get('amount'))),
+                    currency: "USDC"
+                });
+            }
 
             setIsProcessing(false)
             setIsConfirmed(true)
