@@ -9,9 +9,9 @@ import LandingPage from "./_components/landing-page"
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex bg-white text-black">
+    <main className="min-h-screen flex bg-white text-black grid grid-cols-10 overflow-hidden">
       {/* Left side */}
-      <div className="flex-1 p-8 relative">
+      <div className="flex-1 p-8 relative col-span-5">
         <div className="w-[200%] h-[80%] rotate-[25deg] translate-x-[10%] translate-y-[-20%] h-full absolute top-0 left-0 bg-gradient-to-b from-white  to-transparent z-10" />
 
         <div className="flex items-center justify-between">
@@ -89,7 +89,7 @@ export default function Home() {
       </div>
 
       {/* Right side */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white z-10">
+      <div className="flex-1 flex items-center justify-center pl-0 z-10 col-span-5 bg-gradient-to-r from-white via-white to-white">
         <LandingPage />
       </div>
       <span className="absolute bottom-8 left-8 text-xs text-muted-foreground">

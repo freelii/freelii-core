@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 /**
  * Hook to copy text to clipboard
@@ -34,6 +34,7 @@ export const useCopyToClipboard = (
           await navigator.clipboard.write([value]);
         }
         setCopied(true);
+        console.log("Copied to clipboard", silent);
         if (!silent) {
           toast.success("Copied to clipboard");
         }

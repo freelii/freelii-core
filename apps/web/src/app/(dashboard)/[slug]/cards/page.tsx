@@ -124,7 +124,9 @@ export default function CardsPage() {
                 {/* Content */}
                 <div className="relative h-full flex items-center justify-center">
                     <div className="max-w-md z-30">
-
+                        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                            What you get with a Freelii Card
+                        </h2>
                         <div className="space-y-6 mt-8 animate-in slide-in-from-bottom-8 duration-700">
 
                             {features.map((feature, index) => (

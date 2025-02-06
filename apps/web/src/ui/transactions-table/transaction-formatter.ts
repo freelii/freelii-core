@@ -17,7 +17,7 @@ export const formatTransaction = (transaction: Transactions & { recipient?: Clie
         type: transaction.movement_type === TransactionMovementType.IN ? "received" : "sent",
         description: getDescription(transaction),
         amount: Number(transaction.amount),
-        date: dayjs(transaction.created_at).format("DD/MM/YYYY HH:mm"),
+        date: dayjs(transaction.created_at).format("YYYY-MM-DD HH:mm"),
         status: transaction.status === TransactionStatus.COMPLETED ? "completed" : transaction.status === TransactionStatus.FAILED ? "failed" : "pending",
         currency: transaction.currency,
         reference: "", // transaction.reference,

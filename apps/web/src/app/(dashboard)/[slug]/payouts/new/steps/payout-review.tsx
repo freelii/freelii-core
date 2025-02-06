@@ -11,7 +11,7 @@ import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/uti
 import { fromStroops, hasEnoughBalance, shortAddress, toStroops } from "@freelii/utils/functions"
 import { Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
-import { Building2, Check, Copy, Download, Edit2, XCircle } from "lucide-react"
+import { Check, Copy, Download, Edit2, XCircle } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
 
@@ -46,6 +46,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     const transferToFreelii = searchParams.get('transferToFreelii') !== 'false' && true;
 
     // tRPC procedures
+    const trpcUtils = api.useUtils();
     const registerPayment = api.ledger.registerPayment.useMutation({
         onError: ClientTRPCErrorHandler
     });
@@ -145,6 +146,9 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                 sacAddress: TESTNET.USDC_SAC
             })
 
+            void trpcUtils.activity.invalidate()
+            void trpcUtils.wallet.invalidate()
+
 
             if (at?.txHash) {
                 registerPayment.mutate({
@@ -193,7 +197,6 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                     <div className="flex-1">
                                         <p className="font-medium">{paymentDetails.recipient.name}</p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <Building2 className="size-3 text-gray-500" />
                                             <span className="text-xs text-gray-500">{recipientAccount?.network}</span>
                                         </div>
                                     </div>
@@ -272,7 +275,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                     {fromStroops(account.main_balance?.amount ?? 0, 2)}
                                                 </span>
                                             </div>
-                                            {hasEnoughBalance(account.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0) ?
+                                            {hasEnoughBalance(account.main_balance?.amount ?? 0, toStroops(searchParams.get('amount')) ?? 0) ?
                                                 <span className="text-[10px] text-gray-500">Available balance</span> :
                                                 <span className="text-[10px] text-red-500">Insufficient balance</span>
                                             }

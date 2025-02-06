@@ -1,6 +1,6 @@
 export function fromStroops(amount: bigint | number | string | null | undefined, decimals: number = 2): string {
     if (!amount) return '0.00';
-    return (Math.floor((Number(amount) / 10_000_000) * 100) / 100).toString();
+    return (Math.floor((Number(amount) / 10_000_000) * 100) / 100).toFixed(2);
 }
 
 export function toStroops(amount: number | string | bigint | null | undefined): bigint {

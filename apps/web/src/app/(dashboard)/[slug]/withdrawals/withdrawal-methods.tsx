@@ -8,14 +8,6 @@ import { cn, maskFirstDigits } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import Link from "next/link"
 
-type WithdrawalMethod = {
-    id: string
-    accountName: string
-    accountNumber: string
-    bankName: string
-    currency: string
-}
-
 export function WithdrawalsList({ withdrawals, fiatAccountsHash }: { withdrawals: Withdrawal[], fiatAccountsHash: Map<string, FiatAccount> }) {
     return (<div>
         {withdrawals.map((transaction) => (

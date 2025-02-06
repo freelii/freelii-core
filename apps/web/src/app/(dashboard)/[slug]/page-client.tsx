@@ -5,7 +5,7 @@ import { api } from "@/trpc/react"
 import { ITransactionDetails } from "@/ui/transactions-table/transaction-details"
 import TransactionsTable from "@/ui/transactions-table/transactions-table"
 import { useWallet } from "@/wallet/useWallet"
-import { LoadingSpinner } from "@freelii/ui"
+import { Button, LoadingSpinner } from "@freelii/ui"
 import { CURRENCIES } from "@freelii/utils"
 import { USDC_SAC } from "@freelii/utils/constants"
 import { fromStroops, toStroops } from "@freelii/utils/functions"
@@ -32,8 +32,8 @@ const QuickActionButton = ({ icon, label, href }: { icon: JSX.Element, label: st
 }
 
 export default function PageClient() {
-  const { account, fundWallet, transfer, isFunding, isLoadingAccount } = useWallet();
-  const { wallets } = useWalletStore();
+  const { account, transfer, isLoadingAccount } = useWallet();
+  const { wallets, setSelectedWalletId } = useWalletStore();
   const [, setIsTransferring] = useState(false)
   const [selectedRecipient, setSelectedRecipient] = useState('')
   const [selectedTransaction, setSelectedTransaction] = useState<ITransactionDetails | null>(null)
@@ -41,6 +41,7 @@ export default function PageClient() {
 
   // tRPC procedures
   const trpcUtils = api.useUtils();
+  const { data: activity, isLoading: isLoadingActivity } = api.activity.getActivity.useQuery({ items: 7 });
   const { data: txs, isLoading: isLoadingTx } = api.ledger.transactions.useQuery({
     walletId: String(account?.id)
   }, { enabled: !!account?.id })
@@ -79,7 +80,7 @@ export default function PageClient() {
   }
 
   return (
-    <div className="animate-in fade-in duration-500 mb-10">
+    <div className="animate-in fade-in duration-500 mb-10" >
       <div className="grid grid-cols-12 gap-6">
         {/* Main Content Area */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -196,21 +197,67 @@ export default function PageClient() {
           <div className="p-6 border border-gray-200 rounded-lg bg-white">
             <h3 className="text-sm font-medium mb-4">Recent Activity</h3>
             <div className="space-y-4">
-              {wallets.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((wallet, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5" />
-                  <div>
-                    <p className="text-sm">{wallet.alias} account created</p>
-                    <p className="text-xs text-gray-500">{dayjs(wallet.created_at).fromNow()}</p>
-                  </div>
-                </div>
-              ))}
+              {activity?.map((activity, i) => {
+                console.log(activity)
+                if (activity.type === 'new_wallet') {
+                  return (
+                    <div key={i} className="flex items-start gap-3 group relative">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 relative before:absolute before:inset-0 before:rounded-full before:animate-pulse before:blur-sm
+                        ${dayjs().diff(activity.raw.created_at, 'minute') < 5
+                          ? 'bg-green-500/60 before:bg-green-500'
+                          : 'bg-primary/60 before:bg-primary'
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          <Button
+                            variant="ghost"
+                            className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 transition-opacity duration-200 mr-1"
+                            onClick={() => setSelectedWalletId(activity.raw.id)}
+                          >
+                            {activity.raw.alias}
+                          </Button>
+                          account created</p>
+                        <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
+                      </div>
+                      <div className="absolute right-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
+                        <p className="text-xs text-gray-400">{dayjs(activity.raw.created_at).format('MMM D, YYYY hh:mm')}</p>
+                      </div>
+                    </div>
+
+                  )
+                } else if (activity.type === 'transfer_out') {
+                  return (
+                    <div key={i} className="flex items-start gap-3 group relative">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 relative before:absolute before:inset-0 before:rounded-full before:animate-pulse before:blur-sm
+                        ${dayjs().diff(activity.raw.created_at, 'minute') < 5
+                          ? 'bg-green-500/60 before:bg-green-500'
+                          : 'bg-primary/60 before:bg-primary'
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          <span className="text-xs font-medium text-gray-600">
+                            {CURRENCIES.USDC?.symbol}
+                            {fromStroops(activity.raw.amount, 2)}
+                          </span>
+                          <span className="ml-1">payment sent </span>
+                        </p>
+                        <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
+                      </div>
+                      <div className="absolute right-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
+                        <p className="text-xs text-gray-400">{dayjs(activity.raw.created_at).format('MMM D, YYYY hh:mm')}</p>
+                      </div>
+                    </div>
+                  )
+                }
+              })}
             </div>
           </div>
         </div>
       </div>
 
       {/* Mobile slide-over and transaction details remain unchanged */}
-    </div>
+    </div >
   )
 }

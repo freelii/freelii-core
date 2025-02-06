@@ -53,6 +53,11 @@ const NAV_AREAS: SidebarNavAreas<{
             href: `/${slug}/payouts${queryString}`,
           },
           {
+            name: "Deposits",
+            icon: ArrowsOppositeDirectionX,
+            href: `/${slug}/deposits${queryString}`,
+          },
+          {
             name: "Recipients",
             icon: Users6,
             href: `/${slug}/recipients${queryString}`,

@@ -2,11 +2,12 @@
 
 import { useWalletStore } from '@/hooks/stores/wallet-store';
 import {
+  BlurImage,
   Popover,
   Skeleton,
   useScrollProgress
 } from "@freelii/ui";
-import { cn } from "@freelii/utils";
+import { cn, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils";
 import { fromStroops } from '@freelii/utils/functions';
 import { type Wallet, type WalletBalance } from '@prisma/client';
 import { ChevronsUpDown, Plus, Wallet as WalletIcon } from "lucide-react";
@@ -63,7 +64,13 @@ export function WalletDropdown() {
           {wallet ? (
             <div className="flex min-w-0 items-center gap-x-2.5 pr-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4ab3e8]">
-                <WalletIcon className="h-4 w-4 text-white" />
+                {wallet.alias ? <BlurImage
+                  src={`${DICEBEAR_SOLID_AVATAR_URL}${wallet.alias}`}
+                  alt={wallet.alias}
+                  width={28}
+                  height={28}
+                  className="rounded-full"
+                /> : <WalletIcon className="h-4 w-4 text-white" />}
               </div>
               <div className="min-w-0 block">
                 <div className="truncate text-sm font-medium leading-5 text-neutral-900">
@@ -71,7 +78,7 @@ export function WalletDropdown() {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-gray-500">
-                    {fromStroops(wallet.main_balance?.amount ?? 0, 2)} {wallet.main_balance?.currency}
+                    {fromStroops(wallet.main_balance?.amount ?? 0, 2)}
                   </span>
                 </div>
               </div>
@@ -126,7 +133,7 @@ function WalletList({
         <div className="p-2">
           <div className="flex items-center justify-between pb-1">
             <p className="px-1 text-xs font-medium text-neutral-500">
-              My Accounts
+              My Wallets
             </p>
           </div>
           <div className="flex flex-col gap-0.5">
@@ -147,7 +154,15 @@ function WalletList({
                   )}
                 >
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#4ab3e8]">
-                    <WalletIcon className="h-4 w-4 text-white" />
+                    {wallet.alias ?
+                      <BlurImage
+                        src={`${DICEBEAR_SOLID_AVATAR_URL}${wallet.alias}`}
+                        alt={wallet.alias}
+                        width={28}
+                        height={28}
+                        className="rounded-full"
+                      /> : <WalletIcon className="h-4 w-4 text-white" />
+                    }
                   </div>
                   <div>
                     <span className="block truncate text-sm leading-5 text-neutral-900">
@@ -155,7 +170,7 @@ function WalletList({
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="text-xs text-gray-500">
-                        {fromStroops(wallet?.main_balance?.amount ?? 0, 2)} {wallet?.main_balance?.currency}
+                        {fromStroops(wallet?.main_balance?.amount ?? 0, 2)}
                       </span>
                     </div>
                   </div>

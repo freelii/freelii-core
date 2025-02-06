@@ -6,6 +6,7 @@ import { useWallet } from "@/wallet/useWallet";
 import { Button, MaxWidthWrapper, useCopyToClipboard } from "@freelii/ui";
 import { shortAddress } from "@freelii/utils/functions";
 import { Clock, Copy, Info, Shield, User, Wallet } from "lucide-react";
+import Link from "next/link";
 
 
 
@@ -32,13 +33,14 @@ export default function NetworkDetails() {
                                     {isLoading ? (
                                         <div className="h-9 bg-gray-100 rounded-lg animate-pulse" />
                                     ) : (
-                                        <div className="flex items-center gap-2 bg-gray-50 p-2.5 rounded-lg">
+                                        <div className="flex items-center justify-between gap-2 bg-gray-50 p-2.5 rounded-lg">
                                             <code className="text-xs text-gray-600">{shortAddress(account?.address, 6)}</code>
                                             <Button
-                                                variant="ghost"
-                                                className="h-6 w-6 hover:bg-gray-100"
+                                                variant="outline"
+                                                className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200"
                                                 onClick={() => void copyToClipboard(account?.address, false)}
                                             >
+                                                <span className="mr-1">Copy</span>
                                                 <Copy className="h-3 w-3" />
                                             </Button>
                                         </div>
@@ -49,17 +51,19 @@ export default function NetworkDetails() {
                                     {isLoading ? (
                                         <div className="h-5 w-24 bg-gray-100 rounded-md animate-pulse" />
                                     ) : (
-                                        <div className="space-y-2">
+                                        <div className="space-y-2 flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <XLMIcon className="h-4 w-4" />
                                                 <div className="text-sm text-gray-700 capitalize">{account?.network ?? 'Not connected'}</div>
                                             </div>
-                                            <Button
-                                                variant="ghost"
-                                                className="text-gray-500 hover:text-gray-700"
+                                            <Link
+                                                href="https://stellar.org/learn/intro-to-stellar"
+                                                target="_blank"
                                             >
-                                                Learn more about {account?.network ?? 'Stellar'}
-                                            </Button>
+                                                <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200">
+                                                    Learn more
+                                                </span>
+                                            </Link>
                                         </div>
                                     )}
                                 </div>
