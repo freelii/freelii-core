@@ -63,7 +63,7 @@ export default function LoginPage() {
                             <div className="flex items-center mt-4 space-x-4">
                                 <span className='text-xs text-muted-foreground flex items-center'>
                                     <FlagIcon className="w-4 h-4 mr-2" currencyCode='USDC' />
-                                    Powered by USD Coin (USDC)
+                                    Powered by USDC
                                 </span>
                             </div>
                         </div>
