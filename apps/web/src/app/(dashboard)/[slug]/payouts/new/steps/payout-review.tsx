@@ -274,7 +274,8 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                             </div>
                                             {hasEnoughBalance(account.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0) ?
                                                 <span className="text-[10px] text-gray-500">Available balance</span> :
-                                                <span className="text-[10px] text-red-500">Insufficient balance</span>}
+                                                <span className="text-[10px] text-red-500">Insufficient balance</span>
+                                            }
                                         </div>
                                     </div>
                                 </div>

@@ -26,7 +26,6 @@ export default function NewPaymentPage() {
   return (
     <PageContent titleBackButtonLink="/dashboard/payouts" title="New Payment">
       <MaxWidthWrapper>
-        SelectedWalletId: {JSON.stringify(getSelectedWallet()?.alias)}
         <NavSteps currentStep={step} steps={steps} setStep={setStep} />
         <div className="">
           {/* Step content will be rendered here */}

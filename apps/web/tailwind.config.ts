@@ -15,6 +15,8 @@ const config: Pick<Config, "presets"> = {
           ...sharedConfig?.theme?.extend,
           animation: {
             ...sharedConfig?.theme?.extend?.animation,
+            // Feature card animation
+            'feature-card': 'feature-card 0.5s ease-out forwards',
             // Infinite scroll animation
             "infinite-scroll": "infinite-scroll 22s linear infinite",
             "infinite-scroll-y": "infinite-scroll-y 22s linear infinite",
@@ -72,6 +74,17 @@ const config: Pick<Config, "presets"> = {
               "0%": { backgroundPosition: "0% 50%" },
               "100%": { backgroundPosition: "200% 50%" },
             },
+            // Feature card animation
+            'feature-card': {
+              '0%': {
+                opacity: '0',
+                transform: 'translateY(20px)'
+              },
+              '100%': {
+                opacity: '1',
+                transform: 'translateY(0)'
+              },
+            }
           },
         },
       },

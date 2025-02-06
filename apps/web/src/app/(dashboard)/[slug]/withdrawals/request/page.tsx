@@ -3,9 +3,10 @@ import { useFixtures } from "@/fixtures/useFixtures";
 import { PageContent } from "@/ui/layout/page-content";
 import { USDCBadge } from "@/ui/shared/badges/usdc-badge";
 import { FlagIcon } from "@/ui/shared/flag-icon";
+import { useWallet } from "@/wallet/useWallet";
 import { Badge, Button, Input, LoadingSpinner, MaxWidthWrapper, Separator, useRouterStuff } from "@freelii/ui";
 import { CURRENCIES } from "@freelii/utils/constants";
-import { cn } from "@freelii/utils/functions";
+import { cn, fromStroops, hasEnoughBalance, shortAddress, toStroops } from "@freelii/utils/functions";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Building2, ChevronRight, Edit2 } from "lucide-react";
@@ -18,7 +19,8 @@ const CASH_OUT_FEE = 0.0005;
 
 export default function WithdrawalsRequestPage() {
     const { searchParams, router } = useRouterStuff()
-    const { fiatAccounts, usdcAccount, getBalance } = useFixtures()
+    const { account } = useWallet();
+    const { fiatAccounts } = useFixtures()
     const [amount, setAmount] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -123,11 +125,11 @@ export default function WithdrawalsRequestPage() {
                                             <h4 className="text-sm font-medium mb-3">Withdrawal From</h4>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium">{usdcAccount.name}
+                                                    <span className="text-sm font-medium">{account?.alias}
                                                         <USDCBadge className="ml-2" />
                                                     </span>
                                                     <span className="text-xs text-gray-500">
-                                                        {usdcAccount.accountNumber}
+                                                        {shortAddress(account?.address)}
                                                     </span>
                                                 </div>
 
@@ -135,14 +137,19 @@ export default function WithdrawalsRequestPage() {
                                                     <div className="flex flex-col items-end">
                                                         <div className="flex items-center gap-1">
                                                             <FlagIcon
-                                                                currencyCode={usdcAccount.currency.shortName}
+                                                                currencyCode={"USDC"}
                                                                 className="size-3"
                                                             />
                                                             <span className="text-sm font-medium">
-                                                                {usdcAccount.balance.toLocaleString()}
+                                                                {fromStroops(account?.main_balance?.amount, 2)}
                                                             </span>
                                                         </div>
-                                                        <span className="text-[10px] text-gray-500">Available balance</span>
+                                                        {amount && account && <>
+                                                            {hasEnoughBalance((account?.main_balance?.amount ?? 0), toStroops(amount)) ?
+                                                                <span className="text-[10px] text-gray-500">Available balance</span> :
+                                                                <span className="text-[10px] text-red-500">Insufficient balance</span>
+                                                            }
+                                                        </>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -167,22 +174,23 @@ export default function WithdrawalsRequestPage() {
                                         <div className="relative flex-1">
                                             <div className="absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 bg-gray-200 pr-4 pl-2 py-2 rounded-l-md">
                                                 <FlagIcon
-                                                    currencyCode={usdcAccount.currency.shortName}
+                                                    currencyCode={"USDC"}
                                                     size={16}
                                                 />
                                                 <span className="text-sm text-gray-500">
-                                                    {CURRENCIES[usdcAccount.currency.shortName]?.symbol}
+                                                    {CURRENCIES["USDC"]?.symbol}
                                                 </span>
                                             </div>
                                             <Input
                                                 id="amount"
                                                 type="number"
                                                 placeholder="0.00"
+                                                min={0}
+                                                step={0.01}
                                                 className="pl-16 hover:border-gray-200 focus:border-none"
                                                 value={amount}
                                                 onChange={(e) => {
-                                                    const value = e.target.value;
-                                                    setAmount(value);
+                                                    setAmount(e.target.value);
                                                 }}
                                             />
                                         </div>
@@ -207,7 +215,7 @@ export default function WithdrawalsRequestPage() {
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex">
                                                             <FlagIcon
-                                                                currencyCode={usdcAccount.currency.shortName}
+                                                                currencyCode={"USDC"}
                                                                 className="size-4 rounded-full border-2 border-white"
                                                             />
                                                             <FlagIcon

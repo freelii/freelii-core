@@ -1,10 +1,9 @@
 "use client";
 
+import { XLMIcon } from "@/ui/icons/xlm-icon";
 import {
-  ArrowRight,
   ArrowsOppositeDirectionX,
   ArrowsOppositeDirectionY,
-  Calendar6,
   CreditCard,
   Facebook,
   GreekTemple,
@@ -80,26 +79,14 @@ const NAV_AREAS: SidebarNavAreas<{
           //   disabled: true,
           // },
         ],
-      }],
-  }),
-  // Payments
-  payments: ({ slug }) => ({
-    title: "Payouts",
-    backHref: `/${slug}`,
-    content: [
+      },
       {
-        name: "Payouts",
+        name: "Network",
         items: [
           {
-            name: "Account Payouts",
-            icon: Calendar6,
-            href: `/${slug}/payouts`,
-            exact: true,
-          },
-          {
-            name: "New Payment",
-            icon: ArrowRight,
-            href: `/${slug}/payouts/new`,
+            name: "Network Details",
+            icon: XLMIcon,
+            href: `/${slug}/network-details`,
           },
         ],
       },
@@ -212,9 +199,7 @@ export function AppSidebarNav({
       ? "userSettings"
       : pathname.startsWith(`/${String(slug)}/settings`)
         ? "workspaceSettings"
-        : pathname.startsWith(`/${String(slug)}/payouts`)
-          ? "payments"
-          : "default";
+        : "default";
   }, [slug, pathname]);
 
   return (
