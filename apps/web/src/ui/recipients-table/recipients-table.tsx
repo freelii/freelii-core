@@ -1,6 +1,6 @@
 import { Badge, Button, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
 import { cn } from "@freelii/utils/functions";
-import { Address, BlockchainAccount, Client, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
+import { Address, BlockchainAccount, Client, EwalletAccount, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
 import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import { Building2, CheckCircle2, Clock, CreditCard, UserPlus, Wallet } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +11,7 @@ export type Recipient = Client & {
     address?: Address | null
     fiat_accounts?: FiatAccount[]
     blockchain_accounts?: BlockchainAccount[]
+    ewallet_accounts?: EwalletAccount[]
 }
 
 export const columns: ColumnDef<Recipient>[] = [
@@ -97,12 +98,13 @@ export const columns: ColumnDef<Recipient>[] = [
     },
     {
         accessorKey: "fiat_accounts",
-        header: "Bank Accounts",
+        header: "Payment Methods",
         cell: ({ row }) => {
             const recipient = row.original
-            const hasFiatAccounts = recipient.fiat_accounts && recipient.fiat_accounts.length > 0
+            const hasFiatAccounts = recipient.fiat_accounts && recipient.fiat_accounts.length > 0;
+            const hasEwalletAccounts = recipient.ewallet_accounts && recipient.ewallet_accounts.length > 0
 
-            if (!hasFiatAccounts) {
+            if (!hasFiatAccounts && !hasEwalletAccounts) {
                 return (
                     <div className="text-sm text-gray-500 flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
@@ -113,11 +115,27 @@ export const columns: ColumnDef<Recipient>[] = [
 
             return (
                 <div className="space-y-2">
-                    {recipient.fiat_accounts?.map((account) => (
+                    {hasFiatAccounts && recipient.fiat_accounts?.map((account) => (
                         <div key={account.id} className="flex items-center gap-2">
                             <div className="flex flex-col">
                                 <div className="text-xs font-medium flex items-center gap-1 capitalize">
                                     {account.bank_name}
+                                </div>
+                                <div className="text-xs text-gray-500 flex items-center gap-1">
+                                    <FlagIcon
+                                        currencyCode={account.iso_currency}
+                                        size={16}
+                                    />
+                                    {account.iso_currency}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    {hasEwalletAccounts && recipient.ewallet_accounts?.map((account) => (
+                        <div key={account.id} className="flex items-center gap-2">
+                            <div className="flex flex-col">
+                                <div className="text-xs font-medium flex items-center gap-1 capitalize">
+                                    {account.ewallet_provider?.replace("PH_", " ")}
                                 </div>
                                 <div className="text-xs text-gray-500 flex items-center gap-1">
                                     <FlagIcon
@@ -135,7 +153,7 @@ export const columns: ColumnDef<Recipient>[] = [
     },
     {
         accessorKey: "blockchain_accounts",
-        header: "Digital Accounts",
+        header: "Blockchain Accounts",
         cell: ({ row }) => {
             const recipient = row.original
             const hasBlockchainAccounts = recipient.blockchain_accounts && recipient.blockchain_accounts.length > 0
@@ -154,7 +172,7 @@ export const columns: ColumnDef<Recipient>[] = [
                     {recipient.blockchain_accounts?.map((account) => (
                         <div key={account.id} className="flex items-center gap-2">
                             <div className="flex items-center gap-1">
-                                <FlagIcon currencyCode={"USDC"} size={16} />
+                                <FlagIcon currencyCode={"USDC-Hardcoded"} size={16} />
                                 <div className="text-xs text-gray-500 font-mono">
                                     USDC
                                 </div>

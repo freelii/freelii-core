@@ -2,7 +2,6 @@
 
 import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { api } from "@/trpc/react"
-import { FlagIcon } from "@/ui/shared/flag-icon"
 import { ArrowsOppositeDirectionY, Badge, BlurImage, Button, Checkbox, Download } from "@freelii/ui"
 import {
   Table,
@@ -30,7 +29,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { CheckCircle2, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect } from "react"
 import { PaymentDetails } from "./payment-details"
 
 dayjs.extend(relativeTime)
@@ -69,7 +68,7 @@ export type Recipient = {
 
 export type Payout = {
   id: string
-  amount: number
+  amount: string
   currency: string
   label: string
   nextPayment: Date
@@ -126,18 +125,9 @@ export const columns: ColumnDef<Payout>[] = [
     header: () => <div className="text-left">Amount</div>,
     size: 160,
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-      const currency = row.original.currency
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency === "USDC" ? "USD" : currency,
-      }).format(amount)
-
-
       return (
         <div className="flex items-center justify-start gap-2">
-          <FlagIcon currencyCode={currency} />
-          <div className="font-medium">{formatted}</div>
+          <div className="font-medium">{row.getValue("amount")}</div>
         </div>
       )
     },
@@ -251,7 +241,6 @@ export default function PayoutsTable() {
       rowSelection,
     },
   })
-  const detailsRef = useRef<HTMLDivElement>(null)
 
   const { data: txs, isLoading } = api.ledger.getPayouts.useQuery({
     walletId: String(selectedWalletId),
@@ -264,10 +253,10 @@ export default function PayoutsTable() {
   useEffect(() => {
     if (txs) {
       setPayouts(txs.map(tx => {
-        const recipient = tx.recipient
+        const amount = fromStroops(tx.amount)
         return {
           id: tx.id,
-          amount: Number(fromStroops(tx.amount)),
+          amount,
           currency: tx.currency,
           label: tx.recipient.name,
           nextPayment: tx.created_at,
@@ -295,14 +284,6 @@ export default function PayoutsTable() {
     }
   }, [selectedPayout])
 
-
-  const selectedTotal = table.getSelectedRowModel().rows.reduce(
-    (total, row) => {
-      const payout = row.original
-      return total + (payout.amount * payout.recipients.length)
-    },
-    0
-  )
 
   const handlePaymentSelect = (payout: Payout | null) => {
     if (payout?.id === selectedPayout?.id) {

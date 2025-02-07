@@ -13,6 +13,9 @@ interface CreateWalletInput {
 
 export class WalletService extends BaseService {
 
+    readonly mainCurrency = "XLM"
+
+
 
     /**
      * Create a new wallet
@@ -51,15 +54,15 @@ export class WalletService extends BaseService {
         });
 
         // Then update the wallet to set the USDC balance as the main balance
-        const usdcBalance = wallet.balances.find(b => b.currency === "USDC");
-        if (!usdcBalance) {
+        const mainBalance = wallet.balances.find(b => b.currency === this.mainCurrency);
+        if (!mainBalance) {
             throw new Error('USDC balance not created');
         }
 
         const updatedWallet = await this.db.wallet.update({
             where: { id: wallet.id },
             data: {
-                main_balance_id: usdcBalance.id,
+                main_balance_id: mainBalance.id,
             },
             include: {
                 balances: true,

@@ -99,13 +99,14 @@ export class LedgerService extends BaseService {
      * @param currency - The currency of the transaction
      * @returns The transaction
      */
-    async registerPayment({ txId, txHash, senderId, recipientId, amount, currency }: {
+    async registerPayment({ txId, txHash, senderId, recipientId, amount, currency, reference }: {
         txId: string;
         txHash: string;
         senderId: number;
         recipientId: number;
         amount: bigint;
         currency: string;
+        reference?: string;
     }) {
         const wallet = await this.db.wallet.findUniqueOrThrow({
             where: { id: this.walletId },
@@ -129,7 +130,8 @@ export class LedgerService extends BaseService {
                 amount: amount,
                 currency: currency,
                 status: TransactionStatus.COMPLETED,
-                wallet_id: this.walletId
+                wallet_id: this.walletId,
+                reference: reference
             }
         });
 

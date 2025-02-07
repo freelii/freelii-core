@@ -83,6 +83,7 @@ model Client {
     transactions        Transactions[]
     fiat_accounts       FiatAccount[]
     blockchain_accounts BlockchainAccount[]
+    ewallet_accounts    EwalletAccount[]
 
     @@index([user_id])
     @@map("clients")
@@ -120,6 +121,7 @@ model FiatAccount {
     bank_state          String?
     bank_zip            String?
     iso_currency        String
+    transfer_method     TransferMethod?
 
     client_id Int
     client    Client @relation(fields: [client_id], references: [id])
@@ -127,6 +129,22 @@ model FiatAccount {
     @@unique([client_id, alias])
     @@index([client_id])
     @@map("fiat_accounts")
+}
+
+model EwalletAccount {
+    id         String   @id @default(uuid())
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    iso_currency     String
+    mobile_number    String?
+    ewallet_provider EwalletProvider?
+
+    client_id Int
+    client    Client @relation(fields: [client_id], references: [id])
+
+    @@index([client_id])
+    @@map("ewallet_accounts")
 }
 
 model Transactions {
@@ -145,6 +163,7 @@ model Transactions {
     amount                 BigInt
     currency               String
     fee                    BigInt                  @default(0)
+    reference              String?
 
     wallet_id String
     wallet    Wallet @relation(fields: [wallet_id], references: [id])
@@ -168,10 +187,10 @@ model Invoice {
     invoice_number String   @unique
     po_number      String? // Purchase Order number
     currency       String // e.g., "PHP", "USD", "USDC"
-    subtotal       Float // Sum of line items before tax
-    tax_rate       Float    @default(0) // Tax rate as percentage (e.g., 12 for 12%)
-    tax_amount     Float    @default(0) // Calculated tax amount
-    total_amount   Float // Final amount including tax
+    subtotal       Int // Sum of line items before tax
+    tax_rate       Int      @default(0) // Tax rate as percentage (e.g., 12 for 12%)
+    tax_amount     Int      @default(0) // Calculated tax amount
+    total_amount   Int // Final amount including tax
     status         String   @default("Pending") // "Paid", "Pending", "Overdue", "Cancelled"
     due_date       DateTime
     description    String?
@@ -205,7 +224,7 @@ model LineItem {
     id          Int      @id @default(autoincrement())
     description String
     quantity    Float
-    unitPrice   Float
+    unit_price  Float
     amount      Float // quantity * unitPrice
     created_at  DateTime @default(now())
     updated_at  DateTime @updatedAt
@@ -328,4 +347,15 @@ enum RecipientType {
 enum FiatAccountType {
     CHECKING
     SAVINGS
+}
+
+enum TransferMethod {
+    PH_PESONET
+    PH_INSTAPAY
+}
+
+enum EwalletProvider {
+    PH_GCASH
+    PH_MAYA
+    PH_COINS_PH
 }

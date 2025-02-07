@@ -1,7 +1,21 @@
 export const CURRENCIES: Record<string, { name: string; flag: string; symbol: string, rate: number, shortName: string }> = {
-    "USDC": {
+    "XLM": {
+        "name": "USD",
+        "flag": "https://flagcdn.com/us.svg", //"https://flagcdn.com/us.svg",
+        "symbol": "$",
+        "rate": 1,
+        "shortName": "USD"
+    },
+    "USDC-Hardcoded": {
         "name": "USDC",
         "flag": "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7a1lsXQcn37SfveLNMUORa8duyswGr1CPQJlK",
+        "symbol": "$",
+        "rate": 1,
+        "shortName": "USDC"
+    },
+    "USDC": {
+        "name": "USDC",
+        "flag": "https://flagcdn.com/us.svg", // "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7a1lsXQcn37SfveLNMUORa8duyswGr1CPQJlK",
         "symbol": "$",
         "rate": 1,
         "shortName": "USDC"

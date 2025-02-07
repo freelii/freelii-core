@@ -8,8 +8,10 @@ import {
     Badge,
     BlurImage,
     Button,
+    ExpandingArrow,
     Input,
     Label,
+    LoadingDots,
     Select,
     SelectContent,
     SelectItem,
@@ -17,7 +19,7 @@ import {
     SelectValue,
     Textarea
 } from "@freelii/ui"
-import { CURRENCIES } from "@freelii/utils"
+import { cn, CURRENCIES } from "@freelii/utils"
 import { Address, Client } from "@prisma/client"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -42,9 +44,12 @@ interface InvoiceFormProps {
     isNewClient?: boolean
     newClientData?: Partial<Client & { address: Partial<Address> }> | undefined
     handleAddClient?: () => Promise<void>
+    handleCreateInvoice?: () => Promise<void>
+    isCreating?: boolean
 }
 
 export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormProps) {
+    const [isCreating, setIsCreating] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [showCustomDueDate, setShowCustomDueDate] = useState(false);
     const [isNewClient, setIsNewClient] = useState(false)
@@ -60,6 +65,12 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
 
     // tRPC procedures
     const ctx = api.useUtils();
+    const { mutateAsync: createInvoice } = api.invoicing.create.useMutation({
+        onSuccess: () => {
+            toast.success("Invoice created successfully")
+            void ctx.invoicing.search.refetch();
+        },
+    });
     const { mutateAsync: addClient } = api.clients.create.useMutation({
         onSuccess: (newClient) => {
             toast.success("Client created successfully")
@@ -72,6 +83,31 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
             toast.error((error as unknown as Error)?.message ?? "Failed to create client")
         }
     });
+
+    const handleCreateInvoice = async () => {
+        setIsCreating(true);
+        console.log(formData.lineItems, formData)
+        await createInvoice({
+            clientId: formData.clientId?.toString() ?? "",
+            invoiceNumber: formData.invoiceNumber,
+            poNumber: formData.poNumber,
+            currency: formData.currency as "USD" | "PHP",
+            dueDate: formData.dueDate,
+            notes: formData.notes,
+            lineItems: formData.lineItems?.map(item => ({
+                description: item.description,
+                quantity: item.quantity,
+                unit_price: fromFormattedToNumber(item.unit_price),
+                amount: fromFormattedToNumber(item.amount),
+            })),
+            status: "pending",
+            subtotal: formData.lineItems?.reduce((sum, item) => sum + fromFormattedToNumber(item.amount), 0) ?? 0,
+            taxRate: formData.taxRate,
+            taxAmount: formData.lineItems?.reduce((sum, item) => sum + fromFormattedToNumber(item.amount), 0) * (formData.taxRate / 100),
+            totalAmount: formData.lineItems?.reduce((sum, item) => sum + fromFormattedToNumber(item.amount), 0) + formData.lineItems?.reduce((sum, item) => sum + fromFormattedToNumber(item.amount), 0) * (formData.taxRate / 100),
+        });
+        setIsCreating(false);
+    }
 
     const handleAddClient = async () => {
         await addClient({
@@ -90,12 +126,19 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
         const newLineItem: LineItem = {
             description: "",
             quantity: 1,
-            unitPrice: 0,
+            unit_price: 0,
             amount: 0,
         }
         onChange({
             lineItems: [...formData.lineItems, newLineItem]
         })
+    }
+
+    const fromFormattedToNumber = (value: string | number) => {
+        if (typeof value === 'string') {
+            return Number(value.replace(/,/g, '').replace('$', ''));
+        }
+        return value;
     }
 
     const updateLineItem = (index: number, data: Partial<LineItem>) => {
@@ -104,8 +147,8 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
         newLineItems[index] = {
             description: data.description ?? currentItem.description,
             quantity: data.quantity ?? currentItem.quantity,
-            unitPrice: data.unitPrice ?? currentItem.unitPrice,
-            amount: (data.quantity ?? currentItem.quantity) * (data.unitPrice ?? currentItem.unitPrice)
+            unit_price: data.unit_price ?? currentItem.unit_price,
+            amount: (data.quantity ?? currentItem.quantity) * (fromFormattedToNumber(data.unit_price ?? 0) ?? fromFormattedToNumber(currentItem.unit_price))
         }
         onChange({ lineItems: newLineItems })
     }
@@ -156,7 +199,9 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
                     setNewClientData,
                     isNewClient,
                     newClientData,
-                    handleAddClient
+                    handleAddClient,
+                    handleCreateInvoice,
+                    isCreating
                 })}
             </div>
 
@@ -445,8 +490,8 @@ function LineItemsStep({ formData, addLineItem, updateLineItem, removeLineItem, 
                             <Input
                                 type="number"
                                 placeholder="Price"
-                                value={item.unitPrice}
-                                onChange={(e) => updateLineItem?.(index, { unitPrice: e.target.value ? Number(e.target.value) : 0 })}
+                                value={item.unit_price}
+                                onChange={(e) => updateLineItem?.(index, { unit_price: e.target.value ? Number(e.target.value) : 0 })}
                             />
                         </div>
 
@@ -605,7 +650,7 @@ function PaymentDetailsStep({
     )
 }
 
-function ReviewStep({ formData, onChange, invoiceTo }: InvoiceFormProps) {
+function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCreating }: InvoiceFormProps) {
 
     const getSchedulePreview = () => {
         if (!formData.repeatSchedule) return null;
@@ -622,8 +667,15 @@ function ReviewStep({ formData, onChange, invoiceTo }: InvoiceFormProps) {
         return scheduleMap[formData.repeatSchedule];
     };
 
+    const fromFormattedToNumber = (value: string | number) => {
+        if (typeof value === 'string') {
+            return Number(value.replace(/,/g, '').replace('$', ''));
+        }
+        return value;
+    }
+
     const calculateTotal = () => {
-        return formData.lineItems.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+        return formData.lineItems.reduce((sum, item) => sum + (fromFormattedToNumber(item.quantity) * fromFormattedToNumber(item.unit_price)), 0);
     };
 
     return (
@@ -719,10 +771,14 @@ function ReviewStep({ formData, onChange, invoiceTo }: InvoiceFormProps) {
                     Create Only
                 </Button>
                 <Button
-                    onClick={() => {/* Handle create and send */ }}
+                    disabled={isCreating}
+                    className={cn("group px-4 pr-8", isCreating && "opacity-50 py-3 px-6")}
+                    onClick={() => handleCreateInvoice?.()}
                 >
-                    Create and Send
-                    <ArrowsOppositeDirectionX className="ml-2 h-4 w-4" />
+                    {isCreating ?
+                        <LoadingDots className="h-4 w-4" color="white" />
+                        : "Create and Send"}
+                    <ExpandingArrow className="ml-1 h-4 w-4" />
                 </Button>
             </div>
         </div>

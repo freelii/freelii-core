@@ -1,9 +1,8 @@
 "use client";
 
-
-
 import { cn } from "@freelii/utils";
 import { CreditCard, Globe, Shield, Store } from "lucide-react";
+import Image from "next/image";
 
 const features = [
     {
@@ -58,6 +57,16 @@ export default function CardsPage() {
                         "before:absolute before:inset-0 before:bg-black/10 before:z-10",
                         "backdrop-blur-sm"
                     )}>
+                        {/* Freelii Logo */}
+                        <div className="absolute top-6 left-6 w-12 h-12 opacity-20 z-20">
+                            <Image
+                                src="/Freelii-ribbon.png"
+                                alt="Freelii"
+                                width={48}
+                                height={48}
+                                className="object-contain filter brightness-200"
+                            />
+                        </div>
 
                         {/* Existing card content with reduced opacity */}
                         <div className="relative opacity-10">

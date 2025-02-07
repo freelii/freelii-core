@@ -1,6 +1,19 @@
 export function fromStroops(amount: bigint | number | string | null | undefined, decimals: number = 2): string {
     if (!amount) return '0.00';
-    return (Math.floor((Number(amount) / 10_000_000) * 100) / 100).toFixed(2);
+    if (typeof amount === 'bigint') {
+        return Number(amount / BigInt(10_000_000)).toLocaleString('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        })
+    }
+    return (Math.floor((Number(amount) / 10_000_000) * 100) / 100).toLocaleString('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
 }
 
 export function toStroops(amount: number | string | bigint | null | undefined): bigint {

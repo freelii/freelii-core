@@ -25,12 +25,12 @@ export function InvoicesTable({ invoices = [], isLoading }: InvoicesTableProps) 
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead className="text-xs">Invoice #</TableHead>
+                    <TableHead className="text-xs">Client</TableHead>
+                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">Due Date</TableHead>
+                    <TableHead className="text-xs">Amount</TableHead>
+                    <TableHead className="text-xs">Status</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -75,7 +75,7 @@ export function InvoicesTable({ invoices = [], isLoading }: InvoicesTableProps) 
                     // Data rows
                     invoices.map((invoice) => (
                         <TableRow key={invoice.id}>
-                            <TableCell className="font-medium">
+                            <TableCell className="font-medium text-sm">
                                 {invoice.invoice_number}
                                 {invoice.po_number && (
                                     <span className="ml-2 text-xs text-gray-500">

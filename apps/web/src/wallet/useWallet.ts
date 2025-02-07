@@ -92,6 +92,7 @@ export function useWallet() {
         }
 
 
+        console.log('transfer', address, to, amount, sacAddress);
         if (!smartWallet.wallet) await connect();
         const asset = sac.getSACClient(sacAddress ?? XLM_SAC);
         const at = await asset.transfer({

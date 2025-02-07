@@ -6,12 +6,11 @@ import { ITransactionDetails } from "@/ui/transactions-table/transaction-details
 import TransactionsTable from "@/ui/transactions-table/transactions-table"
 import { useWallet } from "@/wallet/useWallet"
 import { Button, LoadingSpinner } from "@freelii/ui"
-import { CURRENCIES } from "@freelii/utils"
-import { USDC_SAC } from "@freelii/utils/constants"
-import { fromStroops, toStroops } from "@freelii/utils/functions"
+import { fromStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import {
+  ArrowDownLeft,
   ArrowUpRight,
   CreditCard
 } from "lucide-react"
@@ -46,30 +45,6 @@ export default function PageClient() {
     walletId: String(account?.id)
   }, { enabled: !!account?.id })
 
-  const refreshBalance = async () => {
-    await trpcUtils.wallet.getAccount.invalidate();
-  }
-
-  const handleInternalTransfer = async () => {
-    if (!selectedRecipient) return
-    setIsTransferring(true)
-    try {
-      console.log('selectedRecipient', selectedRecipient)
-      const address = wallets.find(wallet => wallet.id === selectedRecipient)?.address;
-      if (!address) {
-        throw new Error('No address found')
-      }
-      await transfer({
-        to: address,
-        amount: toStroops(1),
-        sacAddress: USDC_SAC
-      })
-    } finally {
-      setIsTransferring(false)
-      setSelectedRecipient('')
-    }
-  }
-
   const handleTransactionClick = (transaction: ITransactionDetails) => {
     // Toggle details if clicking the same transaction
     if (selectedTransaction?.id === transaction.id) {
@@ -85,16 +60,31 @@ export default function PageClient() {
         {/* Main Content Area */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
           {/* Primary Account Overview */}
-          <div className="p-6 border border-gray-200 rounded-lg bg-white">
+          <div className="p-6 border border-gray-200 rounded-lg bg-white relative">
+            {/* <button
+              onClick={() => {
+                const currentIndex = wallets.findIndex(w => w.id === account?.id);
+                const nextIndex = (currentIndex + 1) % wallets.length;
+                const nextWallet = wallets[nextIndex];
+                if (nextWallet) {
+                  setSelectedWalletId(nextWallet.id);
+                }
+              }}
+              className="absolute top-4 right-4 inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300"
+            >
+              Switch to {wallets[wallets.findIndex(w => w.id === account?.id) + 1]?.alias} →
+            </button> */}
             <div className="flex items-center justify-between mb-6">
-              <div>
+              <div
+                key={account?.id}
+                className="animate-slide-in"
+              >
                 <div className="flex items-center gap-3 mb-2">
                   <h2 className="text-xl font-semibold">{account?.alias}</h2>
                 </div>
                 <p className="text-sm text-gray-500">Available Balance</p>
                 <div className="flex items-center gap-2">
                   <p className="text-3xl font-semibold mt-1">
-                    {CURRENCIES.USDC?.symbol}
                     {fromStroops(account?.main_balance?.amount, 2)}
                   </p>
                   {isLoadingAccount && (
@@ -102,17 +92,6 @@ export default function PageClient() {
                   )}
                 </div>
               </div>
-              {/* <div className="flex flex-col gap-2">
-                <Button
-                  variant="outline"
-                  disabled={isFunding}
-                  onClick={() => fundWallet(account?.address)}
-                  className="w-32"
-                >
-                  <ArrowDownToLine className="h-4 w-4 mr-2" />
-                  {isFunding ? 'Adding...' : 'Add Funds'}
-                </Button>
-              </div> */}
             </div>
           </div>
 
@@ -151,11 +130,11 @@ export default function PageClient() {
               label="Send Money"
               href="/dashboard/payouts/new"
             />
-            {/* <QuickActionButton
+            <QuickActionButton
               icon={<ArrowDownLeft className="h-4 w-4" />}
               label="Add Funds"
-              href="/dashboard/funding/new"
-            /> */}
+              href="/dashboard/deposits"
+            />
             <QuickActionButton
               icon={<CreditCard className="h-4 w-4" />}
               label="Cards"
@@ -198,7 +177,6 @@ export default function PageClient() {
             <h3 className="text-sm font-medium mb-4">Recent Activity</h3>
             <div className="space-y-4">
               {activity?.map((activity, i) => {
-                console.log(activity)
                 if (activity.type === 'new_wallet') {
                   return (
                     <div key={i} className="flex items-start gap-3 group relative">
@@ -238,7 +216,6 @@ export default function PageClient() {
                       <div className="flex-1">
                         <p className="text-sm">
                           <span className="text-xs font-medium text-gray-600">
-                            {CURRENCIES.USDC?.symbol}
                             {fromStroops(activity.raw.amount, 2)}
                           </span>
                           <span className="ml-1">payment sent </span>
@@ -247,6 +224,47 @@ export default function PageClient() {
                       </div>
                       <div className="absolute right-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
                         <p className="text-xs text-gray-400">{dayjs(activity.raw.created_at).format('MMM D, YYYY hh:mm')}</p>
+                      </div>
+                    </div>
+                  )
+                } else if (activity.type === 'invoice_received') {
+                  return (
+                    <div key={i} className="flex items-start gap-3 group relative">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 relative before:absolute before:inset-0 before:rounded-full before:animate-pulse before:blur-sm
+                        ${dayjs().diff(activity.raw.created_at, 'minute') < 5
+                          ? 'bg-green-500/60 before:bg-green-500'
+                          : 'bg-primary/60 before:bg-primary'
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          Invoice received
+                          <span className="ml-1 inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors hover:border-gray-300 transition-opacity duration-200 mr-1">
+                            {activity.raw.invoice_number}
+                          </span>
+                        </p>
+                        <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
+                      </div>
+                    </div>
+                  )
+                }
+                else if (activity.type === 'invoice_created') {
+                  return (
+                    <div key={i} className="flex items-start gap-3 group relative">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1.5 relative before:absolute before:inset-0 before:rounded-full before:animate-pulse before:blur-sm
+                        ${dayjs().diff(activity.raw.created_at, 'minute') < 5
+                          ? 'bg-green-500/60 before:bg-green-500'
+                          : 'bg-primary/60 before:bg-primary'
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm">
+                          Invoice created
+                          <span className="ml-1 inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors hover:border-gray-300 transition-opacity duration-200 mr-1">
+                            {activity.raw.invoice_number}
+                          </span>
+                        </p>
+                        <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
                       </div>
                     </div>
                   )

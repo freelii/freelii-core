@@ -36,12 +36,13 @@ export default function InvoicesPage() {
                 </Button>
             }
         >
-            <MaxWidthWrapper>
+            <MaxWidthWrapper className="space-y-6 p-6">
                 <div className="mb-6">
                     <Input
                         placeholder="Search invoices..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        className="w-full md:w-1/2 lg:w-1/3"
                     />
                 </div>
                 <InvoicesTable invoices={invoices} isLoading={isLoading} />

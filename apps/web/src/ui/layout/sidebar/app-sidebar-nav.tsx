@@ -43,9 +43,14 @@ const NAV_AREAS: SidebarNavAreas<{
           //   href: `/${slug}/accounts${queryString}`,
           // },
           {
-            name: "Invoices",
-            icon: InvoiceDollar,
-            href: `/${slug}/invoices${queryString}`,
+            name: "Deposits",
+            icon: ArrowsOppositeDirectionX,
+            href: `/${slug}/deposits${queryString}`,
+          },
+          {
+            name: "Withdrawals",
+            icon: ArrowsOppositeDirectionY,
+            href: `/${slug}/withdrawals${queryString}`,
           },
           {
             name: "Payouts",
@@ -53,19 +58,14 @@ const NAV_AREAS: SidebarNavAreas<{
             href: `/${slug}/payouts${queryString}`,
           },
           {
-            name: "Deposits",
-            icon: ArrowsOppositeDirectionX,
-            href: `/${slug}/deposits${queryString}`,
+            name: "Invoices",
+            icon: InvoiceDollar,
+            href: `/${slug}/invoices${queryString}`,
           },
           {
             name: "Recipients",
             icon: Users6,
             href: `/${slug}/recipients${queryString}`,
-          },
-          {
-            name: "Withdrawals",
-            icon: ArrowsOppositeDirectionY,
-            href: `/${slug}/withdrawals${queryString}`,
           },
           {
             name: "Cards",

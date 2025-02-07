@@ -4,7 +4,7 @@ import { useFixtures } from "@/fixtures/useFixtures"
 import { PageContent } from "@/ui/layout/page-content"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { Badge, BlurImage, MaxWidthWrapper, Separator } from "@freelii/ui"
-import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, noop, pluralize, toUSD } from "@freelii/utils"
+import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, fromFormattedToNumber, noop, pluralize, toUSD } from "@freelii/utils"
 import { Building2, CheckCircle2, Download } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -40,8 +40,8 @@ export default function PayoutDetailsPage() {
         return <PayoutNotFound />
     }
 
-    const totalAmount = toUSD(payoutDetails.amount, payoutDetails.currency)
-    const processingFee = payoutDetails.amount * 0.001
+    const totalAmount = toUSD(fromFormattedToNumber(payoutDetails.amount), payoutDetails.currency)
+    const processingFee = fromFormattedToNumber(payoutDetails.amount) * 0.001
     const serviceCharge = 10
     const totalFees = processingFee + serviceCharge
     const finalTotal = totalAmount + totalFees
@@ -195,7 +195,7 @@ export default function PayoutDetailsPage() {
                                                         <FlagIcon currencyCode={payoutDetails.currency} size={12} />
                                                         <span className="text-sm font-medium">
                                                             {CURRENCIES[payoutDetails.currency]?.symbol}
-                                                            {(payoutDetails.amount / payoutDetails.recipients.length).toLocaleString()}
+                                                            {(fromFormattedToNumber(payoutDetails.amount) / payoutDetails.recipients.length).toLocaleString()}
                                                         </span>
                                                     </div>
                                                 </div>

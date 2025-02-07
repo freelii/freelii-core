@@ -13,7 +13,7 @@ export const walletRouter = createTRPCRouter({
                 main_balance: true,
             },
             orderBy: {
-                created_at: "desc",
+                created_at: "asc",
             },
         });
         return wallets;

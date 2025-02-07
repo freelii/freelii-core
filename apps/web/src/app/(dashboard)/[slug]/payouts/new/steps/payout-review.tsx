@@ -8,12 +8,13 @@ import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useCopyToClipboard, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
-import { fromStroops, hasEnoughBalance, shortAddress, toStroops } from "@freelii/utils/functions"
-import { Wallet } from "@prisma/client"
+import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
+import { BlockchainAccount, EwalletAccount, Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
-import { Check, Copy, Download, Edit2, XCircle } from "lucide-react"
+import { Check, Download, Edit2, XCircle } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
+import { AccountDetails } from "./account-details"
 
 interface PaymentDetails {
     recipient: Recipient;
@@ -43,7 +44,6 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     const recipientId = searchParams.get('recipientId');
     const selectedAccount = searchParams.get('recipientAccount');
-    const transferToFreelii = searchParams.get('transferToFreelii') !== 'false' && true;
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
@@ -58,8 +58,8 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
         recipient: client!,
         originAccount: account!,
         fees: {
-            processingFee: 1.00,
-            serviceCharge: 10.00
+            processingFee: 0.00,
+            serviceCharge: 0.00
         },
         fx: {
             rate: 0.018,
@@ -74,9 +74,20 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     const recipientAccount = useMemo(() => {
         if (client) {
             return client.blockchain_accounts?.find(acc => acc.id === selectedAccount)
+                ?? client.fiat_accounts?.find(acc => acc.id === selectedAccount)
+                ?? client.ewallet_accounts?.find(acc => acc.id === selectedAccount)
         }
         return null;
     }, [client, selectedAccount])
+
+    const isInstant = useMemo(() => {
+        return (recipientAccount as BlockchainAccount)?.network === 'stellar'
+    }, [recipientAccount])
+
+    const isEwallet = useMemo(() => {
+        return (recipientAccount as EwalletAccount)?.ewallet_provider !== null
+    }, [recipientAccount])
+
 
     // Check if we have all required data
     const isLoading = isLoadingClient || !account
@@ -85,10 +96,69 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     // Show loading state if data is being fetched
     if (isLoading) {
         return (
-            <div className="w-full h-[600px] flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <LoadingSpinner className="size-8" />
-                    <p className="text-sm text-gray-500">Loading payment details...</p>
+            <div className="w-full relative space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] gap-6">
+                    {/* Left side skeleton */}
+                    <div className="space-y-6">
+                        <div className="p-6 rounded-lg border border-gray-200 animate-pulse">
+                            <div className="space-y-6">
+                                {/* Recipient skeleton */}
+                                <div className="flex items-start gap-3">
+                                    <div className="size-12 rounded-full bg-gray-200" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                        <div className="h-3 bg-gray-200 rounded w-2/3" />
+                                    </div>
+                                </div>
+
+                                {/* Account details skeleton */}
+                                <div className="space-y-3 pt-4">
+                                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                                    <div className="h-10 bg-gray-200 rounded" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right side skeleton */}
+                    <div className="space-y-6">
+                        <div className="p-6 rounded-lg border border-gray-200 animate-pulse">
+                            <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-6">
+                                <div className="space-y-6">
+                                    {/* Payment details header skeleton */}
+                                    <div className="space-y-2">
+                                        <div className="h-5 bg-gray-200 rounded w-1/3" />
+                                        <div className="h-4 bg-gray-200 rounded w-2/3" />
+                                    </div>
+
+                                    {/* Payment breakdown skeleton */}
+                                    <div className="space-y-4 pt-4">
+                                        {[1, 2, 3, 4].map((_, i) => (
+                                            <div key={i} className="flex justify-between items-center">
+                                                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                                                <div className="h-4 bg-gray-200 rounded w-1/4" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Timeline skeleton */}
+                                <div className="space-y-4 pl-3">
+                                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                                    <div className="space-y-6 pt-4">
+                                        {[1, 2, 3].map((_, i) => (
+                                            <div key={i} className="pl-8 border-l-2 border-gray-200">
+                                                <div className="space-y-2">
+                                                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                                                    <div className="h-2 bg-gray-200 rounded w-1/3" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         )
@@ -134,46 +204,73 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                 return;
             }
 
-            if (!recipientAccount?.address) {
-                toast.error("Recipient account not found")
-                return;
+            setIsProcessing(true)
+            if ((recipientAccount as BlockchainAccount)?.network === 'stellar') {
+
+                if (!(recipientAccount as BlockchainAccount)?.address) {
+                    toast.error("Recipient account not found")
+                    return;
+                }
+
+                const at = await transfer({
+                    to: (recipientAccount as BlockchainAccount).address,
+                    amount: toStroops(Number(searchParams.get('amount'))),
+                    sacAddress: TESTNET.XLM_SAC
+                })
+                console.log('at:', at);
+                if (at?.txHash) {
+                    registerPayment.mutate({
+                        walletId: account.id,
+                        txId: at?.txHash,
+                        txHash: at?.txHash,
+                        senderId: account.user_id,
+                        recipientId: client.id,
+                        amount: toStroops(Number(searchParams.get('amount'))),
+                        currency: "USDC",
+                        reference: `Payment to ${client.name}`
+                    });
+                }
+            } else {
+                const at = await transfer({
+                    to: "GDUDPV3UBLHL2ZUC7XTERLVE5LPFNRK4DOU3GFM7U4AJEB3L7UMH3PPW",
+                    amount: toStroops(Number(searchParams.get('amount'))),
+                    sacAddress: TESTNET.XLM_SAC
+                })
+                console.log('at:', at);
+                registerPayment.mutate({
+                    walletId: account.id,
+                    txId: at?.txHash ?? "",
+                    txHash: at?.txHash ?? "",
+                    senderId: account.user_id,
+                    recipientId: client.id,
+                    amount: toStroops(Number(searchParams.get('amount'))),
+                    currency: "USD",
+                    reference: `Payment to ${client.name}`
+                });
             }
 
-            setIsProcessing(true)
-            const at = await transfer({
-                to: recipientAccount.address,
-                amount: toStroops(Number(searchParams.get('amount'))),
-                sacAddress: TESTNET.USDC_SAC
-            })
 
             void trpcUtils.activity.invalidate()
             void trpcUtils.wallet.invalidate()
 
 
-            if (at?.txHash) {
-                registerPayment.mutate({
-                    walletId: account.id,
-                    txId: at?.txHash,
-                    txHash: at?.txHash,
-                    senderId: account.user_id,
-                    recipientId: client.id,
-                    amount: toStroops(Number(searchParams.get('amount'))),
-                    currency: "USDC"
-                });
-            }
 
+            console.log('registerPayment done');
             setIsProcessing(false)
             setIsConfirmed(true)
             onConfirm?.()
         } catch (error) {
+            console.error(error)
             toast.error("Error processing payment")
             setIsProcessing(false)
-            console.error(error)
         }
     }
 
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
-    const fxRate = CURRENCIES.USDC?.rate ?? 1
+    let fxRate = CURRENCIES.USDC?.rate ?? 1
+    if (isEwallet) {
+        fxRate = CURRENCIES.PHP?.rate ?? 1
+    }
     const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
     const totalCost = Number(searchParams.get('amount')) + totalFees;
 
@@ -197,57 +294,12 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                     <div className="flex-1">
                                         <p className="font-medium">{paymentDetails.recipient.name}</p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs text-gray-500">{recipientAccount?.network}</span>
+                                            <span className="text-xs text-gray-500">{paymentDetails?.recipient?.email}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <Separator className="my-4" />
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Will receive</span>
-                                        <span className="font-medium">
-                                            {CURRENCIES.USDC?.symbol}
-                                            {(recipientAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Currency</span>
-                                        <div className="flex items-center gap-2">
-                                            <FlagIcon
-                                                currencyCode="USDC"
-                                                className="size-4"
-                                            />
-                                            <span>{CURRENCIES.USDC?.name}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Estimated delivery</span>
-                                        {transferToFreelii ?
-                                            <InstantBadge /> :
-                                            <span>1-3 business days</span>}
-                                    </div>
-                                </div>
-
-                                <div className="mt-4 space-y-3">
-                                    <h4 className="text-sm font-medium">Recipient Account</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Network</span>
-                                            <span>{recipientAccount?.network}</span>
-                                        </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Address</span>
-                                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                {shortAddress(recipientAccount?.address)}
-                                                <Button onClick={() => copyToClipboard(recipientAccount?.address, false)} variant="ghost" className="text-xs text-gray-500">
-                                                    <Copy className="size-3" />
-                                                </Button>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <AccountDetails selectedAccount={recipientAccount} />
                             </div>
 
                             <Separator />
@@ -258,19 +310,19 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                 <div className="flex items-center justify-between">
                                     <div className="flex flex-col">
                                         <span className="text-sm font-medium">{paymentDetails.originAccount?.alias}</span>
-                                        <span className="text-xs text-gray-500">
+                                        {/* <span className="text-xs text-gray-500">
                                             {shortAddress(paymentDetails.originAccount?.address)}
-                                        </span>
+                                        </span> */}
                                     </div>
 
                                     <div className="flex items-start justify-between gap-3">
 
                                         <div className="flex flex-col items-end">
                                             <div className="flex items-center gap-1">
-                                                <FlagIcon
+                                                {/* <FlagIcon
                                                     currencyCode={CURRENCIES.USDC?.shortName}
                                                     className="size-3"
-                                                />
+                                                /> */}
                                                 <span className="text-sm font-medium">
                                                     {fromStroops(account.main_balance?.amount ?? 0, 2)}
                                                 </span>
@@ -304,8 +356,15 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-600">Recipient will receive</span>
                                         <span className="font-medium flex items-center gap-1">
-                                            {CURRENCIES.USDC?.symbol}
-                                            {recipientAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            {isInstant && <FlagIcon
+                                                currencyCode="USDC-Hardcoded"
+                                                size={16}
+                                            />}
+                                            {isEwallet && <FlagIcon
+                                                currencyCode="PHP"
+                                                size={16}
+                                            />}
+                                            {recipientAmount.toLocaleString('en-US', { style: 'currency', currency: isEwallet ? 'PHP' : 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
 
@@ -321,7 +380,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                         className="size-4 rounded-full border-2 border-white"
                                                     />
                                                     <FlagIcon
-                                                        currencyCode={"USDC"}
+                                                        currencyCode={"PHP"}
                                                         className="size-4 -ml-2 rounded-full border-2 border-white"
                                                     />
 
@@ -331,20 +390,20 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                             <span className="flex items-center gap-2 font-medium">
                                                 <Badge className="flex items-center gap-1.5 py-0.5 pl-1 pr-2">
                                                     <FlagIcon
-                                                        currencyCode={"USDC"}
+                                                        currencyCode={"PHP"}
                                                         className="size-4"
                                                     />
-                                                    {CURRENCIES.USDC?.symbol}
-                                                    {CURRENCIES.USDC?.rate}
+                                                    {CURRENCIES.PHP?.symbol}
+                                                    {CURRENCIES.PHP?.rate}
                                                 </Badge>
                                             </span>
                                         </div>
                                     </div>
 
                                     {/* Fees */}
-                                    {/* <div className="space-y-2">
+                                    <div className="space-y-2">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-600">Processing fee (0.1%)</span>
+                                            <span className="text-gray-600">Processing fee (free)</span>
                                             <span className="font-medium">
                                                 ${paymentDetails.fees.processingFee.toFixed(2)}
                                             </span>
@@ -356,7 +415,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                 ${paymentDetails.fees.serviceCharge.toFixed(2)}
                                             </span>
                                         </div>
-                                    </div> */}
+                                    </div>
 
                                     <Separator />
 
@@ -364,10 +423,10 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                     <div className="flex justify-between text-sm font-medium">
                                         <span>Total cost</span>
                                         <span className="flex items-center gap-1">
-                                            <FlagIcon
+                                            {/* <FlagIcon
                                                 currencyCode={account.main_balance?.currency}
                                                 size={16}
-                                            />
+                                            /> */}
                                             ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
@@ -393,7 +452,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                         </div>
                                     </div>
 
-                                    {!transferToFreelii && <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
+                                    {!isInstant && <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
                                         {isProcessing ?
                                             <LoadingSpinner className="size-4 absolute left-0 -translate-x-[5px] p-2 bg-white pt-2 pb-0" /> :
                                             <div className={cn(
@@ -409,14 +468,13 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                         <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 border-gray-200 bg-white" />
                                         <div>
                                             <p className="font-medium text-sm flex items-center gap-1 justify-between">Expected Delivery
-                                                {transferToFreelii && <InstantBadge />}
+                                                {isInstant && <InstantBadge />}
                                             </p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                To {shortAddress(recipientAccount?.address)}
-                                                <Button onClick={() => copyToClipboard(recipientAccount?.address, false)} variant="ghost" className="text-xs text-gray-500">
-                                                    <Copy className="size-3" />
-                                                </Button>
-                                            </p>
+                                            {isInstant ? <p className="text-xs text-gray-500 mt-1">
+                                                Instant
+                                            </p> : <p className="text-xs text-gray-500 mt-1">
+                                                {isEwallet ? "Within 24 hours" : "1-2 business days"}
+                                            </p>}
                                         </div>
                                     </div>
                                 </div>
@@ -449,7 +507,8 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                             >
                                 {isProcessing ?
                                     <LoadingDots className="size-4" color="white" /> :
-                                    "Confirm Payment"}
+                                    "Confirm Payment"
+                                }
                             </Button>
                         </div>
                     </div>

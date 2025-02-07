@@ -7,6 +7,7 @@ import { useWallet } from "@/wallet/useWallet";
 import { Button, ExpandingArrow, Input, LoadingDots } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import { Globe } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -59,7 +60,7 @@ export function WalletOnboarding() {
                                 <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Protected by your device&apos;s security
+                                Protected with biometric security
                             </p>
                         </div>
 
@@ -113,7 +114,7 @@ export function WalletOnboarding() {
                 {/* Content */}
                 <div className="relative h-full flex items-center justify-center">
                     <div className="max-w-md z-30">
-
+                        <h2 className="text-2xl font-semibold text-gray-900">Key Features</h2>
                         <div className="space-y-6 mt-8 animate-in slide-in-from-bottom-8 duration-700">
                             <div className="flex items-start gap-3 p-4 bg-white/90 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.05)] hover:shadow-[0_0_25px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1">
                                 <div className="p-2 bg-primary/10 rounded-lg">
@@ -155,7 +156,13 @@ export function WalletOnboarding() {
                                 </div>
                                 <div>
                                     <h3 className="font-medium">Digital Currency Ready</h3>
-                                    <p className="text-sm text-gray-600">Your deposits are automatically secured in digital dollars (USDC)</p>
+                                    <p className="text-sm text-gray-600">Your deposits are automatically secured in digital dollars
+                                        <Link href="/stablecoins" className="text-primary ml-2">
+                                            <span className=" items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
+                                                Learn more
+                                            </span>
+                                        </Link>
+                                    </p>
                                 </div>
                             </div>
                         </div>

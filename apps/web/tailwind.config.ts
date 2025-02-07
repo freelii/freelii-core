@@ -30,6 +30,7 @@ const config: Pick<Config, "presets"> = {
             // Pulse scale animation used for onboarding/welcome
             "pulse-scale": "pulse-scale 6s ease-out infinite",
             "gradient-move": "gradient-move 5s linear infinite",
+            'slide-in': 'slide-in 0.2s ease-out',
           },
           keyframes: {
             ...sharedConfig?.theme?.extend?.keyframes,
@@ -84,6 +85,10 @@ const config: Pick<Config, "presets"> = {
                 opacity: '1',
                 transform: 'translateY(0)'
               },
+            },
+            'slide-in': {
+              '0%': { transform: 'translateX(100%)', opacity: '0' },
+              '100%': { transform: 'translateX(0)', opacity: '1' },
             }
           },
         },

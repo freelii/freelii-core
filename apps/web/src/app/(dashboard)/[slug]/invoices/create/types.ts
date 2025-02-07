@@ -1,8 +1,8 @@
 export interface LineItem {
     description: string
     quantity: number
-    unitPrice: number
-    amount: number
+    unit_price: number | string
+    amount: number | string
 }
 
 export interface InvoiceFormData {

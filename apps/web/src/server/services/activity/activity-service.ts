@@ -1,4 +1,4 @@
-import { Transactions, Wallet } from "@prisma/client";
+import { Invoice, Transactions, Wallet } from "@prisma/client";
 import dayjs from "dayjs";
 import { BaseService } from "../base-service";
 
@@ -13,7 +13,17 @@ interface INewWallet {
     raw: Wallet
 }
 
-type IActivity = ITransfer | INewWallet
+interface IInvoiceReceived {
+    type: 'invoice_received'
+    raw: Invoice
+}
+
+interface IInvoiceCreated {
+    type: 'invoice_created'
+    raw: Invoice
+}
+
+type IActivity = ITransfer | INewWallet | IInvoiceReceived | IInvoiceCreated
 
 type ActivityMap = Record<number, IActivity[]>
 
@@ -49,15 +59,47 @@ export class ActivityService extends BaseService {
         const transfers = this.summarizeTransfers(transactions)
         // Deposit
         // Withdrawal
-        // Invoice creation
-        // Invoice payment
+        // Invoice received
+        const invoices = await this.db.invoice.findMany({
+            where: {
+                receiver_id: Number(this.session.user.id),
+                created_at: {
+                    gte: dayjs().subtract(1, 'week').toDate()
+                }
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        })
+        const invoiceReceived = this.summarizeInvoiceReceived(invoices, 'received')
+
+        // Invoice created
+        const invoicesCreated = await this.db.invoice.findMany({
+            where: {
+                generator_id: Number(this.session.user.id),
+                created_at: {
+                    gte: dayjs().subtract(1, 'week').toDate()
+                }
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        });
+
+        console.log('invoicesCreated:', invoicesCreated)
+
+        const invoiceCreatedSorted = this.summarizeInvoiceReceived(invoicesCreated, 'created')
         // Card creation
-        const sortedActivity = Object.entries(activity).concat(Object.entries(transfers))
+        const sortedActivity = Object.entries(activity)
+            .concat(Object.entries(transfers))
+            .concat(Object.entries(invoiceReceived))
+            .concat(Object.entries(invoiceCreatedSorted))
             .sort(([timestampA], [timestampB]) => {
                 return Number(timestampB) - Number(timestampA)
             })
             .map(([_, values]) => Array.isArray(values) ? values : [values])
             .flat();
+
 
         return sortedActivity.slice(0, items);
     }
@@ -82,6 +124,22 @@ export class ActivityService extends BaseService {
                 activity[timestamp] = [];
             }
             activity[timestamp].push({ type: 'transfer_out', raw: transaction });
+        });
+        return activity;
+    }
+
+    summarizeInvoiceReceived(invoices: Invoice[], type: 'received' | 'created'): ActivityMap {
+        const activity: ActivityMap = {};
+        invoices.forEach(invoice => {
+            const timestamp = dayjs(invoice.created_at).unix();
+            if (!activity[timestamp]) {
+                activity[timestamp] = [];
+            }
+            if (type === 'received') {
+                activity[timestamp].push({ type: 'invoice_received', raw: invoice });
+            } else {
+                activity[timestamp].push({ type: 'invoice_created', raw: invoice });
+            }
         });
         return activity;
     }

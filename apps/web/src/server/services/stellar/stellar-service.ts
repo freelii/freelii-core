@@ -81,6 +81,8 @@ export class StellarService {
     }
 
 
+
+
     validateAddress() {
         if (!this.wallet.address) {
             return false;

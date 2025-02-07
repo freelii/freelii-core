@@ -1,9 +1,9 @@
-import { FlagIcon } from '@/ui/shared/flag-icon'
-import { cn, CURRENCIES, fromStroops } from '@freelii/utils'
+import { cn, fromStroops } from '@freelii/utils'
 import { Client, Transactions, User } from '@prisma/client'
 import dayjs from 'dayjs'
 import { ArrowDownRight, ArrowUpRight, InboxIcon } from 'lucide-react'
 import Link from 'next/link'
+import { StatusBadge } from '../shared/badges/status-badge'
 import { ITransactionDetails } from './transaction-details'
 import { formatTransaction } from './transaction-formatter'
 
@@ -66,13 +66,14 @@ export default function TransactionsTable({
                             <div>
                                 <div className="font-medium text-sm flex items-center gap-2">
                                     {transaction.description}
+                                    <StatusBadge text={transaction.status} />
 
 
                                 </div>
                                 <div className="text-xs text-gray-500 flex items-center gap-2">
                                     {dayjs(transaction.date).format('MMM D, YYYY [at] h:mm A')}
                                     <span className="text-gray-300">•</span>
-                                    <span>{transaction.reference}ref</span>
+                                    <span>{transaction.reference ?? ''}</span>
                                 </div>
                             </div>
                         </div>
@@ -80,12 +81,10 @@ export default function TransactionsTable({
                             <div className="text-right">
                                 <div className=" font-medium flex items-center gap-1 justify-end">
                                     <Link href={`/dashboard/invoices/${transaction.invoice_id ?? 'create?tx_id=' + transaction.id}`}>
-                                        <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                            {transaction.invoice_id ? "View Invoice" : "Generate Invoice"}
+                                        <span className="inline-flex items-center mr-2 rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            {transaction.invoice_id ? "View Invoice" : "Invoice"}
                                         </span>
                                     </Link>
-                                    <FlagIcon currencyCode={transaction.currency} size={12} />
-                                    {CURRENCIES[transaction.currency]?.symbol}
                                     {fromStroops(transaction.amount, 2)}
                                 </div>
                             </div>

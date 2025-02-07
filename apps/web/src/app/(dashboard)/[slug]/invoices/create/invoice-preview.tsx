@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@freelii/ui/button"
-import { formatCurrency } from "@freelii/utils/functions"
+import { formatCurrency, fromFormattedToNumber } from "@freelii/utils/functions"
 import { Address, Client } from "@prisma/client"
 import dayjs from "dayjs"
 import { Minus, Plus } from "lucide-react"
@@ -39,7 +39,7 @@ export function InvoicePreview({ data, client }: InvoicePreviewProps) {
     }
 
 
-    const subtotal = data.lineItems.reduce((sum, item) => sum + item.amount, 0)
+    const subtotal = data.lineItems.reduce((sum, item) => sum + fromFormattedToNumber(item.amount), 0)
     const taxAmount = subtotal * (data.taxRate / 100)
     const total = subtotal + taxAmount
 
@@ -145,10 +145,10 @@ export function InvoicePreview({ data, client }: InvoicePreviewProps) {
                                                 <td className="py-4">{item.description}</td>
                                                 <td className="py-4 text-right">{item.quantity}</td>
                                                 <td className="py-4 text-right">
-                                                    {formatCurrency(item.unitPrice, data.currency)}
+                                                    {item.unit_price}
                                                 </td>
                                                 <td className="py-4 text-right">
-                                                    {formatCurrency(item.amount, data.currency)}
+                                                    {item.amount}, {data.currency}
                                                 </td>
                                             </tr>
                                         ))}

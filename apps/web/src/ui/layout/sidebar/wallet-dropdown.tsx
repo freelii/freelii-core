@@ -84,7 +84,7 @@ export function WalletDropdown() {
               </div>
             </div>
           ) : (
-            <div className="text-sm text-gray-500">No wallet selected</div>
+            <div className="text-sm text-gray-500">No account selected</div>
           )}
           <ChevronsUpDown
             className="size-4 shrink-0 text-gray-400"
@@ -133,7 +133,7 @@ function WalletList({
         <div className="p-2">
           <div className="flex items-center justify-between pb-1">
             <p className="px-1 text-xs font-medium text-neutral-500">
-              My Wallets
+              My Accounts
             </p>
           </div>
           <div className="flex flex-col gap-0.5">

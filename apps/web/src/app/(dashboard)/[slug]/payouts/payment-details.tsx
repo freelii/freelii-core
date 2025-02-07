@@ -2,7 +2,6 @@ import { BlurImage, Separator } from "@freelii/ui"
 import { DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils/constants"
 import dayjs from "dayjs"
 import { Building2, Calendar } from "lucide-react"
-import Link from "next/link"
 import { useEffect, useRef } from "react"
 import { type Payout } from "./page-payouts"
 
@@ -16,9 +15,6 @@ export function PaymentDetails({
   onClose
 }: PayoutDetailsProps) {
   const detailsRef = useRef<HTMLDivElement>(null)
-
-  const totalAmount = payment.amount * payment.recipients.length
-  const verifiedCount = payment.recipients.filter(r => r.isVerified).length
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -83,20 +79,17 @@ export function PaymentDetails({
             <div className="w-full">
               <div className="text-sm text-gray-500 flex items-center justify-between w-full">
                 Payment amount
-                <Link
+                {/* <Link
                   href={`/dashboard/invoices/create?tx_id=${payment.id}`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <span className=" items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
                     Generate Invoice
                   </span>
-                </Link>
+                </Link> */}
               </div>
               <div className="text-sm font-semibold">
-                {new Intl.NumberFormat("en-US", {
-                  style: "currency",
-                  currency: payment.currency === "USDC" ? "USD" : payment.currency,
-                }).format(totalAmount)}
+                {payment.amount}
               </div>
             </div>
           </div>

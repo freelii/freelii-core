@@ -42,7 +42,7 @@ export default function LandingPage() {
   return (
     <div className="w-full max-w-sm space-y-6">
       <Link href="/dashboard" className="fixed top-6 right-10 inline-flex items-center text-sm hover:opacity-80 group">
-        Launch app
+        Launch sandbox
         <ExpandingArrow className="w-4 h-4" />
       </Link>
       <div>

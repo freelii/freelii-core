@@ -1,4 +1,4 @@
-import { FiatAccountType, Prisma, RecipientType } from "@prisma/client";
+import { EwalletProvider, FiatAccountType, Prisma, RecipientType, TransferMethod } from "@prisma/client";
 import { z } from "zod";
 import { BaseService } from "../base-service";
 import { ClientCreateSchema } from "./schemas/client-create.schema";
@@ -34,6 +34,7 @@ export class ClientService extends BaseService {
                 address: true,
                 fiat_accounts: true,
                 blockchain_accounts: true,
+                ewallet_accounts: true,
             }
         });
     }
@@ -44,7 +45,7 @@ export class ClientService extends BaseService {
          * @returns The created client
          */
     async createClient(input: z.infer<typeof ClientCreateSchema>) {
-        const { name, email, tax_number, street, city, state, country, zipCode, paymentMethod, bankName, accountNumber, routingNumber, accountType, accountHolderName, walletAddress, network } = input;
+        const { name, email, tax_number, street, city, state, country, zipCode, paymentMethod, bankName, accountNumber, routingNumber, accountType, accountHolderName, walletAddress, network, ewalletProvider, mobileNumber, transferMethod } = input;
 
         return this.db.$transaction(async (tx) => {
             const client = await tx.client.create({
@@ -53,13 +54,12 @@ export class ClientService extends BaseService {
                     name,
                     email,
                     tax_number,
-                    verification_status: "PENDING",
+                    verification_status: "VERIFIED",
                     recipient_type: input.type === "company"
                         ? RecipientType.BUSINESS
                         : RecipientType.INDIVIDUAL,
                 },
             });
-            console.log('Client created', client);
             // Address
             if (street && city && country) {
                 const address = await tx.address.create({
@@ -71,7 +71,6 @@ export class ClientService extends BaseService {
                         zip_code: zipCode,
                     },
                 });
-                console.log('Address created', address);
             }
 
             // Fiat Account
@@ -99,6 +98,7 @@ export class ClientService extends BaseService {
                         bank_state: state ?? "",
                         bank_zip: zipCode ?? "",
                         iso_currency: "USD",
+                        transfer_method: transferMethod === "instapay" ? TransferMethod.PH_INSTAPAY : transferMethod === "pesonet" ? TransferMethod.PH_PESONET : undefined,
                     },
                 });
                 console.log('Fiat account created', fiatAccount);
@@ -115,6 +115,19 @@ export class ClientService extends BaseService {
                     },
                 });
                 console.log('Blockchain account created', blockchainAccount);
+            } else if (paymentMethod === "ewallet") {
+                if (!ewalletProvider || !mobileNumber) {
+                    throw new Error("Missing required fields");
+                }
+                const ewalletAccount = await tx.ewalletAccount.create({
+                    data: {
+                        client_id: client.id,
+                        mobile_number: mobileNumber,
+                        ewallet_provider: ewalletProvider === "gcash" ? EwalletProvider.PH_GCASH : ewalletProvider === "maya" ? EwalletProvider.PH_MAYA : ewalletProvider === "coins_ph" ? EwalletProvider.PH_COINS_PH : undefined,
+                        iso_currency: "PHP",
+                    },
+                });
+                console.log('Ewallet account created', ewalletAccount);
             }
             return client;
         });
@@ -128,6 +141,7 @@ export class ClientService extends BaseService {
                 address: true,
                 fiat_accounts: true,
                 blockchain_accounts: true,
+                ewallet_accounts: true,
             }
         });
         if (client?.user_id !== Number(this.session.user.id)) {

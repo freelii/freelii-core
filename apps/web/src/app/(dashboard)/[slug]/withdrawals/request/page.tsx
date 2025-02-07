@@ -1,7 +1,6 @@
 "use client"
 import { useFixtures } from "@/fixtures/useFixtures";
 import { PageContent } from "@/ui/layout/page-content";
-import { USDCBadge } from "@/ui/shared/badges/usdc-badge";
 import { FlagIcon } from "@/ui/shared/flag-icon";
 import { useWallet } from "@/wallet/useWallet";
 import { Badge, Button, Input, LoadingSpinner, MaxWidthWrapper, Separator, useRouterStuff } from "@freelii/ui";
@@ -125,9 +124,6 @@ export default function WithdrawalsRequestPage() {
                                             <h4 className="text-sm font-medium mb-3">Withdrawal From</h4>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-medium">{account?.alias}
-                                                        <USDCBadge className="ml-2" />
-                                                    </span>
                                                     <span className="text-xs text-gray-500">
                                                         {shortAddress(account?.address)}
                                                     </span>

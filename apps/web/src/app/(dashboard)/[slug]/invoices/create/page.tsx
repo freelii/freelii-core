@@ -5,12 +5,12 @@ import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
 import { MaxWidthWrapper, useRouterStuff } from "@freelii/ui"
 import { cn, fromStroops } from "@freelii/utils/functions"
+import { fromFormattedToNumber } from "@freelii/utils/functions/format-currency"
 import { noop } from "@tanstack/react-table"
 import { useEffect, useState } from "react"
 import { InvoiceForm } from "./invoice-form"
 import { InvoicePreview } from "./invoice-preview"
 import { type InvoiceFormData } from "./types"
-
 
 
 const initialFormData: InvoiceFormData = {
@@ -21,7 +21,7 @@ const initialFormData: InvoiceFormData = {
     dueDate: new Date(),
     issueDate: new Date(),
     taxRate: 0,
-    lineItems: [{ description: "", quantity: 1, unitPrice: 0, amount: 0 }],
+    lineItems: [{ description: "", quantity: 1, unit_price: 0, amount: 0 }],
     notes: "",
     recurrence: "none",
     repeatSchedule: null
@@ -50,7 +50,13 @@ export default function CreateInvoicePage() {
 
     useEffect(() => {
         if (transaction) {
-            console.log('transaction:', transaction)
+            console.log("transaction", transaction)
+            console.log({
+                description: '',
+                quantity: 1,
+                unit_price: fromStroops(transaction.amount, 2),
+                amount: fromStroops(transaction.amount, 2)
+            })
             setFormData(prev => ({
                 ...prev,
                 clientId: transaction.recipient_id,
@@ -61,8 +67,8 @@ export default function CreateInvoicePage() {
                 lineItems: [{
                     description: '',
                     quantity: 1,
-                    unitPrice: Number(fromStroops(transaction.amount, 2)),
-                    amount: Number(fromStroops(transaction.amount, 2))
+                    unit_price: fromFormattedToNumber(fromStroops(transaction.amount, 2)),
+                    amount: fromFormattedToNumber(fromStroops(transaction.amount, 2))
                 }]
             }))
         }

@@ -4,7 +4,7 @@
     "usdcAmount": 450.25,
     "amount": 25000,
     "currency": "PHP",
-    "date": "2024-03-15T08:30:00Z",
+    "date": "2025-02-06T08:30:00Z",
     "destination": "acc_ph_001",
     "status": "completed"
   },
@@ -13,7 +13,7 @@
     "usdcAmount": 270.15,
     "amount": 15000,
     "currency": "PHP",
-    "date": "2024-03-10T14:20:00Z",
+    "date": "2025-02-06T14:20:00Z",
     "destination": "acc_ph_002",
     "status": "processing"
   },
@@ -22,7 +22,7 @@
     "usdcAmount": 5000,
     "amount": 5000,
     "currency": "USD",
-    "date": "2024-03-05T11:45:00Z",
+    "date": "2025-02-06T11:45:00Z",
     "destination": "acc_us_002",
     "status": "completed"
   }

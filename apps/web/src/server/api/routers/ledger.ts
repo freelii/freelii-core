@@ -42,6 +42,7 @@ export const ledgerRouter = createTRPCRouter({
             recipientId: z.number().min(1),
             amount: z.bigint(),
             currency: z.string().min(1),
+            reference: z.string().min(1).optional(),
         }))
         .mutation(async ({ ctx, input }) => {
             const ledgerService = new LedgerService({
@@ -56,6 +57,7 @@ export const ledgerRouter = createTRPCRouter({
                 recipientId: input.recipientId,
                 amount: BigInt(input.amount),
                 currency: input.currency,
+                reference: input.reference,
             });
         }),
     getPayouts: protectedProcedure

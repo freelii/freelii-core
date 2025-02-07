@@ -20,7 +20,7 @@ export const formatTransaction = (transaction: Transactions & { recipient?: Clie
         date: dayjs(transaction.created_at).format("YYYY-MM-DD HH:mm"),
         status: transaction.status === TransactionStatus.COMPLETED ? "completed" : transaction.status === TransactionStatus.FAILED ? "failed" : "pending",
         currency: transaction.currency,
-        reference: "", // transaction.reference,
+        reference: transaction.reference ?? "",
         sender: "", // transaction.sender?.name,
         senderEmail: "", // transaction.sender?.email,
         bankName: "", // transaction.recipient?.bank_name,
