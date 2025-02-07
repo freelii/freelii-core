@@ -14,27 +14,27 @@ function AccountDetails() {
   const [activeSection, setActiveSection] = useState<'wire' | 'ach' | 'blockchain' | null>(null)
   const accountDetails = {
     wire: {
-      accountHolderName: "Freelii Inc.",
-      routingNumber: "992187472",
-      swiftCode: "CHASUS33XXX",
-      accountNumber: "022109183",
-      bankName: "Lead Bank",
-      bankAddress: "1801 Main St",
-      bankCity: "Kansas City",
-      bankState: "MO",
-      bankZip: "64108",
+      accountHolderName: "DEMO Company Inc.",
+      routingNumber: "000000000",
+      swiftCode: "DEMO00XXXXX",
+      accountNumber: "000000000",
+      bankName: "DEMO Bank",
+      bankAddress: "123 Demo Street",
+      bankCity: "Demo City",
+      bankState: "DC",
+      bankZip: "00000",
       intermediaryBank: {
-        name: "JPMorgan Chase",
-        swiftCode: "CHASUS33",
-        address: "270 Park Avenue, New York, NY 10017",
+        name: "DEMO Intermediary Bank",
+        swiftCode: "DEMO00",
+        address: "456 Demo Avenue, Demo City, DC 00000",
       },
-      purposeOfPayment: "Business Transaction",
+      purposeOfPayment: "Demo Transaction",
     },
     ach: {
-      accountHolderName: "Freelii Inc.",
-      bankName: "Lead Bank",
-      routingNumber: "992187472",
-      accountNumber: "****2210",
+      accountHolderName: "DEMO Company Inc.",
+      bankName: "DEMO Bank",
+      routingNumber: "000000000",
+      accountNumber: "****0000",
     }
   }
 
