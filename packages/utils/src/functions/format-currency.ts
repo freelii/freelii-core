@@ -26,3 +26,7 @@ export const fromFormattedToNumber = (value: string | number) => {
     }
     return value;
 }
+
+export const maskAccountNumber = (accountNumber: string, lastNDigits: number = 4) => {
+    return accountNumber.slice(0, -lastNDigits).replace(/\d/g, '•') + accountNumber.slice(-lastNDigits)
+}
