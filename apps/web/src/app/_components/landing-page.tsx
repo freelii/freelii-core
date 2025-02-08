@@ -97,7 +97,7 @@ export default function LandingPage() {
       </form>
 
       <p className="text-center text-xs text-muted-foreground">
-        © 2025 Freelii, LLC. All rights reserved.
+        © 2025 Freelii Tech, Inc. All rights reserved.
       </p>
     </div>
   );

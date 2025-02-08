@@ -125,7 +125,7 @@ export default function LoginPage() {
                     </p>
                 </div>
                 <span className="absolute bottom-8 left-8 text-xs text-muted-foreground">
-                    © 2025 Freelii, LLC. All rights reserved.{' • '}
+                    © 2025 Freelii Tech, Inc. All rights reserved.{' • '}
                     <Link href="/terms" className="text-gray-400 hover:text-blue-400">Terms</Link>{' • '}
                     <Link href="/privacy" className="text-gray-400 hover:text-blue-400">Privacy</Link>
                 </span>

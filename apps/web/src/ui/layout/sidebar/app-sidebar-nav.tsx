@@ -226,7 +226,7 @@ export function AppSidebarNav({
         <>
           {/* TODO <UserSurveyButton /> */}
           {/* <Usage /> */}
-          <span className="text-xs text-muted-foreground p-4">© 2025 Freelii, LLC. All rights reserved.</span>
+          <span className="text-xs text-muted-foreground p-4">© 2025 Freelii Tech, Inc. All rights reserved.</span>
         </>
       }
     />
