@@ -1,5 +1,5 @@
 import { Badge, Button, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
-import { cn } from "@freelii/utils/functions";
+import { cn, maskAccountNumber } from "@freelii/utils/functions";
 import { Address, BlockchainAccount, Client, EwalletAccount, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
 import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import { Building2, CheckCircle2, Clock, CreditCard, UserPlus, Wallet } from "lucide-react";
@@ -113,15 +113,32 @@ export const columns: ColumnDef<Recipient>[] = [
                 )
             }
 
+            const getPaymentMethodLabel = (account: FiatAccount | EwalletAccount) => {
+                // SPEI (Mexico)
+                if ('bank_name' in account && account.iso_currency === 'MXN') {
+                    return 'SPEI'
+                }
+                // Philippines Bank
+                if ('bank_name' in account && account.iso_currency === 'PHP') {
+                    return account.bank_name
+                }
+                // E-wallets (Philippines)
+                if ('ewallet_provider' in account && account.iso_currency === 'PHP' && account.ewallet_provider) {
+                    return account.ewallet_provider.replace('PH_', '')
+                }
+                // Default case - just show bank name or provider
+                return 'bank_name' in account ? account.bank_name : account.ewallet_provider?.replace('PH_', '')
+            }
+
             return (
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                     {hasFiatAccounts && recipient.fiat_accounts?.map((account) => (
-                        <div key={account.id} className="flex items-center gap-2">
+                        <div key={account.id} className="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-50">
                             <div className="flex flex-col">
                                 <div className="text-xs font-medium flex items-center gap-1 capitalize">
-                                    {account.bank_name}
+                                    {getPaymentMethodLabel(account)} {maskAccountNumber(account.account_number)}
                                 </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                                     <FlagIcon
                                         currencyCode={account.iso_currency}
                                         size={16}
@@ -132,12 +149,12 @@ export const columns: ColumnDef<Recipient>[] = [
                         </div>
                     ))}
                     {hasEwalletAccounts && recipient.ewallet_accounts?.map((account) => (
-                        <div key={account.id} className="flex items-center gap-2">
+                        <div key={account.id} className="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-50">
                             <div className="flex flex-col">
                                 <div className="text-xs font-medium flex items-center gap-1 capitalize">
-                                    {account.ewallet_provider?.replace("PH_", " ")}
+                                    {getPaymentMethodLabel(account)}
                                 </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                                     <FlagIcon
                                         currencyCode={account.iso_currency}
                                         size={16}

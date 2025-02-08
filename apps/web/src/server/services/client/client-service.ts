@@ -76,23 +76,19 @@ export class ClientService extends BaseService {
             // Fiat Account
             if (paymentMethod === "fiat") {
                 if (
-                    !bankName ||
-                    !accountNumber ||
-                    !routingNumber ||
-                    !accountType ||
-                    !accountHolderName
+                    !accountNumber
                 ) {
-                    throw new Error("Missing required fields");
+                    throw new Error("Missing required fields for fiat account");
                 }
                 const fiatAccount = await tx.fiatAccount.create({
                     data: {
                         client_id: client.id,
-                        alias: bankName,
+                        alias: bankName ?? "",
                         account_number: accountNumber,
-                        routing_number: routingNumber,
+                        routing_number: routingNumber ?? "",
                         account_type: accountType === "checking" ? FiatAccountType.CHECKING : FiatAccountType.SAVINGS,
-                        account_holder_name: accountHolderName,
-                        bank_name: bankName,
+                        account_holder_name: accountHolderName ?? "",
+                        bank_name: bankName ?? "",
                         bank_address: street ?? "",
                         bank_city: city ?? "",
                         bank_state: state ?? "",
@@ -104,7 +100,7 @@ export class ClientService extends BaseService {
                 console.log('Fiat account created', fiatAccount);
             } else if (paymentMethod === "blockchain") {
                 if (!walletAddress || !network) {
-                    throw new Error("Missing required fields");
+                    throw new Error("Missing required fields for blockchain account");
                 }
                 const blockchainAccount = await tx.blockchainAccount.create({
                     data: {
@@ -117,7 +113,7 @@ export class ClientService extends BaseService {
                 console.log('Blockchain account created', blockchainAccount);
             } else if (paymentMethod === "ewallet") {
                 if (!ewalletProvider || !mobileNumber) {
-                    throw new Error("Missing required fields");
+                    throw new Error("Missing required fields for ewallet account");
                 }
                 const ewalletAccount = await tx.ewalletAccount.create({
                     data: {

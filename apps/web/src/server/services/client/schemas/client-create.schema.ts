@@ -9,6 +9,7 @@ export const ClientCreateSchema = z.object({
     city: z.string().optional(),
     state: z.string().optional(),
     country: z.string().optional(),
+    currency: z.enum(["USD", "PHP", "MXN"]).optional(),
     zipCode: z.string().optional(),
     paymentMethod: z.enum(["fiat", "blockchain", "ewallet"]).optional(),
     // Local Bank

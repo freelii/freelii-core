@@ -9,8 +9,9 @@ import { Button, ExpandingArrow, Input, LoadingDots, MaxWidthWrapper, useRouterS
 import { cn } from "@freelii/utils"
 import { ArrowLeft } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { FiatDetails } from "./_components/render-fiat-details"
 
-interface FormData {
+export interface FormData {
     type: "company" | "person"
     name: string
     email: string
@@ -34,11 +35,13 @@ interface FormData {
     accountHolderName: string
     walletAddress: string
     network: "stellar"
+    currency: "USD" | "PHP" | "MXN"
 }
 
 export default function NewRecipientPage() {
     const { router, searchParams } = useRouterStuff();
     const [currentStep, setCurrentStep] = useState(0)
+    const [showAddressForm, setShowAddressForm] = useState(false)
     const [formData, setFormData] = useState<FormData>({
         type: "person",
         name: "",
@@ -62,6 +65,7 @@ export default function NewRecipientPage() {
         accountHolderName: "",
         walletAddress: "",
         network: "stellar",
+        currency: "USD",
     })
 
     // tRPC procedures
@@ -72,7 +76,11 @@ export default function NewRecipientPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        console.log(formData)
+
+        // Assign currency based on country
+        const currency = formData.country === "Philippines" ? "PHP" : formData.country === "Mexico" ? "MXN" : "USD"
+        setFormData({ ...formData, currency })
+
         const newRecipient = await createRecipient.mutateAsync(formData);
         // If comes from payments, redirect to payments
         if (searchParams.get("from") === "payments") {
@@ -85,9 +93,8 @@ export default function NewRecipientPage() {
     const steps = [
         { id: 0, name: "Recipient Type", component: TypeStep },
         { id: 1, name: "Basic Information", component: BasicInfoStep },
-        { id: 2, name: "Address Details", component: AddressStep },
-        { id: 3, name: "Banking Details", component: BankingStep },
-        { id: 4, name: "Review", component: ReviewStep },
+        { id: 2, name: "Payment Details", component: BankingStep },
+        { id: 3, name: "Review", component: ReviewStep },
     ]
 
     const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
@@ -102,14 +109,10 @@ export default function NewRecipientPage() {
             <MaxWidthWrapper>
                 <div className="space-y-6">
                     <NavSteps currentStep={currentStep} steps={steps} setStep={setCurrentStep} />
-
-
-
-
                     <div className="grid grid-cols-12 gap-6">
                         <div className="col-span-8">
                             <div className="bg-white py-2 px-6 border-l border-gray-200">
-                                {steps[currentStep]?.component({ formData, setFormData })}
+                                {steps[currentStep]?.component({ formData, setFormData, showAddressForm, setShowAddressForm })}
                             </div>
                             {/* Navigation buttons */}
                             <div className="flex justify-between mt-6">
@@ -173,11 +176,9 @@ export default function NewRecipientPage() {
                                     <div className={`relative pl-8 border-l-2 ${currentStep >= 2 ? 'border-[#4ab3e8]' : 'border-gray-200'} pb-6`}>
                                         <div className={`absolute left-0 -translate-x-[9px] size-4 rounded-full ${currentStep >= 2 ? 'bg-[#4ab3e8]' : 'border-2 border-gray-200 bg-white'}`} />
                                         <div>
-                                            <p className="font-medium text-sm">Address Details</p>
+                                            <p className="font-medium text-sm">Payment Details</p>
                                             <p className="text-xs text-gray-500">
-                                                {formData.city && formData.country ?
-                                                    `${formData.city}, ${formData.country}` :
-                                                    'Pending'}
+                                                {currentStep === 2 ? 'In Progress' : 'Pending'}
                                             </p>
                                         </div>
                                     </div>
@@ -185,19 +186,9 @@ export default function NewRecipientPage() {
                                     <div className={`relative pl-8 border-l-2 ${currentStep >= 3 ? 'border-[#4ab3e8]' : 'border-gray-200'}`}>
                                         <div className={`absolute left-0 -translate-x-[9px] size-4 rounded-full ${currentStep >= 3 ? 'bg-[#4ab3e8]' : 'border-2 border-gray-200 bg-white'}`} />
                                         <div>
-                                            <p className="font-medium text-sm">Banking Details</p>
-                                            <p className="text-xs text-gray-500">
-                                                {currentStep === 3 ? 'In Progress' : 'Pending'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className={`relative pl-8 border-l-2 ${currentStep >= 4 ? 'border-[#4ab3e8]' : 'border-gray-200'}`}>
-                                        <div className={`absolute left-0 -translate-x-[9px] size-4 rounded-full ${currentStep >= 4 ? 'bg-[#4ab3e8]' : 'border-2 border-gray-200 bg-white'}`} />
-                                        <div>
                                             <p className="font-medium text-sm">Review & Confirm</p>
                                             <p className="text-xs text-gray-500">
-                                                {currentStep === 4 ? 'In Progress' : 'Pending'}
+                                                {currentStep === 3 ? 'In Progress' : 'Pending'}
                                             </p>
                                         </div>
                                     </div>
@@ -243,6 +234,15 @@ function TypeStep({ formData, setFormData }: { formData: FormData, setFormData: 
                     <p className="text-sm text-gray-500">Business or organization for professional invoicing</p>
                 </button>
             </div>
+
+            <div className="mt-8 pt-6 border-t">
+                <h3 className="text-sm font-medium mb-3">Recipient&apos;s Country</h3>
+                <p className="text-sm text-gray-500 mb-4">This will determine available payment methods</p>
+                <CountrySelect
+                    value={formData.country}
+                    onChange={(country) => setFormData({ ...formData, country })}
+                />
+            </div>
         </div>
     )
 }
@@ -251,6 +251,19 @@ function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormD
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
+    }
+
+    const getTaxNumberHint = () => {
+        switch (formData.country) {
+            case "Philippines":
+                return "TIN (Tax Identification Number) - Format: XXX-XXX-XXX-XXX"
+            case "Mexico":
+                return "RFC (Registro Federal de Contribuyentes) - Format: AAAA123456XXX"
+            case "United States":
+                return "EIN (Employer Identification Number) - Format: XX-XXXXXXX"
+            default:
+                return "Tax/VAT registration number"
+        }
     }
 
     return (
@@ -266,7 +279,7 @@ function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormD
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder={formData.type === "company" ? "Company Name" : "John Doe"}
+                        placeholder={formData.type === "company" ? "Legal business name" : "Full name as shown on ID"}
                         className="w-full p-2 border rounded-md"
                     />
                 </div>
@@ -277,95 +290,44 @@ function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormD
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="email@example.com"
+                        placeholder="Business contact email"
                         className="w-full p-2 border rounded-md"
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                        Payment notifications will be sent to this email
+                    </p>
                 </div>
                 {formData.type === "company" && (
                     <div>
-                        <label className="block text-sm font-medium mb-1">Tax Number</label>
+                        <div className="flex items-center gap-2 mb-1">
+                            <label className="block text-sm font-medium">Tax Number</label>
+                            <div className="relative group">
+                                <button
+                                    type="button"
+                                    className="text-gray-400 hover:text-gray-500"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM8.94 6.94a.75.75 0 11-1.06-1.06 2.75 2.75 0 013.82 0 .75.75 0 01-1.06 1.06 1.25 1.25 0 00-1.7 0zM12 10a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 text-xs text-white rounded shadow-lg">
+                                    {getTaxNumberHint()}
+                                </div>
+                            </div>
+                        </div>
                         <Input
                             type="text"
                             name="taxNumber"
                             value={formData.taxNumber}
                             onChange={handleChange}
-                            placeholder="VAT/Tax ID"
+                            placeholder={getTaxNumberHint()}
                             className="w-full p-2 border rounded-md"
                         />
+                        <p className="mt-1 text-xs text-gray-500">
+                            Required for tax compliance and invoicing
+                        </p>
                     </div>
                 )}
-            </div>
-        </div>
-    )
-}
-
-function AddressStep({ formData, setFormData }: { formData: FormData, setFormData: (data: FormData) => void }) {
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target
-        setFormData({ ...formData, [name]: value })
-    }
-
-    return (
-        <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Address Details</h2>
-            <div className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Street Address</label>
-                    <Input
-                        type="text"
-                        name="street"
-                        value={formData.street}
-                        onChange={handleChange}
-                        placeholder="123 Main St"
-                        className="w-full p-2 border rounded-md"
-                    />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">City</label>
-                        <Input
-                            type="text"
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            placeholder="City"
-                            className="w-full p-2 border rounded-md"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">State/Province</label>
-                        <Input
-                            type="text"
-                            name="state"
-                            value={formData.state}
-                            onChange={handleChange}
-                            placeholder="State"
-                            className="w-full p-2 border rounded-md"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Country</label>
-                        <CountrySelect
-                            value={formData.country}
-                            onChange={(country) => setFormData({ ...formData, country })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">ZIP/Postal Code</label>
-                        <Input
-                            type="text"
-                            name="zipCode"
-                            value={formData.zipCode}
-                            onChange={handleChange}
-                            placeholder="ZIP Code"
-                            className="w-full p-2 border rounded-md"
-                        />
-                    </div>
-                </div>
             </div>
         </div>
     )
@@ -798,79 +760,14 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
     )
 }
 
-function ReviewStep({ formData }: { formData: FormData }) {
-    // Helper function to render fiat payment details based on country
-    const renderFiatDetails = () => {
-        switch (formData.country) {
-            case "Mexico":
-                return (
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Account Holder</label>
-                            <p className="text-xs mt-1">{formData.accountHolderName}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">CLABE</label>
-                            <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
-                        </div>
-                    </div>
-                )
-            case "United States":
-                return (
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Account Holder</label>
-                            <p className="text-xs mt-1">{formData.accountHolderName}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Bank</label>
-                            <p className="text-xs mt-1">{formData.bankName}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Account Type</label>
-                            <p className="text-xs mt-1 capitalize">{formData.accountType}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Account Number</label>
-                            <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Routing Number</label>
-                            <p className="text-xs mt-1">****{formData.routingNumber.slice(-4)}</p>
-                        </div>
-                        {formData.purposeOfPayment && (
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500">Purpose of Payment</label>
-                                <p className="text-xs mt-1">{formData.purposeOfPayment}</p>
-                            </div>
-                        )}
-                    </div>
-                )
-            case "Philippines":
-                return (
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Account Holder</label>
-                            <p className="text-xs mt-1">{formData.accountHolderName}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Bank</label>
-                            <p className="text-xs mt-1">{formData.bankName}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Account Number</label>
-                            <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500">Transfer Method</label>
-                            <p className="text-xs mt-1 capitalize">{formData.transferMethod}</p>
-                        </div>
-                    </div>
-                )
-            default:
-                return null
-        }
+function ReviewStep({ formData, setFormData, showAddressForm, setShowAddressForm }: { formData: FormData, setFormData: (data: FormData) => void, showAddressForm: boolean, setShowAddressForm: (show: boolean) => void }) {
+    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target
+        setFormData({ ...formData, [name]: value })
     }
+
+    // Helper function to render fiat payment details based on country
+
 
     return (
         <div className="space-y-6">
@@ -899,14 +796,7 @@ function ReviewStep({ formData }: { formData: FormData }) {
                     </div>
                 )}
 
-                <div className="border-t pt-4 mt-4">
-                    <h3 className="text-sm font-medium mb-3">Address</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-1">
-                        <p className="text-gray-600 text-xs">{formData.street}</p>
-                        <p className="text-gray-600 text-xs">{formData.city}, {formData.state}</p>
-                        <p className="text-gray-600 text-xs">{formData.country}, {formData.zipCode}</p>
-                    </div>
-                </div>
+
 
                 <div className="border-t pt-4 mt-4">
                     <div className="flex items-center gap-2 mb-3">
@@ -918,7 +808,7 @@ function ReviewStep({ formData }: { formData: FormData }) {
                     </div>
 
                     {formData.paymentMethod === "fiat" ? (
-                        renderFiatDetails()
+                        <FiatDetails formData={formData} />
                     ) : formData.paymentMethod === "ewallet" ? (
                         <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                             <div>
@@ -943,6 +833,79 @@ function ReviewStep({ formData }: { formData: FormData }) {
                                 </p>
                             </div>
                         </div>
+                    )}
+                </div>
+                <div className="border-t pt-4 mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-medium">Billing Address</h3>
+                        <button
+                            type="button"
+                            onClick={() => setShowAddressForm(!showAddressForm)}
+                            className="items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                        >
+                            {showAddressForm ? "Hide" : "Add address for invoicing"}
+                        </button>
+                    </div>
+
+                    {showAddressForm ? (
+                        <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500">Street Address</label>
+                                <Input
+                                    type="text"
+                                    name="street"
+                                    value={formData.street}
+                                    onChange={handleAddressChange}
+                                    placeholder="123 Main St"
+                                    className="w-full mt-1"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500">City</label>
+                                    <Input
+                                        type="text"
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleAddressChange}
+                                        placeholder="City"
+                                        className="w-full mt-1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500">State/Province</label>
+                                    <Input
+                                        type="text"
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={handleAddressChange}
+                                        placeholder="State"
+                                        className="w-full mt-1"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500">ZIP/Postal Code</label>
+                                <Input
+                                    type="text"
+                                    name="zipCode"
+                                    value={formData.zipCode}
+                                    onChange={handleAddressChange}
+                                    placeholder="ZIP Code"
+                                    className="w-full mt-1"
+                                />
+                            </div>
+                        </div>
+                    ) : formData.street ? (
+                        <div className="bg-gray-50 p-4 rounded-lg space-y-1">
+                            <p className="text-gray-600 text-xs">{formData.street}</p>
+                            <p className="text-gray-600 text-xs">{formData.city}, {formData.state}</p>
+                            <p className="text-gray-600 text-xs">{formData.zipCode}</p>
+                        </div>
+                    ) : (
+                        <p className="text-xs text-gray-500">No address provided</p>
                     )}
                 </div>
             </div>

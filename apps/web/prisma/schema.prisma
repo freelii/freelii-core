@@ -112,10 +112,10 @@ model FiatAccount {
 
     alias               String
     account_number      String
-    routing_number      String
+    routing_number      String?
     account_type        FiatAccountType
-    account_holder_name String
-    bank_name           String
+    account_holder_name String?
+    bank_name           String?
     bank_address        String?
     bank_city           String?
     bank_state          String?
