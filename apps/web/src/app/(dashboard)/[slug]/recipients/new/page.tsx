@@ -384,21 +384,14 @@ function CountrySelect({ value, onChange }: { value: string, onChange: (value: s
     const countries = [
         { name: "Philippines", currencyCode: "PHP", },
         { name: "Mexico", currencyCode: "MXN", },
-        { name: "Brazil", currencyCode: "BRL", },
-        { name: "Argentina", currencyCode: "ARS", },
-        { name: "Colombia", currencyCode: "COP", },
         { name: "United States", currencyCode: "USD", },
-        { name: "Singapore", currencyCode: "SGD", },
-        { name: "Japan", currencyCode: "JPY", },
-        { name: "Hong Kong", currencyCode: "HKD", },
-        { name: "Australia", currencyCode: "AUD", },
-        { name: "China", currencyCode: "CNY", },
-        // Add more countries as needed
     ]
 
     const filteredCountries = countries.filter(country =>
         country.name.toLowerCase().includes(search.toLowerCase())
     )
+
+    const selectedCountry = countries.find(c => c.name === value)
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowDown") {
@@ -414,9 +407,11 @@ function CountrySelect({ value, onChange }: { value: string, onChange: (value: s
             if (filteredCountries[highlightedIndex]) {
                 onChange(filteredCountries[highlightedIndex].name)
                 setIsOpen(false)
+                setSearch("")
             }
         } else if (e.key === "Escape") {
             setIsOpen(false)
+            setSearch("")
         }
     }
 
@@ -436,19 +431,22 @@ function CountrySelect({ value, onChange }: { value: string, onChange: (value: s
             <div className="relative">
                 <Input
                     type="text"
-                    value={search}
+                    value={isOpen ? search : selectedCountry?.name ?? ""}
                     onChange={(e) => {
                         setSearch(e.target.value)
                         setIsOpen(true)
                         setHighlightedIndex(0)
                     }}
-                    onFocus={() => setIsOpen(true)}
-                    placeholder="Search countries"
+                    onFocus={() => {
+                        setIsOpen(true)
+                        setSearch("")
+                    }}
+                    placeholder="Select destination country"
                     className="w-full pl-10"
                     onKeyDown={handleKeyDown}
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                    <FlagIcon size={16} currencyCode={countries.find(c => c.name === value)?.currencyCode ?? ""} />
+                    <FlagIcon size={16} currencyCode={selectedCountry?.currencyCode ?? ""} />
                 </div>
             </div>
 
@@ -482,19 +480,46 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
         setFormData({ ...formData, [name]: value })
     }
 
+    // Get country-specific payment info
+    const getCountryPaymentInfo = () => {
+        switch (formData.country) {
+            case "Philippines":
+                return {
+                    icon: <FlagIcon currencyCode="PHP" size={20} />,
+                    message: "These payment options are available for recipients in the Philippines"
+                }
+            case "Mexico":
+                return {
+                    icon: <FlagIcon currencyCode="MXN" size={20} />,
+                    message: "These payment options are available for recipients in Mexico"
+                }
+            case "United States":
+                return {
+                    icon: <FlagIcon currencyCode="USD" size={20} />,
+                    message: "These payment options are available for recipients in the United States"
+                }
+            default:
+                return null
+        }
+    }
+
+    const countryInfo = getCountryPaymentInfo()
+
     return (
         <div className="space-y-4">
             <h2 className="text-xl font-semibold">Payment Information</h2>
 
-            {/* Philippines Payment Options Banner */}
-            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 flex items-center gap-2">
-                <FlagIcon currencyCode="PHP" size={20} />
-                <p className="text-sm text-gray-600">
-                    These payment options are available for recipients in the Philippines
-                </p>
-            </div>
+            {/* Country-specific Payment Options Banner */}
+            {countryInfo && (
+                <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 flex items-center gap-2">
+                    {countryInfo.icon}
+                    <p className="text-sm text-gray-600">
+                        {countryInfo.message}
+                    </p>
+                </div>
+            )}
 
-            {/* Payment Method Tabs */}
+            {/* Payment Method Tabs - Show different options based on country */}
             <div className="border-b border-gray-200">
                 <div className="flex space-x-8">
                     <button
@@ -504,17 +529,23 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                             }`}
                     >
-                        Local Bank Transfer
+                        {formData.country === "Mexico" ? "SPEI Transfer" :
+                            formData.country === "United States" ? "Bank Transfer (ACH/Wire)" :
+                                "Local Bank Transfer"}
                     </button>
-                    <button
-                        onClick={() => setFormData({ ...formData, paymentMethod: "ewallet" })}
-                        className={`py-4 px-1 border-b-2 font-medium text-sm ${formData.paymentMethod === "ewallet"
-                            ? "border-[#4ab3e8] text-[#4ab3e8]"
-                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                            }`}
-                    >
-                        E-Wallet
-                    </button>
+                    {formData.country === "Philippines" && (
+                        <>
+                            <button
+                                onClick={() => setFormData({ ...formData, paymentMethod: "ewallet" })}
+                                className={`py-4 px-1 border-b-2 font-medium text-sm ${formData.paymentMethod === "ewallet"
+                                    ? "border-[#4ab3e8] text-[#4ab3e8]"
+                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    }`}
+                            >
+                                E-Wallet
+                            </button>
+                        </>
+                    )}
                     <button
                         onClick={() => setFormData({ ...formData, paymentMethod: "blockchain" })}
                         className={`py-4 px-1 border-b-2 font-medium text-sm ${formData.paymentMethod === "blockchain"
@@ -542,56 +573,163 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
                         />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Bank Name</label>
-                        <select
-                            name="bankName"
-                            value={formData.bankName}
-                            onChange={handleChange}
-                            className="w-full p-2 border rounded-md text-gray-500 text-sm border-zinc-200"
-                        >
-                            <option value="">Select Bank</option>
-                            <option value="BDO">BDO</option>
-                            <option value="BPI">BPI</option>
-                            <option value="UnionBank">UnionBank</option>
-                            <option value="Metrobank">Metrobank</option>
-                            <option value="Landbank">Landbank</option>
-                        </select>
-                    </div>
+                    {formData.country === "Mexico" ? (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">CLABE</label>
+                                <Input
+                                    type="text"
+                                    name="accountNumber"
+                                    value={formData.accountNumber}
+                                    onChange={handleChange}
+                                    placeholder="18-digit CLABE number"
+                                    className="w-full"
+                                    maxLength={18}
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    The CLABE is an 18-digit number used for bank transfers in Mexico
+                                </p>
+                            </div>
+                        </>
+                    ) : formData.country === "United States" ? (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Bank Name</label>
+                                <Input
+                                    type="text"
+                                    name="bankName"
+                                    value={formData.bankName}
+                                    onChange={handleChange}
+                                    placeholder="Enter bank name"
+                                    className="w-full"
+                                />
+                            </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Account Number</label>
-                        <Input
-                            type="text"
-                            name="accountNumber"
-                            value={formData.accountNumber}
-                            onChange={handleChange}
-                            placeholder="10-16 digit account number"
-                            className="w-full"
-                        />
-                    </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Account Type</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, accountType: "checking" })}
+                                        className={`p-4 border rounded-lg text-left ${formData.accountType === "checking" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
+                                    >
+                                        <h3 className="font-medium">Checking</h3>
+                                        <p className="text-sm text-gray-500">Personal or business checking</p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, accountType: "savings" })}
+                                        className={`p-4 border rounded-lg text-left ${formData.accountType === "savings" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
+                                    >
+                                        <h3 className="font-medium">Savings</h3>
+                                        <p className="text-sm text-gray-500">Personal savings account</p>
+                                    </button>
+                                </div>
+                            </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Transfer Method</label>
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                type="button"
-                                onClick={() => setFormData({ ...formData, transferMethod: "instapay" })}
-                                className={`p-4 border rounded-lg text-left ${formData.transferMethod === "instapay" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
-                            >
-                                <h3 className="font-medium">InstaPay</h3>
-                                <p className="text-sm text-gray-500">Real-time transfer</p>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setFormData({ ...formData, transferMethod: "pesonet" })}
-                                className={`p-4 border rounded-lg text-left ${formData.transferMethod === "pesonet" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
-                            >
-                                <h3 className="font-medium">PESONet</h3>
-                                <p className="text-sm text-gray-500">Same-day batch processing</p>
-                            </button>
-                        </div>
-                    </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Routing Number</label>
+                                <Input
+                                    type="text"
+                                    name="routingNumber"
+                                    value={formData.routingNumber}
+                                    onChange={handleChange}
+                                    placeholder="9-digit routing number"
+                                    className="w-full"
+                                    maxLength={9}
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    The routing number is a 9-digit code used to identify your bank
+                                </p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Account Number</label>
+                                <Input
+                                    type="text"
+                                    name="accountNumber"
+                                    value={formData.accountNumber}
+                                    onChange={handleChange}
+                                    placeholder="Enter account number"
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Purpose of Payment</label>
+                                <Input
+                                    type="text"
+                                    name="purposeOfPayment"
+                                    value={formData.purposeOfPayment}
+                                    onChange={handleChange}
+                                    placeholder="e.g., Services rendered, Consulting fees"
+                                    className="w-full"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Required for international wire transfers
+                                </p>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Bank Name</label>
+                                <select
+                                    name="bankName"
+                                    value={formData.bankName}
+                                    onChange={handleChange}
+                                    className="w-full p-2 border rounded-md text-gray-500 text-sm border-zinc-200"
+                                >
+                                    <option value="">Select Bank</option>
+                                    {formData.country === "Philippines" ? (
+                                        <>
+                                            <option value="BDO">BDO</option>
+                                            <option value="BPI">BPI</option>
+                                            <option value="UnionBank">UnionBank</option>
+                                            <option value="Metrobank">Metrobank</option>
+                                            <option value="Landbank">Landbank</option>
+                                        </>
+                                    ) : null}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Account Number</label>
+                                <Input
+                                    type="text"
+                                    name="accountNumber"
+                                    value={formData.accountNumber}
+                                    onChange={handleChange}
+                                    placeholder="10-16 digit account number"
+                                    className="w-full"
+                                />
+                            </div>
+
+                            {formData.country === "Philippines" && (
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Transfer Method</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, transferMethod: "instapay" })}
+                                            className={`p-4 border rounded-lg text-left ${formData.transferMethod === "instapay" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
+                                        >
+                                            <h3 className="font-medium">InstaPay</h3>
+                                            <p className="text-sm text-gray-500">Real-time transfer</p>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, transferMethod: "pesonet" })}
+                                            className={`p-4 border rounded-lg text-left ${formData.transferMethod === "pesonet" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
+                                        >
+                                            <h3 className="font-medium">PESONet</h3>
+                                            <p className="text-sm text-gray-500">Same-day batch processing</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
 
@@ -661,6 +799,79 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
 }
 
 function ReviewStep({ formData }: { formData: FormData }) {
+    // Helper function to render fiat payment details based on country
+    const renderFiatDetails = () => {
+        switch (formData.country) {
+            case "Mexico":
+                return (
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Account Holder</label>
+                            <p className="text-xs mt-1">{formData.accountHolderName}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">CLABE</label>
+                            <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
+                        </div>
+                    </div>
+                )
+            case "United States":
+                return (
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Account Holder</label>
+                            <p className="text-xs mt-1">{formData.accountHolderName}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Bank</label>
+                            <p className="text-xs mt-1">{formData.bankName}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Account Type</label>
+                            <p className="text-xs mt-1 capitalize">{formData.accountType}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Account Number</label>
+                            <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Routing Number</label>
+                            <p className="text-xs mt-1">****{formData.routingNumber.slice(-4)}</p>
+                        </div>
+                        {formData.purposeOfPayment && (
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500">Purpose of Payment</label>
+                                <p className="text-xs mt-1">{formData.purposeOfPayment}</p>
+                            </div>
+                        )}
+                    </div>
+                )
+            case "Philippines":
+                return (
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Account Holder</label>
+                            <p className="text-xs mt-1">{formData.accountHolderName}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Bank</label>
+                            <p className="text-xs mt-1">{formData.bankName}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Account Number</label>
+                            <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-500">Transfer Method</label>
+                            <p className="text-xs mt-1 capitalize">{formData.transferMethod}</p>
+                        </div>
+                    </div>
+                )
+            default:
+                return null
+        }
+    }
+
     return (
         <div className="space-y-6">
             <h2 className="text-xl font-semibold">Review Information</h2>
@@ -698,30 +909,16 @@ function ReviewStep({ formData }: { formData: FormData }) {
                 </div>
 
                 <div className="border-t pt-4 mt-4">
-                    <h3 className="text-sm font-medium mb-3">Payment Details</h3>
+                    <div className="flex items-center gap-2 mb-3">
+                        <h3 className="text-sm font-medium">Payment Details</h3>
+                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                            {formData.paymentMethod === "fiat" ? "Bank Transfer" :
+                                formData.paymentMethod === "ewallet" ? "E-Wallet" : "Blockchain"}
+                        </span>
+                    </div>
+
                     {formData.paymentMethod === "fiat" ? (
-                        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500">Account Holder</label>
-                                <p className="text-xs mt-1">{formData.accountHolderName}</p>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500">Bank</label>
-                                <p className="text-xs mt-1">{formData.bankName}</p>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500">Account Type</label>
-                                <p className="text-xs mt-1 capitalize">{formData.accountType}</p>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500">Account Number</label>
-                                <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500">Routing Number</label>
-                                <p className="text-xs mt-1">****{formData.routingNumber.slice(-4)}</p>
-                            </div>
-                        </div>
+                        renderFiatDetails()
                     ) : formData.paymentMethod === "ewallet" ? (
                         <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                             <div>
@@ -751,4 +948,4 @@ function ReviewStep({ formData }: { formData: FormData }) {
             </div>
         </div>
     )
-}   
+}
