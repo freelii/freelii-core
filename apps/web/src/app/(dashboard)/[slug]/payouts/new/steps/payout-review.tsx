@@ -9,7 +9,7 @@ import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useCopyToClipboard, useRouterStuff } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
 import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
-import { BlockchainAccount, EwalletAccount, Wallet } from "@prisma/client"
+import { BlockchainAccount, EwalletAccount, FiatAccount, Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
 import { Check, Download, Edit2, XCircle } from "lucide-react"
 import { useMemo, useState } from "react"
@@ -85,8 +85,18 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     }, [recipientAccount])
 
     const isEwallet = useMemo(() => {
-        return (recipientAccount as EwalletAccount)?.ewallet_provider !== null
+        return !!(recipientAccount as EwalletAccount)?.ewallet_provider
     }, [recipientAccount])
+
+    const currencyCode = useMemo(() => {
+        if (isEwallet) {
+            return (recipientAccount as EwalletAccount)?.iso_currency
+        }
+        if (isInstant) {
+            return CURRENCIES.USDC?.shortName
+        }
+        return (recipientAccount as FiatAccount)?.iso_currency
+    }, [recipientAccount, isEwallet, isInstant])
 
 
     // Check if we have all required data
@@ -268,8 +278,8 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
     let fxRate = CURRENCIES.USDC?.rate ?? 1
-    if (isEwallet) {
-        fxRate = CURRENCIES.PHP?.rate ?? 1
+    if (currencyCode !== "USD") {
+        fxRate = CURRENCIES[currencyCode ?? "USD"]?.rate ?? 1
     }
     const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
     const totalCost = Number(searchParams.get('amount')) + totalFees;
@@ -351,27 +361,13 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                             </div>
 
                             <div className="mt-6 space-y-6">
+                                <Separator />
                                 {/* Amount and FX Details */}
                                 <div className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Recipient will receive</span>
-                                        <span className="font-medium flex items-center gap-1">
-                                            {isInstant && <FlagIcon
-                                                currencyCode="USDC-Hardcoded"
-                                                size={16}
-                                            />}
-                                            {isEwallet && <FlagIcon
-                                                currencyCode="PHP"
-                                                size={16}
-                                            />}
-                                            {recipientAmount.toLocaleString('en-US', { style: 'currency', currency: isEwallet ? 'PHP' : 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                    </div>
 
-                                    <Separator />
 
                                     {/* FX Details */}
-                                    <div className="rounded-lg bg-gray-50 p-3 space-y-2">
+                                    {currencyCode !== "USD" && <div className="rounded-lg bg-gray-50 p-3 space-y-2">
                                         <div className="flex justify-between text-sm">
                                             <div className="flex items-center gap-2">
                                                 <div className="flex">
@@ -380,7 +376,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                         className="size-4 rounded-full border-2 border-white"
                                                     />
                                                     <FlagIcon
-                                                        currencyCode={"PHP"}
+                                                        currencyCode={currencyCode}
                                                         className="size-4 -ml-2 rounded-full border-2 border-white"
                                                     />
 
@@ -390,15 +386,15 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                             <span className="flex items-center gap-2 font-medium">
                                                 <Badge className="flex items-center gap-1.5 py-0.5 pl-1 pr-2">
                                                     <FlagIcon
-                                                        currencyCode={"PHP"}
+                                                        currencyCode={currencyCode}
                                                         className="size-4"
                                                     />
-                                                    {CURRENCIES.PHP?.symbol}
-                                                    {CURRENCIES.PHP?.rate}
+                                                    {CURRENCIES[currencyCode ?? "USD"]?.symbol}
+                                                    {CURRENCIES[currencyCode ?? "USD"]?.rate}
                                                 </Badge>
                                             </span>
                                         </div>
-                                    </div>
+                                    </div>}
 
                                     {/* Fees */}
                                     <div className="space-y-2">
@@ -430,6 +426,21 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                             ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </span>
                                     </div>
+                                    <div className="flex font-medium justify-between text-sm">
+                                        <span>Recipient will receive</span>
+                                        <span className=" flex items-center gap-1">
+                                            {isInstant && <FlagIcon
+                                                currencyCode="USDC-Hardcoded"
+                                                size={16}
+                                            />}
+                                            {currencyCode !== "USD" && <FlagIcon
+                                                currencyCode={currencyCode}
+                                                size={16}
+                                            />}
+                                            {recipientAmount.toLocaleString('en-US', { style: 'currency', currency: currencyCode, minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                    </div>
+
                                 </div>
                             </div>
                         </div>

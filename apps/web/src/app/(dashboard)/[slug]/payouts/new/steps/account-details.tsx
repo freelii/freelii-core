@@ -5,9 +5,8 @@ import { BlockchainAccount, EwalletAccount, FiatAccount } from "@prisma/client"
 
 
 export function AccountDetails({ selectedAccount }: { selectedAccount: BlockchainAccount | FiatAccount | EwalletAccount | null }) {
-
     const isFromStellar = (selectedAccount as BlockchainAccount)?.network === 'stellar'
-    const isFromEwallet = (selectedAccount as EwalletAccount)?.ewallet_provider !== null
+    const isFromEwallet = !!(selectedAccount as EwalletAccount)?.ewallet_provider
     if (!selectedAccount) {
         return (
             <div className="mt-3 p-3 bg-gray-50 rounded-md text-xs space-y-2">
