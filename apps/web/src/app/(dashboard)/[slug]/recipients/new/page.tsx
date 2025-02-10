@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react"
 export interface FormData {
     type: "company" | "person"
     name: string
-    email: string
+    email?: string
     taxNumber: string
     street: string
     city: string
@@ -41,10 +41,12 @@ export default function NewRecipientPage() {
     const { router, searchParams } = useRouterStuff();
     const [currentStep, setCurrentStep] = useState(0)
     const [showAddressForm, setShowAddressForm] = useState(false)
+    const [showEmailForm, setShowEmailForm] = useState(false)
+    const [showAccountHolderNameForm, setShowAccountHolderNameForm] = useState(false)
     const [formData, setFormData] = useState<FormData>({
         type: "person",
         name: "",
-        email: "",
+        email: undefined,
         taxNumber: "",
         street: "",
         city: "",
@@ -111,7 +113,16 @@ export default function NewRecipientPage() {
                     <div className="grid grid-cols-12 gap-6">
                         <div className="col-span-8">
                             <div className="bg-white py-2 px-6 border-l border-gray-200">
-                                {steps[currentStep]?.component({ formData, setFormData, showAddressForm, setShowAddressForm })}
+                                {steps[currentStep]?.component({
+                                    formData,
+                                    setFormData,
+                                    showAddressForm,
+                                    setShowAddressForm,
+                                    showEmailForm,
+                                    setShowEmailForm,
+                                    showAccountHolderNameForm,
+                                    setShowAccountHolderNameForm
+                                })}
                             </div>
                             {/* Navigation buttons */}
                             <div className="flex justify-between mt-6">
@@ -234,19 +245,17 @@ function TypeStep({ formData, setFormData }: { formData: FormData, setFormData: 
                 </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t">
-                <h3 className="text-sm font-medium mb-3">Recipient&apos;s Country</h3>
-                <p className="text-sm text-gray-500 mb-4">This will determine available payment methods</p>
-                <CountrySelect
-                    value={formData.country}
-                    onChange={(country) => setFormData({ ...formData, country: country as "Philippines" | "Mexico" | "United States" })}
-                />
-            </div>
+
         </div>
     )
 }
 
-function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormData: (data: FormData) => void }) {
+function BasicInfoStep({ formData, setFormData, showEmailForm, setShowEmailForm }: {
+    formData: FormData,
+    setFormData: (data: FormData) => void,
+    showEmailForm: boolean,
+    setShowEmailForm: (show: boolean) => void
+}) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
@@ -268,6 +277,7 @@ function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormD
     return (
         <div className="space-y-6">
             <h2 className="text-xl font-semibold">Basic Information</h2>
+
             <div className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium mb-1">
@@ -282,19 +292,16 @@ function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormD
                         className="w-full p-2 border rounded-md"
                     />
                 </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <Input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="Business contact email"
-                        className="w-full p-2 border rounded-md"
+
+
+
+                <div className="mt-8">
+                    <h3 className="text-sm font-medium mb-3">Recipient&apos;s Country</h3>
+                    <p className="text-sm text-gray-500 mb-4">This will determine available payment methods</p>
+                    <CountrySelect
+                        value={formData.country}
+                        onChange={(country) => setFormData({ ...formData, country: country as "Philippines" | "Mexico" | "United States" })}
                     />
-                    <p className="mt-1 text-xs text-gray-500">
-                        Payment notifications will be sent to this email
-                    </p>
                 </div>
                 {formData.type === "company" && (
                     <div>
@@ -327,6 +334,42 @@ function BasicInfoStep({ formData, setFormData }: { formData: FormData, setFormD
                         </p>
                     </div>
                 )}
+                <div className="border-t pt-4 mt-4">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-medium">Contact Email</h3>
+                        <button
+                            type="button"
+                            onClick={() => setShowEmailForm(!showEmailForm)}
+                            className="items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                        >
+                            {showEmailForm ? "Hide" : "Add email for notifications"}
+                        </button>
+                    </div>
+
+                    {showEmailForm ? (
+                        <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                            <div>
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email || ''}
+                                    onChange={handleChange}
+                                    placeholder="Contact email for payment notifications"
+                                    className="w-full"
+                                />
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Add an email to receive payment notifications and invoices
+                                </p>
+                            </div>
+                        </div>
+                    ) : formData.email ? (
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <p className="text-gray-600 text-xs">{formData.email}</p>
+                        </div>
+                    ) : (
+                        <p className="text-xs text-gray-500">No email provided</p>
+                    )}
+                </div>
             </div>
         </div>
     )
@@ -404,6 +447,7 @@ function CountrySelect({ value, onChange }: { value: string, onChange: (value: s
                     }}
                     placeholder="Select destination country"
                     className="w-full pl-10"
+                    autoComplete="false"
                     onKeyDown={handleKeyDown}
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2">
@@ -435,7 +479,7 @@ function CountrySelect({ value, onChange }: { value: string, onChange: (value: s
     )
 }
 
-function BankingStep({ formData, setFormData }: { formData: FormData, setFormData: (data: FormData) => void }) {
+function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShowAccountHolderNameForm }: { formData: FormData, setFormData: (data: FormData) => void, showAccountHolderNameForm: boolean, setShowAccountHolderNameForm: (show: boolean) => void }) {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
@@ -522,16 +566,57 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
             {/* Conditional Form Content */}
             {formData.paymentMethod === "fiat" && (
                 <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Account Holder Name</label>
-                        <Input
-                            type="text"
-                            name="accountHolderName"
-                            value={formData.accountHolderName}
-                            onChange={handleChange}
-                            placeholder="Exact name on bank account"
-                            className="w-full"
-                        />
+                    <div className="mt-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-medium">Account Holder Name</h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowAccountHolderNameForm(!showAccountHolderNameForm)}
+                                className="items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                            >
+                                {showAccountHolderNameForm ? "Hide" : "Use different name"}
+                            </button>
+                        </div>
+
+                        {showAccountHolderNameForm ? (
+                            <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                                <div>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            type="text"
+                                            name="accountHolderName"
+                                            value={formData.accountHolderName}
+                                            onChange={handleChange}
+                                            placeholder="Exact name on bank account"
+                                            className="w-full"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => {
+                                                if (formData.accountHolderName) {
+                                                    setShowAccountHolderNameForm(false)
+                                                }
+                                            }}
+                                            className="whitespace-nowrap"
+                                        >
+                                            Confirm Name
+                                        </Button>
+                                    </div>
+                                    <div className="mt-2 flex items-start gap-1.5">
+                                        <p className="text-xs text-gray-500">
+                                            This name will be different from the recipient name ({formData.name})
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : formData.name ? (
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                                <p className="text-gray-600 text-xs">{formData.accountHolderName.length > 0 ? formData.accountHolderName : formData.name}</p>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-gray-500">No name provided</p>
+                        )}
                     </div>
 
                     {formData.country === "Mexico" ? (
@@ -713,6 +798,7 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
                         </div>
                     </div>
 
+
                     <div>
                         <label className="block text-sm font-medium mb-1">Mobile Number</label>
                         <Input
@@ -724,6 +810,24 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
                             className="w-full"
                         />
                     </div>
+                    {formData.ewalletProvider === "coins_ph" && (
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Account Number</label>
+                            <Input
+                                type="text"
+                                name="accountNumber"
+                                value={formData.accountNumber}
+                                onChange={handleChange}
+                                placeholder="10-16 digit account number"
+                                className="w-full"
+                                maxLength={16}
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                                Enter the 10-16 digit account number for your Coins.ph account
+                            </p>
+                        </div>
+                    )}
+
                 </div>
             )}
 
@@ -759,7 +863,14 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
     )
 }
 
-function ReviewStep({ formData, setFormData, showAddressForm, setShowAddressForm }: { formData: FormData, setFormData: (data: FormData) => void, showAddressForm: boolean, setShowAddressForm: (show: boolean) => void }) {
+function ReviewStep({ formData, setFormData, showEmailForm, setShowEmailForm, showAddressForm, setShowAddressForm }: {
+    formData: FormData,
+    setFormData: (data: FormData) => void,
+    showEmailForm: boolean,
+    setShowEmailForm: (show: boolean) => void,
+    showAddressForm: boolean,
+    setShowAddressForm: (show: boolean) => void
+}) {
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData({ ...formData, [name]: value })
@@ -771,32 +882,56 @@ function ReviewStep({ formData, setFormData, showAddressForm, setShowAddressForm
     return (
         <div className="space-y-6">
             <h2 className="text-xl font-semibold">Review Information</h2>
-            <div className="space-y-4 text-sm">
-                <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500">Type</label>
-                        <p className="mt-1 font-medium">{formData.type === "company" ? "Company" : "Person"}</p>
+            <div className="space-y-4">
+                {/* Basic Info Card */}
+                <div className="bg-white border border-gray-100 rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-lg font-medium">{formData.name}</h3>
+                        <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                            {formData.type === "company" ? "Business" : "Individual"}
+                        </span>
                     </div>
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500">Name</label>
-                        <p className="mt-1 font-medium">{formData.name}</p>
+
+                    {formData.type === "company" && formData.taxNumber && (
+                        <div className="mb-4">
+                            <span className="text-sm text-gray-500">Tax Number: </span>
+                            <span className="text-sm font-medium">{formData.taxNumber}</span>
+                        </div>
+                    )}
+
+                    <div className="border-t pt-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-gray-500">Email</span>
+                                {formData.email && (
+                                    <span className="text-sm">{formData.email}</span>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowEmailForm(!showEmailForm)}
+                                className="items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                            >
+                                {showEmailForm ? "Hide" : formData.email ? "Edit" : "Add email"}
+                            </button>
+                        </div>
+
+                        {showEmailForm && (
+                            <div className="mt-3">
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email || ''}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    placeholder="Enter email address"
+                                    className="w-full"
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <label className="block text-xs font-medium text-gray-500">Email</label>
-                    <p className="mt-1 font-medium">{formData.email}</p>
-                </div>
-
-                {formData.type === "company" && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                        <label className="block text-xs font-medium text-gray-500">Tax Number</label>
-                        <p className="mt-1 font-medium">{formData.taxNumber ?? "Not provided"}</p>
-                    </div>
-                )}
-
-
-
+                {/* Rest of the review content */}
                 <div className="border-t pt-4 mt-4">
                     <div className="flex items-center gap-2 mb-3">
                         <h3 className="text-sm font-medium">Payment Details</h3>
@@ -814,6 +949,12 @@ function ReviewStep({ formData, setFormData, showAddressForm, setShowAddressForm
                                 <label className="block text-xs font-medium text-gray-500">E-Wallet Provider</label>
                                 <p className="text-xs mt-1">{formData.ewalletProvider?.toUpperCase()}</p>
                             </div>
+                            {formData.ewalletProvider === "coins_ph" && (
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500">Account Number</label>
+                                    <p className="text-xs mt-1">{formData.accountNumber}</p>
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-xs font-medium text-gray-500">Mobile Number</label>
                                 <p className="text-xs mt-1">{formData.mobileNumber}</p>
@@ -834,15 +975,18 @@ function ReviewStep({ formData, setFormData, showAddressForm, setShowAddressForm
                         </div>
                     )}
                 </div>
-                <div className="border-t pt-4 mt-8">
+                <div className="border-t pt-4 mt-8 group">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-medium">Billing Address</h3>
                         <button
                             type="button"
                             onClick={() => setShowAddressForm(!showAddressForm)}
-                            className="items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+                            className="items-center flex rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
                         >
                             {showAddressForm ? "Hide" : "Add address for invoicing"}
+                            <span className="hidden font-bold ml-1 group-hover:block transition-all duration-900">
+                                +
+                            </span>
                         </button>
                     </div>
 

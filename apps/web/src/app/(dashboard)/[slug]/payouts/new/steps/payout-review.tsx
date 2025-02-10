@@ -35,7 +35,6 @@ interface PayoutReviewProps {
     onConfirm?: () => void
 }
 
-const DEMO_RECIPIENT_ID = 21;
 
 export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     const { transfer, account } = useWallet();
@@ -227,6 +226,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                     amount: toStroops(Number(searchParams.get('amount'))),
                     sacAddress: TESTNET.XLM_SAC
                 })
+
                 console.log('at:', at);
                 if (at?.txHash) {
                     registerPayment.mutate({

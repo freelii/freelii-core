@@ -20,7 +20,7 @@ export function FiatDetails({ formData }: { formData: FiatDetailsProps }) {
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-gray-500">CLABE</label>
-                    <p className="text-xs mt-1">****{formData.accountNumber.slice(-4)}</p>
+                    <p className="text-xs mt-1">{formData.accountNumber}a</p>
                 </div>
             </div>
         )

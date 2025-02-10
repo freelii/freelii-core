@@ -110,6 +110,8 @@ expiry	Quote expire time seconds.
             const messageToSign = queryParams.toString();
             const signature = this.signMessage(messageToSign);
 
+            console.log(queryParams)
+
             const response = await axios.post(`${this.apiHost}/${path}`, null, {
                 params: {
                     ...Object.fromEntries(queryParams),
@@ -222,7 +224,7 @@ expiry	Quote expire time seconds.
      * @param params 
      * @returns 
      */
-    async cashOut(params: CashOutParams): Promise<CashOutResponse> {
+    async cashout(params: CashOutParams): Promise<CashOutResponse> {
         try {
             const path = 'openapi/fiat/v1/cash-out';
             const timestamp = Date.now().toString();
@@ -239,9 +241,12 @@ expiry	Quote expire time seconds.
                     recipientAccountNumber: params.recipientAccountNumber,
                     recipientName: params.recipientName,
                     ...(params.recipientAddress && { recipientAddress: params.recipientAddress }),
-                    ...(params.remarks && { remarks: params.remarks })
+                    ...(params.remarks && { remarks: params.remarks }),
+                    ...(params.recipientMobile && { recipientMobile: params.recipientMobile })
                 }
             };
+
+            console.log('requestBody', requestBody);
 
             const queryParams = new URLSearchParams({ timestamp });
             const messageToSign = `${queryParams.toString()}${JSON.stringify(requestBody)}`;
@@ -258,6 +263,7 @@ expiry	Quote expire time seconds.
                     params: { signature }
                 }
             );
+            console.log('response', response.data);
 
             if (response.data.status !== 0) {
                 this.handleCashoutError(response.data.status, response.data.error);
@@ -265,7 +271,6 @@ expiry	Quote expire time seconds.
 
             return response.data;
         } catch (error) {
-            console.error('Error processing cash out:', error);
             throw error;
         }
     }
@@ -276,8 +281,8 @@ expiry	Quote expire time seconds.
      * @returns Guarded amount
      */
     amountGuard(strAmount: string): string {
-        if (process.env.NODE_ENV === 'development') {
-            return "0.01";
+        if (process.env.NODE_ENV !== 'production') {
+            return "1";
         }
         const amount = Number(strAmount);
         if (Number.isNaN(amount)) {
@@ -323,7 +328,7 @@ expiry	Quote expire time seconds.
      * @returns Guarded channel subject
      */
     channelSubjectGuard(channelSubject: string): string {
-        const availableChannelSubjects = ['gcash']
+        const availableChannelSubjects = ['gcash', 'coins.ph']
         if (!availableChannelSubjects.includes(channelSubject)) {
             throw new Error('Invalid channel subject');
         }
@@ -380,7 +385,7 @@ expiry	Quote expire time seconds.
      * @param internalOrderId - ID of the order to retrieve details for
      * @returns Details about the fiat order
      */
-    async getFiatOrderDetails(internalOrderId: string): Promise<FiatOrderDetails> {
+    async getFiatOrderDetails(internalOrderId: string): Promise<{ success: true; res: FiatOrderDetails } | { success: false; error: string }> {
         try {
             const path = 'openapi/fiat/v1/details';
             const timestamp = Date.now().toString();
@@ -407,7 +412,10 @@ expiry	Quote expire time seconds.
                 throw new Error(`Error fetching order details: ${response.data.error}`);
             }
 
-            return response.data.data;
+            return {
+                success: true,
+                res: response.data.data
+            }
         } catch (error) {
             console.error('Error fetching fiat order details:', error);
             throw error;

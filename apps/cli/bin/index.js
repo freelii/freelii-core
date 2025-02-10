@@ -2,7 +2,7 @@
 
 const { Command } = require('commander');
 const dotenv = require('dotenv');
-const { input, confirm } = require('@inquirer/prompts');
+const { input, confirm, select } = require('@inquirer/prompts');
 const { CoinsPHService } = require('@freelii/anchors');
 const path = require('path');
 
@@ -119,6 +119,112 @@ program
         } else {
             console.log('\n❌ Transaction cancelled');
         }
+    });
+
+program.command('cashout')
+    .description('Cashout to a recipient')
+    .action(async () => {
+        // Channel options
+        const CHANNEL_OPTIONS = [
+            { value: 'INSTAPAY', label: 'Instapay' },
+            { value: 'PESONET', label: 'PESONet' }
+        ];
+
+        const CHANNEL_SUBJECT_OPTIONS = [
+            { value: 'coins.ph', label: 'Coins.ph' },
+            { value: 'gcash', label: 'GCash' },
+            { value: 'unionbank', label: 'UnionBank' },
+            { value: 'bpi', label: 'BPI' },
+            { value: 'bdo', label: 'BDO' }
+        ];
+
+        // Generate random internal order ID
+        const internalOrderId = Math.random().toString(36).substring(2, 15);
+
+        // Interactive prompts
+        const amount = await input({
+            message: 'Enter amount to cashout (PHP):',
+            validate: (value) => {
+                if (isNaN(value) || value <= 0) return 'Please enter a valid positive number';
+                return true;
+            }
+        });
+
+        const channelName = await select({
+            message: 'Select payment channel:',
+            choices: CHANNEL_OPTIONS
+        });
+
+        const channelSubject = await select({
+            message: 'Select bank/payment provider:',
+            choices: CHANNEL_SUBJECT_OPTIONS
+        });
+
+        const recipientName = await input({
+            message: 'Enter recipient name:',
+            default: 'testing',
+            validate: (value) => value.length > 0 ? true : 'Recipient name is required'
+        });
+
+        const recipientAccountNumber = await input({
+            message: 'Enter recipient account number:',
+            default: '09171586897',
+            validate: (value) => value.length > 0 ? true : 'Account number is required'
+        });
+
+        const recipientMobile = await input({
+            message: 'Enter recipient mobile number (e.g., 09171234567):',
+            default: '09171586897',
+            validate: (value) => {
+                if (!/^09\d{9}$/.test(value)) return 'Please enter a valid Philippine mobile number (e.g., 09171234567)';
+                return true;
+            }
+        });
+
+        const cashoutData = {
+            internalOrderId,
+            currency: "PHP",
+            amount,
+            channelName,
+            channelSubject,
+            recipientName,
+            recipientAccountNumber,
+            recipientMobile: `+63${recipientMobile.substring(1)}` // Convert 09XX to +639XX format
+        };
+
+        console.log('\n📝 Review your cashout details:');
+        console.table(cashoutData);
+
+        const shouldProceed = await confirm({
+            message: 'Would you like to proceed with this cashout?',
+        });
+
+        if (shouldProceed) {
+            const coinsPHService = new CoinsPHService();
+            try {
+                const cashoutResponse = await coinsPHService.cashout(cashoutData);
+
+                if (cashoutResponse.success) {
+                    console.log('\n✅ Cashout initiated successfully!');
+                    console.log(cashoutResponse);
+                } else {
+                    console.error('\n❌ Cashout failed:', cashoutResponse.error);
+                }
+            } catch (error) {
+                console.error('\n❌ Cashout failed:', error.message);
+            }
+        } else {
+            console.log('\n❌ Cashout cancelled');
+        }
+    });
+
+program.command('monitor')
+    .description('Monitor a cashout')
+    .argument('<internalOrderId>', 'Internal order ID')
+    .action(async (internalOrderId) => {
+        const coinsPHService = new CoinsPHService();
+        const details = await coinsPHService.getFiatOrderDetails(internalOrderId);
+        console.log(details);
     });
 
 program.parse();

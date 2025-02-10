@@ -51,6 +51,7 @@ export interface CashOutParams {
     currency: string;
     recipientName: string;
     recipientAccountNumber: string;
+    recipientMobile?: string;
     recipientAddress?: string;
     remarks?: string;
     channelName: 'INSTAPAY' | 'SWIFTPAY_PESONET';
