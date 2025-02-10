@@ -28,6 +28,7 @@ export * from "./greek-temple";
 export * from "./hyperlink";
 export * from "./invoice-dollar";
 export * from "./layout-sidebar";
+export * from "./message-smile";
 export * from "./mobile-phone";
 export * from "./money-bill2";
 export * from "./money-bills2";

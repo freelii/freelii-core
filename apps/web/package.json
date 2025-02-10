@@ -27,6 +27,7 @@
     "@freelii/tailwind-config": "workspace:*",
     "@freelii/ui": "workspace:*",
     "@freelii/utils": "workspace:*",
+    "zafegard-policy-sdk": "workspace:*",
     "@prisma/client": "^5.14.0",
     "@radix-ui/react-slot": "1.1.1",
     "@splinetool/react-spline": "^4.0.0",

@@ -1,6 +1,8 @@
 "use client"
 
-import { FiatAccount, useFixtures, Withdrawal } from "@/fixtures/useFixtures"
+import { FiatAccount, Withdrawal } from "@/fixtures/useFixtures"
+import { api } from "@/trpc/react"
+import { XLMIcon } from "@/ui/icons/xlm-icon"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { Badge, Button, ExpandingArrow, Tabs, TabsContent, TabsList, TabsTrigger } from "@freelii/ui"
 import { CURRENCIES } from "@freelii/utils/constants"
@@ -9,6 +11,14 @@ import dayjs from "dayjs"
 import Link from "next/link"
 
 export function WithdrawalsList({ withdrawals, fiatAccountsHash }: { withdrawals: Withdrawal[], fiatAccountsHash: Map<string, FiatAccount> }) {
+    if (!withdrawals.length) {
+        return (
+            <div className="text-center py-6 text-gray-500">
+                <p>No withdrawals to show</p>
+            </div>
+        )
+    }
+
     return (<div>
         {withdrawals.map((transaction) => (
             <div
@@ -63,9 +73,11 @@ export function WithdrawalsList({ withdrawals, fiatAccountsHash }: { withdrawals
 }
 
 export function WithdrawalMethods() {
-    const { fiatAccounts, withdrawals } = useFixtures()
+    const { data: accounts } = api.users.listWithdrawalAccounts.useQuery();
 
-    const fiatAccountsHash = new Map(fiatAccounts.map(account => [account.id, account]))
+    const fiatAccountsHash = new Map(accounts?.fiat_accounts.map(account => [account.id, account]) ?? [])
+    const blockchainAccountsHash = new Map(accounts?.blockchain_accounts.map(account => [account.id, account]) ?? [])
+    const ewalletAccountsHash = new Map(accounts?.ewallet_accounts.map(account => [account.id, account]) ?? [])
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] gap-6">
@@ -77,19 +89,21 @@ export function WithdrawalMethods() {
                     <h3 className="font-medium mb-4">
                         Available Withdrawal Options
                     </h3>
-                    <Button variant="outline" className="border-none" >
-                        Link account
-                    </Button>
+                    <Link href="/dashboard/withdrawals/link-account">
+                        <Button variant="outline" className="border-none" >
+                            Link account
+                        </Button>
+                    </Link>
                 </div>
 
 
                 <div className="space-y-3 mt-2">
-                    {fiatAccounts.map((account) => (
+                    {Array.from(fiatAccountsHash.values()).map((account) => (
                         <div key={account.id} className="border-b border-gray-200 p-3 hover:bg-gray-50 rounded-lg">
                             <div className="flex items-start justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-2">
-                                        <FlagIcon currencyCode={account.currency} size={20} />
+                                        <FlagIcon currencyCode={account.iso_currency} size={20} />
                                         <div>
                                             <div className="text-sm font-medium">{account.bank_name}</div>
                                             <div className="text-xs text-gray-500">{maskFirstDigits(account.account_number)}</div>
@@ -105,13 +119,44 @@ export function WithdrawalMethods() {
                                         Withdraw
                                         <ExpandingArrow className="size-4 -ml-2" />
                                         <FlagIcon
-                                            currencyCode={account.currency}
+                                            currencyCode={account.iso_currency}
                                             className="ml-2 transition-transform duration-200 group-hover:scale-110 group-hover:brightness-110"
                                         />
-                                        <div className="font-xs">{account.currency}</div>
+                                        <div className="font-xs">{account.iso_currency}</div>
 
                                     </Button>
                                 </Link>
+                            </div>
+                        </div>
+                    ))}
+                    {Array.from(blockchainAccountsHash.values()).map((account) => (
+                        <div key={account.id} className="border-b border-gray-200 p-3 hover:bg-gray-50 rounded-lg">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <XLMIcon size={20} />
+                                        <div>
+                                            <div className="text-sm font-medium">{account.network}</div>
+                                            <div className="text-xs text-gray-500">{account.address}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                    {Array.from(ewalletAccountsHash.values()).map((account) => (
+                        <div key={account.id} className="border-b border-gray-200 p-3 hover:bg-gray-50 rounded-lg">
+                            <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <FlagIcon currencyCode={account.iso_currency} size={20} />
+                                            <div>
+                                                <div className="text-sm font-medium">{account.ewallet_provider}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -126,11 +171,10 @@ export function WithdrawalMethods() {
                         </TabsList>
 
                         <TabsContent value="latest">
-                            <WithdrawalsList withdrawals={withdrawals.filter(withdrawal => withdrawal.status === 'completed')} fiatAccountsHash={fiatAccountsHash} />
+                            <WithdrawalsList withdrawals={[]} fiatAccountsHash={new Map()} />
                         </TabsContent>
-
                         <TabsContent value="request">
-                            <WithdrawalsList withdrawals={withdrawals.filter(withdrawal => withdrawal.status === 'processing')} fiatAccountsHash={fiatAccountsHash} />
+                            <WithdrawalsList withdrawals={[]} fiatAccountsHash={new Map()} />
                         </TabsContent>
                     </Tabs>
                 </div>

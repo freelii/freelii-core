@@ -3,13 +3,13 @@
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
+import { FiatDetails } from "@/ui/render-fiat-details"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { NavSteps } from "@/ui/shared/nav-steps"
 import { Button, ExpandingArrow, Input, LoadingDots, MaxWidthWrapper, useRouterStuff } from "@freelii/ui"
 import { cn } from "@freelii/utils"
 import { ArrowLeft } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
-import { FiatDetails } from "./_components/render-fiat-details"
 
 export interface FormData {
     type: "company" | "person"
@@ -19,7 +19,7 @@ export interface FormData {
     street: string
     city: string
     state: string
-    country: string
+    country: "Philippines" | "Mexico" | "United States"
     zipCode: string
     paymentMethod: "fiat" | "ewallet" | "blockchain"
     transferMethod?: "instapay" | "pesonet"
@@ -27,7 +27,6 @@ export interface FormData {
     mobileNumber?: string
     swiftCode?: string
     bankAddress?: string
-    purposeOfPayment?: string
     bankName: string
     accountNumber: string
     routingNumber: string
@@ -50,7 +49,7 @@ export default function NewRecipientPage() {
         street: "",
         city: "",
         state: "",
-        country: "",
+        country: "Philippines",
         zipCode: "",
         paymentMethod: "fiat",
         transferMethod: undefined,
@@ -240,7 +239,7 @@ function TypeStep({ formData, setFormData }: { formData: FormData, setFormData: 
                 <p className="text-sm text-gray-500 mb-4">This will determine available payment methods</p>
                 <CountrySelect
                     value={formData.country}
-                    onChange={(country) => setFormData({ ...formData, country })}
+                    onChange={(country) => setFormData({ ...formData, country: country as "Philippines" | "Mexico" | "United States" })}
                 />
             </div>
         </div>
@@ -617,7 +616,7 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
                                 />
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium mb-1">Purpose of Payment</label>
                                 <Input
                                     type="text"
@@ -630,7 +629,7 @@ function BankingStep({ formData, setFormData }: { formData: FormData, setFormDat
                                 <p className="mt-1 text-xs text-gray-500">
                                     Required for international wire transfers
                                 </p>
-                            </div>
+                            </div> */}
                         </>
                     ) : (
                         <>

@@ -8,6 +8,7 @@ import {
   Facebook,
   GreekTemple,
   InvoiceDollar,
+  MoneyBills2,
   useRouterStuff,
   Users6
 } from "@freelii/ui";
@@ -54,7 +55,7 @@ const NAV_AREAS: SidebarNavAreas<{
           },
           {
             name: "Payouts",
-            icon: ArrowsOppositeDirectionX,
+            icon: MoneyBills2,
             href: `/${slug}/payouts${queryString}`,
           },
           {

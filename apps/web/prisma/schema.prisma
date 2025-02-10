@@ -53,13 +53,16 @@ model User {
     emailVerified DateTime?
 
     // Relationships
-    generated_invoices Invoice[]      @relation("GeneratedInvoices")
-    received_invoices  Invoice[]      @relation("ReceivedInvoices")
-    clients            Client[]
-    accounts           Account[]
-    sessions           Session[]
-    wallets            Wallet[]
-    transactions       Transactions[]
+    generated_invoices  Invoice[]           @relation("GeneratedInvoices")
+    received_invoices   Invoice[]           @relation("ReceivedInvoices")
+    clients             Client[]
+    accounts            Account[]
+    sessions            Session[]
+    wallets             Wallet[]
+    transactions        Transactions[]
+    fiat_accounts       FiatAccount[]
+    ewallet_accounts    EwalletAccount[]
+    blockchain_accounts BlockchainAccount[]
 
     @@map("users")
 }
@@ -98,10 +101,14 @@ model BlockchainAccount {
     network     String
     environment String
 
-    client_id Int
-    client    Client @relation(fields: [client_id], references: [id])
+    client_id Int?
+    client    Client? @relation(fields: [client_id], references: [id])
+
+    user_id Int?
+    user    User? @relation(fields: [user_id], references: [id])
 
     @@index([client_id])
+    @@index([user_id])
     @@map("blockchain_accounts")
 }
 
@@ -123,11 +130,14 @@ model FiatAccount {
     iso_currency        String
     transfer_method     TransferMethod?
 
-    client_id Int
-    client    Client @relation(fields: [client_id], references: [id])
+    client_id Int?
+    client    Client? @relation(fields: [client_id], references: [id])
 
-    @@unique([client_id, alias])
+    user_id Int?
+    user    User? @relation(fields: [user_id], references: [id])
+
     @@index([client_id])
+    @@index([user_id])
     @@map("fiat_accounts")
 }
 
@@ -140,10 +150,14 @@ model EwalletAccount {
     mobile_number    String?
     ewallet_provider EwalletProvider?
 
-    client_id Int
-    client    Client @relation(fields: [client_id], references: [id])
+    client_id Int?
+    client    Client? @relation(fields: [client_id], references: [id])
+
+    user_id Int?
+    user    User? @relation(fields: [user_id], references: [id])
 
     @@index([client_id])
+    @@index([user_id])
     @@map("ewallet_accounts")
 }
 

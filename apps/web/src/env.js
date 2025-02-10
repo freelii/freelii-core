@@ -35,7 +35,7 @@ export const env = createEnv({
    * Specify your client-side environment variables schema here. This way you can ensure the app
    * isn't built with invalid env vars. To expose them to the client, prefix them with
    * `NEXT_PUBLIC_`.
-   */
+  */
   client: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
     NEXT_PUBLIC_RPC_URL: z.string(),
@@ -47,6 +47,7 @@ export const env = createEnv({
     NEXT_PUBLIC_MERCURY_URL: z.string(),
     NEXT_PUBLIC_MERCURY_JWT: z.string(),
     NEXT_PUBLIC_NATIVE_CONTRACT_ID: z.string(),
+    NEXT_PUBLIC_ZAFEGARD_WASM_HASH: z.string(),
   },
 
   /**
@@ -69,6 +70,7 @@ export const env = createEnv({
     WEBHOOK_SECRET: process.env.WEBHOOK_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
+    NEXT_PUBLIC_ZAFEGARD_WASM_HASH: process.env.NEXT_PUBLIC_ZAFEGARD_WASM_HASH,
     NEXT_PUBLIC_RPC_URL: process.env.NEXT_PUBLIC_RPC_URL,
     NEXT_PUBLIC_LAUNCHTUBE_URL: process.env.NEXT_PUBLIC_LAUNCHTUBE_URL,
     NEXT_PUBLIC_LAUNCHTUBE_JWT: process.env.NEXT_PUBLIC_LAUNCHTUBE_JWT,

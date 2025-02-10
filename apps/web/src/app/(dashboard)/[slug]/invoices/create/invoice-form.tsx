@@ -8,10 +8,8 @@ import {
     Badge,
     BlurImage,
     Button,
-    ExpandingArrow,
     Input,
     Label,
-    LoadingDots,
     Select,
     SelectContent,
     SelectItem,
@@ -19,7 +17,7 @@ import {
     SelectValue,
     Textarea
 } from "@freelii/ui"
-import { cn, CURRENCIES } from "@freelii/utils"
+import { CURRENCIES } from "@freelii/utils"
 import { Address, Client } from "@prisma/client"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -739,7 +737,7 @@ function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCrea
             </div>
 
             {/* Email Options */}
-            <div className="rounded-lg border-none py-0 p-6 space-y-4">
+            {/* <div className="rounded-lg border-none py-0 p-6 space-y-4">
                 <div className="space-y-4">
                     <div>
                         <Label>CC Recipients (Optional)</Label>
@@ -760,7 +758,7 @@ function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCrea
                         </p>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-4 pt-4">
@@ -768,9 +766,9 @@ function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCrea
                     variant="outline"
                     onClick={() => {/* Handle create only */ }}
                 >
-                    Create Only
+                    Create
                 </Button>
-                <Button
+                {/* <Button
                     disabled={isCreating}
                     className={cn("group px-4 pr-8", isCreating && "opacity-50 py-3 px-6")}
                     onClick={() => handleCreateInvoice?.()}
@@ -779,7 +777,7 @@ function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCrea
                         <LoadingDots className="h-4 w-4" color="white" />
                         : "Create and Send"}
                     <ExpandingArrow className="ml-1 h-4 w-4" />
-                </Button>
+                </Button> */}
             </div>
         </div>
     );

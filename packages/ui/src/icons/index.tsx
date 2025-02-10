@@ -4,6 +4,9 @@ import { ComponentType, SVGProps } from "react";
 // Nucleo icons
 export * from "./nucleo";
 
+// Continents
+export * from "./continents";
+
 // Custom icons
 export { default as ExpandingArrow } from "./expanding-arrow";
 

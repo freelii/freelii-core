@@ -1,4 +1,6 @@
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import { LinkWithdrawalAccountSchema } from "@/server/services/user/schemas/link-withdrawal-account.schema";
+import { UserService } from "@/server/services/user/user-service";
 import { z } from "zod";
 
 export const userRouter = createTRPCRouter({
@@ -28,5 +30,22 @@ export const userRouter = createTRPCRouter({
                 },
             });
             return user;
+        }),
+    linkWithdrawalAccount: protectedProcedure
+        .input(LinkWithdrawalAccountSchema)
+        .mutation(async ({ ctx, input }) => {
+            const userService = new UserService({
+                db: ctx.db,
+                session: ctx.session,
+            });
+            return userService.linkWithdrawalAccount(input);
+        }),
+    listWithdrawalAccounts: protectedProcedure
+        .query(async ({ ctx }) => {
+            const userService = new UserService({
+                db: ctx.db,
+                session: ctx.session,
+            });
+            return userService.listWithdrawalAccounts();
         }),
 });
