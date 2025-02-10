@@ -1,7 +1,9 @@
+import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { BlurImage, Separator } from "@freelii/ui"
+import { cn } from "@freelii/utils"
 import { DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils/constants"
 import dayjs from "dayjs"
-import { Building2, Calendar } from "lucide-react"
+import { Building2, Calendar, Check } from "lucide-react"
 import { useEffect, useRef } from "react"
 import { type Payout } from "./page-payouts"
 
@@ -79,22 +81,61 @@ export function PaymentDetails({
             <div className="w-full">
               <div className="text-sm text-gray-500 flex items-center justify-between w-full">
                 Payment amount
-                {/* <Link
-                  href={`/dashboard/invoices/create?tx_id=${payment.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <span className=" items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors">
-                    Generate Invoice
-                  </span>
-                </Link> */}
               </div>
               <div className="text-sm font-semibold">
                 {payment.amount}
               </div>
             </div>
           </div>
-          <div>
+
+          {/* Add Timeline Section */}
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">Payment Progress</p>
+
+            <div className="mt-4">
+              {/* Timeline steps */}
+              <div className="relative pl-8 border-l-2 border-[#4ab3e8] pb-6">
+                <div className="absolute left-0 -translate-x-[9px] size-4 rounded-full bg-[#4ab3e8]" />
+                <div>
+                  <p className="font-medium text-sm">Payment Initiated</p>
+                  <p className="text-xs text-gray-500">
+                    {dayjs(payment.createdAt).format("MMM D, YYYY")}
+                  </p>
+                </div>
+              </div>
+
+              {!payment.isInstant && <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
+                <div className={cn(
+                  "border-gray-200 bg-white absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 transition-all duration-300",
+                  payment.status === "processing" && "border-[#4ab3e8] bg-[#4ab3e8]"
+                )} />
+                <div>
+                  <p className="font-medium text-sm">Processing</p>
+                  <p className="text-xs text-gray-500">Within 24 hours</p>
+                </div>
+              </div>}
+
+              <div className="relative pl-8 border-l-2 border-transparent">
+                <div className={cn(
+                  "absolute left-0 -translate-x-[9px] size-4 rounded-full border-2 border-gray-200 bg-white",
+                  payment.status === "COMPLETED" && "border-[#4ab3e8] bg-[#4ab3e8]"
+                )} />
+                <div>
+                  <p className="font-medium text-sm flex items-center gap-1">
+                    Completed
+                    {payment.status === "COMPLETED" && <Check className="size-4 text-green-500" />}
+                    {payment.isInstant && <InstantBadge />}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {payment.isInstant ?
+                      dayjs(payment.createdAt).format("MMM D, YYYY hh:mm")
+                      : "1-2 business days"}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
+
         </div>
 
       </div>

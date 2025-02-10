@@ -67,6 +67,7 @@ export type Recipient = {
 }
 
 export type Payout = {
+  createdAt: Date
   id: string
   amount: string
   currency: string
@@ -75,6 +76,8 @@ export type Payout = {
   recipients: Recipient[]
   progress: string
   notes?: string
+  status: string
+  isInstant: boolean
 }
 
 export const columns: ColumnDef<Payout>[] = [
@@ -255,6 +258,7 @@ export default function PayoutsTable() {
       setPayouts(txs.map(tx => {
         const amount = fromStroops(tx.amount)
         return {
+          createdAt: tx.created_at,
           id: tx.id,
           amount,
           currency: tx.currency,
@@ -267,6 +271,8 @@ export default function PayoutsTable() {
             isVerified: tx.recipient.verification_status === VerificationStatus.VERIFIED,
           } : null] as Recipient[],
           progress: "One-time payment",
+          status: tx.status,
+          isInstant: !!tx.blockchain_tx_hash
         }
       }))
     }
@@ -320,7 +326,7 @@ export default function PayoutsTable() {
           "flex-1",
           selectedPayout ? "col-span-8" : "col-span-12"
         )}>
-          <Table className="border-none relative">
+          <Table className="border-none relative" >
             <TableHeader className="border-none">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -340,7 +346,18 @@ export default function PayoutsTable() {
               ))}
             </TableHeader>
             <TableBody className="border-none">
-              {table.getRowModel().rows?.length ? (
+              {isLoading ? (
+                // Loading skeleton rows
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={`skeleton-${index}`} className="animate-pulse">
+                    {columns.map((column, cellIndex) => (
+                      <TableCell key={`skeleton-cell-${cellIndex}`} className="p-1">
+                        <div className="h-4 bg-gray-200 rounded w-[80%]" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
@@ -349,7 +366,9 @@ export default function PayoutsTable() {
                       "cursor-pointer hover:bg-gray-50 group transition-all duration-300 ease-in-out",
                       selectedPayout?.id === row.original.id && "bg-gray-100"
                     )}
-                    onClick={() => handlePaymentSelect(row.original)}
+                    onClick={(e) => {
+                      handlePaymentSelect(row.original)
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className={cn("font-normal text-xs p-1", selectedPayout?.id === row.original.id && "font-semibold")}>

@@ -1,17 +1,128 @@
 import { Badge, Button, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
-import { cn, maskAccountNumber } from "@freelii/utils/functions";
+import { cn } from "@freelii/utils/functions";
 import { Address, BlockchainAccount, Client, EwalletAccount, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
 import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
-import { Building2, CheckCircle2, Clock, CreditCard, UserPlus, Wallet } from "lucide-react";
+import dayjs from "dayjs";
+import { Building2, CheckCircle2, Clock, CreditCard, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { FlagIcon } from "../shared/flag-icon";
+
+
 
 export type Recipient = Client & {
     address?: Address | null
     fiat_accounts?: FiatAccount[]
     blockchain_accounts?: BlockchainAccount[]
     ewallet_accounts?: EwalletAccount[]
+}
+
+const getPaymentMethodLabel = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
+    if ('network' in account) {
+        return 'blockchain'
+    }
+    // SPEI (Mexico)
+    if ('bank_name' in account && account.iso_currency === 'MXN') {
+        return 'SPEI'
+    }
+    // Philippines Bank
+    if ('bank_name' in account && account.iso_currency === 'PHP') {
+        return account.bank_name
+    }
+    // E-wallets (Philippines)
+    if ('ewallet_provider' in account && account.iso_currency === 'PHP' && account.ewallet_provider) {
+        return account.ewallet_provider.replace('PH_', '')
+    }
+    // Default case
+    return 'bank_name' in account ? account.bank_name : account.ewallet_provider?.replace('PH_', '')
+}
+
+
+const getPaymentMethodFlag = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
+    if ('network' in account) {
+        return 'USDC-Hardcoded'
+    }
+    return account.iso_currency
+}
+
+const getPaymentMethodDescription = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
+    if ('network' in account) {
+        return 'USDC'
+    }
+    return account.iso_currency
+}
+
+const getAverageTransferTime = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
+    if ('network' in account) {
+        return 'Instant'
+    }
+    if (account.iso_currency === 'MXN') {
+        return 'less than 1 hour'
+    }
+    if (account.iso_currency === 'PHP') {
+        return '~2 hours'
+    }
+    return '1-2 days'
+}
+
+const PaymentMethod = ({ account, defaultCollapsed = true }: { account: FiatAccount | EwalletAccount | BlockchainAccount, defaultCollapsed?: boolean }) => {
+    return (
+        <HoverCard>
+            <HoverCardTrigger asChild>
+                <div className="flex items-center gap-1.5 bg-gray-50 rounded-full border border-gray-200 w-fit group px-1 py-1">
+                    <FlagIcon
+                        currencyCode={getPaymentMethodFlag(account)}
+                        size={16}
+                    />
+                    <span className={cn(
+                        "text-xs font-medium",
+                        !defaultCollapsed && "hidden group-hover:block"
+                    )}>
+                        {getPaymentMethodLabel(account)}
+                    </span>
+                </div>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80 bg-white shadow-lg border border-gray-200 z-50">
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                        <FlagIcon
+                            currencyCode={getPaymentMethodFlag(account)}
+                            className="w-6 h-6"
+                            size={20}
+                        />
+                        <div>
+                            <h4 className="text-sm font-medium">{getPaymentMethodLabel(account)}</h4>
+                            <p className="text-xs text-gray-500">{getPaymentMethodDescription(account)}</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3 border-t border-gray-100 pt-3">
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Last transfer</span>
+                            <span className="font-medium">2 days ago</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Total transfers</span>
+                            <span className="font-medium">24 transfers</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Average transfer time</span>
+                            <span className="font-medium">{getAverageTransferTime(account)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Success rate</span>
+                            <span className="font-medium text-green-600">100%</span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md mt-1">
+                        <Clock className="h-3 w-3 text-gray-500" />
+                        <span className="text-xs text-gray-600">Added on {dayjs(account.created_at).format('MMMM D, YYYY')}</span>
+                    </div>
+                </div>
+            </HoverCardContent>
+        </HoverCard>
+    )
 }
 
 export const columns: ColumnDef<Recipient>[] = [
@@ -97,107 +208,39 @@ export const columns: ColumnDef<Recipient>[] = [
         },
     },
     {
-        accessorKey: "fiat_accounts",
+        accessorKey: "payment_methods",
         header: "Payment Methods",
         cell: ({ row }) => {
             const recipient = row.original
-            const hasFiatAccounts = recipient.fiat_accounts && recipient.fiat_accounts.length > 0;
-            const hasEwalletAccounts = recipient.ewallet_accounts && recipient.ewallet_accounts.length > 0
+            const fiatAccounts = recipient.fiat_accounts || []
+            const ewalletAccounts = recipient.ewallet_accounts || []
+            const blockchainAccounts = recipient.blockchain_accounts || []
+            const allAccounts = [...fiatAccounts, ...ewalletAccounts, ...blockchainAccounts]
 
-            if (!hasFiatAccounts && !hasEwalletAccounts) {
+            if (allAccounts.length === 0) {
                 return (
-                    <div className="text-sm text-gray-500 flex items-center gap-2">
+                    <div className="text-xs text-gray-500 flex items-center gap-2">
                         <CreditCard className="h-4 w-4" />
                         <span>Not provided</span>
                     </div>
                 )
             }
 
-            const getPaymentMethodLabel = (account: FiatAccount | EwalletAccount) => {
-                // SPEI (Mexico)
-                if ('bank_name' in account && account.iso_currency === 'MXN') {
-                    return 'SPEI'
-                }
-                // Philippines Bank
-                if ('bank_name' in account && account.iso_currency === 'PHP') {
-                    return account.bank_name
-                }
-                // E-wallets (Philippines)
-                if ('ewallet_provider' in account && account.iso_currency === 'PHP' && account.ewallet_provider) {
-                    return account.ewallet_provider.replace('PH_', '')
-                }
-                // Default case - just show bank name or provider
-                return 'bank_name' in account ? account.bank_name : account.ewallet_provider?.replace('PH_', '')
-            }
 
-            return (
-                <div className="space-y-1.5">
-                    {hasFiatAccounts && recipient.fiat_accounts?.map((account) => (
-                        <div key={account.id} className="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-50">
-                            <div className="flex flex-col">
-                                <div className="text-xs font-medium flex items-center gap-1 capitalize">
-                                    {getPaymentMethodLabel(account)} {maskAccountNumber(account.account_number)}
-                                </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                    <FlagIcon
-                                        currencyCode={account.iso_currency}
-                                        size={16}
-                                    />
-                                    {account.iso_currency}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                    {hasEwalletAccounts && recipient.ewallet_accounts?.map((account) => (
-                        <div key={account.id} className="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-50">
-                            <div className="flex flex-col">
-                                <div className="text-xs font-medium flex items-center gap-1 capitalize">
-                                    {getPaymentMethodLabel(account)}
-                                </div>
-                                <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                                    <FlagIcon
-                                        currencyCode={account.iso_currency}
-                                        size={16}
-                                    />
-                                    {account.iso_currency}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )
-        },
-    },
-    {
-        accessorKey: "blockchain_accounts",
-        header: "Blockchain Accounts",
-        cell: ({ row }) => {
-            const recipient = row.original
-            const hasBlockchainAccounts = recipient.blockchain_accounts && recipient.blockchain_accounts.length > 0
 
-            if (!hasBlockchainAccounts) {
+            if (allAccounts.length === 1) {
                 return (
-                    <div className="text-xs text-gray-500 flex items-center gap-2">
-                        <Wallet className="h-4 w-4" />
-                        <span>Not provided</span>
+                    <PaymentMethod account={allAccounts[0]!} />
+                )
+            } else {
+                return (
+                    <div className="flex flex-wrap gap-1">
+                        {allAccounts.map((account) => (
+                            <PaymentMethod key={account.id} account={account} defaultCollapsed={false} />
+                        ))}
                     </div>
                 )
             }
-
-            return (
-                <div className="space-y-2">
-                    {recipient.blockchain_accounts?.map((account) => (
-                        <div key={account.id} className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                                <FlagIcon currencyCode={"USDC-Hardcoded"} size={16} />
-                                <div className="text-xs text-gray-500 font-mono">
-                                    USDC
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )
         },
     },
 ];
