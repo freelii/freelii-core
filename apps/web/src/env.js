@@ -32,8 +32,11 @@ export const env = createEnv({
     COINS_PH_API_HOST: z.string(),
     COINS_PH_API_KEY: z.string(),
     COINS_PH_API_SECRET: z.string(),
+    COINS_PH_PROXY_API_HOST: z.string(),
+    COINS_PH_PROXY_API_KEY: z.string(),
+    COINS_PH_PROXY_API_SECRET: z.string(),
+    USE_COINS_PH_PROXY: z.boolean(),
     OPENAI_API_KEY: z.string(),
-    COINS_REVERSE_PROXY_API_GATEWAY: z.string(),
   },
 
   /**
@@ -89,7 +92,10 @@ export const env = createEnv({
     COINS_PH_API_KEY: process.env.COINS_PH_API_KEY,
     COINS_PH_API_SECRET: process.env.COINS_PH_API_SECRET,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    COINS_REVERSE_PROXY_API_GATEWAY: process.env.COINS_REVERSE_PROXY_API_GATEWAY,
+    COINS_PH_PROXY_API_HOST: process.env.COINS_PH_PROXY_API_HOST,
+    COINS_PH_PROXY_API_KEY: process.env.COINS_PH_PROXY_API_KEY,
+    COINS_PH_PROXY_API_SECRET: process.env.COINS_PH_PROXY_API_SECRET,
+    USE_COINS_PH_PROXY: process.env.USE_COINS_PH_PROXY,
   },
 
   /**

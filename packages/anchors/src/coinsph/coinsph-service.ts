@@ -18,12 +18,14 @@ import {
 
 export class CoinsPHService {
 
+    private useProxy = process.env.USE_COINS_PH_PROXY === 'true';
 
     // Coins.ph API Host
     private get apiHost(): string {
         // Make sure we're using the reverse proxy API gateway
-        if (process.env.COINS_REVERSE_PROXY_API_GATEWAY) {
-            return process.env.COINS_REVERSE_PROXY_API_GATEWAY;
+        if (this.useProxy && process.env.COINS_PH_PROXY_API_HOST) {
+            console.log('Using proxy');
+            return process.env.COINS_PH_PROXY_API_HOST;
         }
 
         if (!process.env.COINS_PH_API_HOST) {
@@ -34,6 +36,10 @@ export class CoinsPHService {
 
     // Coins.ph API Key
     private get apiKey(): string {
+        if (this.useProxy && process.env.COINS_PH_PROXY_API_KEY) {
+            console.log('Using proxy');
+            return process.env.COINS_PH_PROXY_API_KEY;
+        }
         if (!process.env.COINS_PH_API_KEY) {
             throw new Error('COINS_PH_API_KEY is not set');
         }
@@ -42,6 +48,10 @@ export class CoinsPHService {
 
     // Coins.ph API Secret
     private get apiSecret(): string {
+        if (this.useProxy && process.env.COINS_PH_PROXY_API_SECRET) {
+            console.log('Using proxy');
+            return process.env.COINS_PH_PROXY_API_SECRET;
+        }
         if (!process.env.COINS_PH_API_SECRET) {
             throw new Error('COINS_PH_API_SECRET is not set');
         }
@@ -60,6 +70,7 @@ export class CoinsPHService {
      * @returns Signed message
      */
     signMessage(message: string) {
+        console.log('signing with', this.apiSecret);
         const signature = crypto.createHmac('sha256', this.apiSecret).update(message).digest('hex');
         return signature;
     }
@@ -107,34 +118,37 @@ expiry	Quote expire time seconds.
         try {
             const { sourceCurrency, targetCurrency, sourceAmount, targetAmount } = params;
             const timestamp = Date.now().toString();
-            const queryParams = new URLSearchParams({
-                sourceCurrency,
-                targetCurrency,
-                timestamp,
-                ...(sourceAmount && { sourceAmount }),
-                ...(targetAmount && { targetAmount }),
-            });
-
             const path = 'openapi/convert/v1/get-quote';
 
-            const messageToSign = queryParams.toString();
+            let messageToSign = `sourceCurrency=${sourceCurrency}`;
+            if (sourceAmount) {
+                messageToSign += `&sourceAmount=${sourceAmount}`;
+            }
+            if (targetAmount) {
+                messageToSign += `&targetAmount=${targetAmount}`;
+            }
+            messageToSign += `&targetCurrency=${targetCurrency}&timestamp=${timestamp}`;
+
+            console.log('messageToSign', messageToSign);
             const signature = this.signMessage(messageToSign);
 
-            console.log(queryParams)
+            const url = `${this.apiHost}/${path}?${messageToSign}&signature=${signature}`;
+            console.log('url', url);
+            console.log('apiKey', this.apiKey);
 
-            const response = await axios.post(`${this.apiHost}/${path}`, null, {
-                params: {
-                    ...Object.fromEntries(queryParams),
-                    signature
-                },
+            const response = await axios.post(url, null, {
                 headers: {
                     'X-COINS-APIKEY': `${this.apiKey}`
                 }
             })
 
+            console.log('response', response.data);
+
             if (response.data.status !== 0) {
                 if (response.data.status === COINS_ERRORS.INSUFFICIENT_BALANCE) {
                     return { success: false, error: 'Insufficient balance' };
+                } else if (response.data.status === COINS_ERRORS.INVALID_SIGNATURE) {
+                    return { success: false, error: 'Invalid signature' };
                 }
                 throw new Error(`Error fetching quote: ${response?.data?.error}`);
             }
@@ -204,10 +218,6 @@ expiry	Quote expire time seconds.
                 },
                 headers: { 'X-COINS-APIKEY': `${this.apiKey}` }
             });
-
-            if (response.data.code !== 0) {
-                throw new Error(`Error fetching account: ${response.data.msg}`);
-            }
 
             return { success: true, res: response.data };
         } catch (error) {

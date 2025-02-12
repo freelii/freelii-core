@@ -51,9 +51,10 @@ program
             console.error(account.error);
             return;
         }
+
         // Show current balances
         console.log('\n💰 Current Balances:');
-        account.res.balances.forEach((balance) => {
+        account.res.balances?.forEach((balance) => {
             BALANCES[balance.asset] = balance.free;
             console.log(`${balance.asset}: ${balance.free.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         });
