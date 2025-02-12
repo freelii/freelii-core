@@ -166,6 +166,12 @@ model Transactions {
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt
 
+    // timeline date-booleans
+    sent_at       DateTime? // Sent to final recipient
+    completed_at  DateTime? // Completed by recipient
+    failed_at     DateTime? // Failed to complete
+    failed_reason String? // Reason for failure
+
     ts                     DateTime
     movement_type          TransactionMovementType
     tx_type                TransactionType

@@ -1,11 +1,12 @@
-import { Badge, Button, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
+import { Badge, Button, Checkbox, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
 import { cn } from "@freelii/utils/functions";
 import { Address, BlockchainAccount, Client, EwalletAccount, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
 import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import { Building2, CheckCircle2, Clock, CreditCard, UserPlus } from "lucide-react";
+import { Building2, CheckCircle2, Clock, CreditCard, Send, Shield, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { FlagIcon } from "../shared/flag-icon";
 
 
@@ -19,7 +20,7 @@ export type Recipient = Client & {
 
 const getPaymentMethodLabel = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
     if ('network' in account) {
-        return 'blockchain'
+        return 'stellar'
     }
     // SPEI (Mexico)
     if ('bank_name' in account && account.iso_currency === 'MXN') {
@@ -126,6 +127,28 @@ const PaymentMethod = ({ account, defaultCollapsed = true }: { account: FiatAcco
 }
 
 export const columns: ColumnDef<Recipient>[] = [
+    {
+        id: "select",
+        header: ({ table }) => (
+            <Checkbox
+                checked={table.getIsAllPageRowsSelected()}
+                onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                aria-label="Select all"
+                className="translate-y-[2px]"
+            />
+        ),
+        cell: ({ row }) => (
+            <Checkbox
+                onClick={(e) => e.stopPropagation()}
+                checked={row.getIsSelected()}
+                onCheckedChange={(value) => row.toggleSelected(!!value)}
+                aria-label="Select row"
+                className="translate-y-[2px]"
+            />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+    },
     {
         accessorKey: "name",
         header: "Contact",
@@ -253,6 +276,76 @@ interface RecipientsTableProps {
     searchQuery?: string
 }
 
+interface FloatingActionsBarProps {
+    selectedCount: number;
+    onClose: () => void;
+}
+
+const FloatingActionsBar = ({ selectedCount, onClose }: FloatingActionsBarProps) => {
+    return (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center gap-6 z-50">
+            <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-medium">
+                    {selectedCount}
+                </div>
+                <span className="text-sm text-gray-600">recipients selected</span>
+            </div>
+
+            <div className="h-8 w-px bg-gray-200" />
+
+            <div className="flex items-center gap-3">
+                <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={async () => {
+                        // Handle send verification amount
+                        const id = toast.loading('Sending verification amount...');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        toast.dismiss(id)
+                        toast.success('Verification amount sent!', { id })
+                        onClose();
+                    }}
+                >
+                    <Send className="h-4 w-4" />
+                    Send verification amount
+                </Button>
+
+                <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() => {
+                        // Handle request KYC/KYB
+                    }}
+                >
+                    <Shield className="h-4 w-4" />
+                    Request KYC/KYB
+                </Button>
+
+                <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() => {
+                        // Handle send next payment
+                    }}
+                >
+                    <CreditCard className="h-4 w-4" />
+                    Send next payment
+                </Button>
+            </div>
+
+            <div className="h-8 w-px bg-gray-200" />
+
+            <Button
+                variant="ghost"
+                onClick={onClose}
+                className="text-gray-500"
+            >
+                Cancel
+            </Button>
+        </div>
+    )
+}
+
 export function RecipientsTable({
     recipients,
     loading = false,
@@ -286,97 +379,107 @@ export function RecipientsTable({
         enableRowSelection: true,
     })
 
+    const selectedRows = Object.keys(rowSelection).length;
 
     return (
-        <Table className="border-none relative">
-            <TableHeader className="border-none">
-                {TableComponent.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                            <TableHead key={header.id} className="text-xs font-medium p-1">
-                                <>{header.isPlaceholder
-                                    ? null
-                                    : flexRender(
-                                        header.column.columnDef.header,
-                                        header.getContext()
-                                    )}</>
-                            </TableHead>
-                        ))}
-                    </TableRow>
-                ))}
-            </TableHeader>
-            <TableBody className="border-none">
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                        <TableRow key={`skeleton-${index}`}>
-                            <TableCell className="p-1 w-[40px]">
-                                <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-                            </TableCell>
-                            <TableCell className="p-1">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                                        <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-                                    </div>
-                                    <div className="h-3 w-40 bg-gray-200 rounded animate-pulse" />
-                                </div>
-                            </TableCell>
-                            <TableCell className="p-1">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-                                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
-                                        <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
-                                    </div>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))
-                ) : TableComponent.getRowModel().rows?.length ? (
-                    TableComponent.getRowModel().rows.map((row) => (
-                        <TableRow
-                            key={row.id}
-                            data-state={row.getIsSelected() && "selected"}
-                            className={cn(
-                                "cursor-pointer hover:bg-gray-50 relative",
-                                selectedRecipient?.id === row.original.id && "rounded-full bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
-                            )}
-                            onClick={() => onRecipientSelect?.(row.original)}
-                        >
-                            {row.getVisibleCells().map((cell) => (
-                                <TableCell key={cell.id} className="font-normal text-xs p-1">
-                                    <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
-                                </TableCell>
+        <>
+            <Table className="border-none relative">
+                <TableHeader className="border-none">
+                    {TableComponent.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                            {headerGroup.headers.map((header) => (
+                                <TableHead key={header.id} className="text-xs font-medium p-1">
+                                    <>{header.isPlaceholder
+                                        ? null
+                                        : flexRender(
+                                            header.column.columnDef.header,
+                                            header.getContext()
+                                        )}</>
+                                </TableHead>
                             ))}
                         </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell
-                            colSpan={columns.length}
-                            className="h-96 text-center"
-                        >
-                            <div className="flex flex-col items-center justify-center gap-2">
-                                <div className="rounded-full bg-gray-100 p-3">
-                                    <Building2 className="h-6 w-6 text-gray-400" />
+                    ))}
+                </TableHeader>
+                <TableBody className="border-none">
+                    {loading ? (
+                        Array.from({ length: 5 }).map((_, index) => (
+                            <TableRow key={`skeleton-${index}`}>
+                                <TableCell className="p-1 w-[40px]">
+                                    <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+                                </TableCell>
+                                <TableCell className="p-1">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                                            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                                        </div>
+                                        <div className="h-3 w-40 bg-gray-200 rounded animate-pulse" />
+                                    </div>
+                                </TableCell>
+                                <TableCell className="p-1">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+                                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-4 w-4 rounded bg-gray-200 animate-pulse" />
+                                            <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
+                                        </div>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : TableComponent.getRowModel().rows?.length ? (
+                        TableComponent.getRowModel().rows.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && "selected"}
+                                className={cn(
+                                    "cursor-pointer hover:bg-gray-50 relative",
+                                    selectedRecipient?.id === row.original.id && "rounded-full bg-gray-50 after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-8 after:border-transparent after:border-r-gray-200",
+                                )}
+                                onClick={() => onRecipientSelect?.(row.original)}
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id} className="font-normal text-xs p-1">
+                                        <div>{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                            <TableCell
+                                colSpan={columns.length}
+                                className="h-96 text-center"
+                            >
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                    <div className="rounded-full bg-gray-100 p-3">
+                                        <Building2 className="h-6 w-6 text-gray-400" />
+                                    </div>
+                                    <p className="font-medium text-gray-900">{(searchQuery) ? "No recipients found" : "No recipients yet"}</p>
+                                    <p className="text-sm text-gray-500">{(searchQuery) ? "Add a new recipient to get started." : "Get started by adding your first recipient."}</p>
+                                    <Button
+                                        className="mt-4 text-xs font-medium bg-black text-white hover:bg-neutral-900"
+                                    >
+                                        <Link href="/dashboard/recipients/new">
+                                            Add recipient
+                                        </Link>
+                                    </Button>
                                 </div>
-                                <p className="font-medium text-gray-900">{(searchQuery) ? "No recipients found" : "No recipients yet"}</p>
-                                <p className="text-sm text-gray-500">{(searchQuery) ? "Add a new recipient to get started." : "Get started by adding your first recipient."}</p>
-                                <Button
-                                    className="mt-4 text-xs font-medium bg-black text-white hover:bg-neutral-900"
-                                >
-                                    <Link href="/dashboard/recipients/new">
-                                        Add recipient
-                                    </Link>
-                                </Button>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+
+            {selectedRows > 0 && (
+                <FloatingActionsBar
+                    selectedCount={selectedRows}
+                    onClose={() => setRowSelection({})}
+                />
+            )}
+        </>
     )
 }

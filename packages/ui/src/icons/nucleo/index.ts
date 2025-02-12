@@ -15,6 +15,7 @@ export * from "./circle-check";
 export * from "./circle-check-fill";
 export * from "./circle-dollar";
 export * from "./circle-dotted";
+export * from './cloud-upload';
 export * from "./connected-dots";
 export * from "./connected-dots-fill";
 export * from "./connected-dots4";
@@ -43,4 +44,5 @@ export * from "./users";
 export * from "./users-settings";
 export * from "./users2";
 export * from "./users6";
+export * from "./xmark";
 

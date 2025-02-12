@@ -54,7 +54,7 @@ export class ClientService extends BaseService {
                     name,
                     email,
                     tax_number,
-                    verification_status: "VERIFIED",
+                    verification_status: "PENDING",
                     recipient_type: input.type === "company"
                         ? RecipientType.BUSINESS
                         : RecipientType.INDIVIDUAL,
@@ -71,6 +71,7 @@ export class ClientService extends BaseService {
                         zip_code: zipCode,
                     },
                 });
+                console.log('Address created', address);
             }
 
             // Fiat Account
@@ -98,7 +99,11 @@ export class ClientService extends BaseService {
                     },
                 });
                 console.log('Fiat account created', fiatAccount);
-            } else if (paymentMethod === "blockchain") {
+            }
+            console.log('walletAddress', walletAddress);
+            console.log('network', network);
+            console.log('paymentMethod', paymentMethod);
+            if ((walletAddress && network) || paymentMethod === "blockchain") {
                 if (!walletAddress || !network) {
                     throw new Error("Missing required fields for blockchain account");
                 }
@@ -111,7 +116,8 @@ export class ClientService extends BaseService {
                     },
                 });
                 console.log('Blockchain account created', blockchainAccount);
-            } else if (paymentMethod === "ewallet") {
+            }
+            if (paymentMethod === "ewallet") {
                 if (!ewalletProvider || !mobileNumber) {
                     throw new Error("Missing required fields for ewallet account");
                 }

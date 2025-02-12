@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const ClientCreateSchema = z.object({
-    type: z.enum(["company", "person"]),
+    type: z.enum(["company", "person"]).optional(),
     name: z.string(),
     email: z.string().optional(),
     tax_number: z.string().optional(),

@@ -1,4 +1,6 @@
 export interface Account {
+    code: number,
+    msg: string,
     canTrade: boolean,
     canDeposit: boolean,
     canWithdraw: boolean,
@@ -37,6 +39,7 @@ export interface Account {
 
 export const COINS_ERRORS = {
     INSUFFICIENT_BALANCE: 10000003,
+    INVALID_SIGNATURE: -1022,
 }
 
 export interface CashOutRequest {
@@ -142,4 +145,49 @@ export interface FiatOrderHistoryRequest {
 export interface FiatOrderHistoryResponse {
     data: FiatOrderDetails[];
     total: number;
+}
+
+export interface OrderHistoryRequest {
+    startTime?: string;
+    endTime?: string;
+    status?: 'TODO' | 'SUCCESS' | 'FAILED' | 'PROCESSING';
+    page?: number;
+    size?: number;
+}
+
+export interface OrderHistoryItem {
+    id: string;
+    orderId: string;
+    quoteId: string;
+    userId: string;
+    sourceCurrency: string;
+    sourceCurrencyIcon: string;
+    targetCurrency: string;
+    targetCurrencyIcon: string;
+    sourceAmount: string;
+    targetAmount: string;
+    price: string;
+    status: 'TODO' | 'SUCCESS' | 'FAILED' | 'PROCESSING';
+    createdAt: string;
+    errorCode: string;
+    errorMessage: string;
+    inversePrice: string;
+}
+
+export interface OrderHistoryResponse {
+    data: OrderHistoryItem[];
+    total: number;
+}
+
+export interface SubAccountDepositAddressRequest {
+    email: string;
+    coin: string;
+    network: string;
+    recvWindow?: number;
+}
+
+export interface SubAccountDepositAddressResponse {
+    coin: string;
+    address: string;
+    addressTag: string;
 }

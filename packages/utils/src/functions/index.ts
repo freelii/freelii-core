@@ -1,5 +1,6 @@
 export * from "./cn";
 export * from "./construct-metadata";
+export * from "./datetime";
 export * from "./fetcher";
 export * from "./format-currency";
 export * from "./has-enough-balance";
@@ -8,7 +9,11 @@ export * from "./nformatter";
 export * from "./noop";
 export * from "./pluralize";
 export * from "./quick-fx-quote";
+export * from "./resize-image";
 export * from "./shortAddress";
 export * from "./stable-sort";
 export * from "./stroops";
+export * from "./time-ago";
+export * from "./truncate";
 export * from "./urls";
+

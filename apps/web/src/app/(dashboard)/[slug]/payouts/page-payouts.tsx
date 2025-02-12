@@ -30,6 +30,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 import { CheckCircle2, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import React, { useEffect } from "react"
+import toast from "react-hot-toast"
 import { PaymentDetails } from "./payment-details"
 
 dayjs.extend(relativeTime)
@@ -299,6 +300,51 @@ export default function PayoutsTable() {
     }
   }
 
+  const FloatingActionsBar = () => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows
+    const count = selectedRows.length
+
+    if (count === 0) return null
+
+    return (
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white border border-gray-200 shadow-lg rounded-lg px-4 py-3 animate-in fade-in slide-in-from-bottom-4">
+        <div className="text-sm text-gray-600 font-medium border-r border-gray-200 pr-4">
+          {count} {count === 1 ? 'payment' : 'payments'} selected
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              const id = toast.loading('Sending confirmation email(s)...');
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              toast.dismiss(id)
+              toast.success('Confirmation email(s) sent!', { id })
+              table.toggleAllRowsSelected(false)
+            }}
+          >
+            Send Confirmation Email
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              /* TODO: Implement export selected */
+              console.log('Export:', selectedRows.map(row => row.original))
+            }}
+          >
+            Export Selected
+          </Button>
+          <Button
+            variant="outline"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={() => table.toggleAllRowsSelected(false)}
+          >
+            Clear Selection
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="">
       <div className="mb-4 flex items-center justify-between ">
@@ -441,6 +487,7 @@ export default function PayoutsTable() {
           </div>
         )}
       </div>
+      <FloatingActionsBar />
     </div>
   )
 }

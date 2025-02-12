@@ -9,13 +9,23 @@ import {
     COINS_ERRORS,
     FiatOrderDetails,
     FiatOrderHistoryRequest,
-    FiatOrderHistoryResponse
+    FiatOrderHistoryResponse,
+    OrderHistoryRequest,
+    OrderHistoryResponse,
+    SubAccountDepositAddressRequest,
+    SubAccountDepositAddressResponse
 } from './coinsph.interfaces';
 
 export class CoinsPHService {
 
+
     // Coins.ph API Host
     private get apiHost(): string {
+        // Make sure we're using the reverse proxy API gateway
+        if (process.env.COINS_REVERSE_PROXY_API_GATEWAY) {
+            return process.env.COINS_REVERSE_PROXY_API_GATEWAY;
+        }
+
         if (!process.env.COINS_PH_API_HOST) {
             throw new Error('COINS_PH_API_HOST is not set');
         }
@@ -178,7 +188,7 @@ expiry	Quote expire time seconds.
      * 
      * @returns Account information
      */
-    async getAccount() {
+    async getAccount(): Promise<{ success: true; res: Account } | { success: false; error: string }> {
         try {
             const path = 'openapi/v1/account';
             const timestamp = Date.now().toString();
@@ -194,7 +204,12 @@ expiry	Quote expire time seconds.
                 },
                 headers: { 'X-COINS-APIKEY': `${this.apiKey}` }
             });
-            return response.data;
+
+            if (response.data.code !== 0) {
+                throw new Error(`Error fetching account: ${response.data.msg}`);
+            }
+
+            return { success: true, res: response.data };
         } catch (error) {
             console.error('Error fetching account:', error);
             throw error;
@@ -463,6 +478,96 @@ expiry	Quote expire time seconds.
             };
         } catch (error) {
             console.error('Error fetching fiat order history:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Query order history
+     * POST /openapi/convert/v1/query-order-history
+     * This endpoint retrieves order history with optional time period filters
+     * 
+     * @param params - Optional parameters to filter the history
+     * @returns List of orders and total count
+     */
+    async getOrderHistory(params: OrderHistoryRequest = {}): Promise<OrderHistoryResponse> {
+        try {
+            const path = 'openapi/convert/v1/query-order-history';
+            const timestamp = Date.now().toString();
+
+            // Remove undefined values from params
+            const cleanedParams = Object.fromEntries(
+                Object.entries(params).filter(([_, value]) => value !== undefined)
+            );
+
+            const queryParams = new URLSearchParams({ timestamp });
+            const messageToSign = `${queryParams.toString()}${JSON.stringify(cleanedParams)}`;
+            const signature = this.signMessage(messageToSign);
+
+            const response = await axios.post(
+                `${this.apiHost}/${path}?${queryParams.toString()}`,
+                cleanedParams,
+                {
+                    headers: {
+                        'X-COINS-APIKEY': this.apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    params: { signature }
+                }
+            );
+
+            if (response.data.status !== 0) {
+                throw new Error(`Error fetching order history: ${response.data.error}`);
+            }
+
+            return {
+                data: response.data.data,
+                total: response.data.total
+            };
+        } catch (error) {
+            console.error('Error fetching order history:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get Sub-account Deposit Address (For Master Account)
+     * GET /openapi/v1/sub-account/wallet/deposit/address
+     * Fetch sub account deposit address with network.
+     * 
+     * @param params - Parameters to specify the sub-account and coin details
+     * @returns Deposit address information
+     */
+    async getSubAccountDepositAddress(params: SubAccountDepositAddressRequest): Promise<SubAccountDepositAddressResponse> {
+        try {
+            const path = 'openapi/v1/sub-account/wallet/deposit/address';
+            const timestamp = Date.now().toString();
+
+            // Create the parameter string directly (similar to the Postman implementation)
+            const paramString = `coin=${params.coin}&email=${params.email}&network=${params.network}&recvWindow=60000&timestamp=${timestamp}`;
+
+            // Sign the raw parameter string
+            const signature = this.signMessage(paramString);
+
+            // Construct the full URL with parameters and signature
+            const url = `${this.apiHost}/${path}?${paramString}&signature=${signature}`;
+
+            const response = await axios.get(url, {
+                headers: {
+                    'X-COINS-APIKEY': this.apiKey
+                }
+            });
+            console.log('response', response.data);
+            if (response.data.status !== 0) {
+                if (response.data.code === COINS_ERRORS.INVALID_SIGNATURE) {
+                    throw new Error(`Invalid signature`);
+                }
+                throw new Error(`Error fetching deposit address: ${response.data.error}`);
+            }
+
+            return response.data.data;
+        } catch (error) {
+            console.error('Error fetching sub-account deposit address:', error);
             throw error;
         }
     }

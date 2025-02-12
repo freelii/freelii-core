@@ -23,10 +23,6 @@ interface PaymentDetails {
         processingFee: number
         serviceCharge: number
     }
-    fx: {
-        rate: number
-        margin: number
-    }
 }
 
 interface PayoutReviewProps {
@@ -46,6 +42,24 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
+    const fx = api.fx.getFxForSource.useQuery({
+        sourceCurrency: "USDC",
+        targetCurrency: "PHP",
+        sourceAmount: 10
+    }, {
+        // Refetch when the component mounts or window regains focus
+        refetchOnMount: true,
+        refetchOnWindowFocus: true,
+        // Set up refetch interval based on expiry
+        refetchInterval: (data) => {
+            if (data?.state?.data?.success) {
+                if (!data?.state?.data?.res.expiry) return false;
+                // Calculate milliseconds until expiry
+                return Number(data.state.data.res.expiry) * 1000;
+            }
+            return false;
+        }
+    })
     const registerPayment = api.ledger.registerPayment.useMutation({
         onError: ClientTRPCErrorHandler
     });
@@ -60,10 +74,6 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
             processingFee: 0.00,
             serviceCharge: 0.00
         },
-        fx: {
-            rate: 0.018,
-            margin: 0.5
-        }
     }), [client, account])
 
     const [isConfirmed, setIsConfirmed] = useState(false)
@@ -101,6 +111,16 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     // Check if we have all required data
     const isLoading = isLoadingClient || !account
     const hasRequiredData = !!client && !!recipientAccount && !!account
+
+
+    const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
+    const { fxRate, recipientAmount, totalCost } = useMemo(() => {
+        const fxRate = currencyCode !== "USD" && fx.data ? fx.data.success ? Number(fx.data.res.price) : 1 : 1;
+        const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
+        const totalCost = Number(searchParams.get('amount')) + totalFees;
+
+        return { fxRate, recipientAmount, totalCost };
+    }, [fx.data, currencyCode, searchParams, totalFees]);
 
     // Show loading state if data is being fetched
     if (isLoading) {
@@ -276,13 +296,6 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
         }
     }
 
-    const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
-    let fxRate = CURRENCIES.USDC?.rate ?? 1
-    if (currencyCode !== "USD") {
-        fxRate = CURRENCIES[currencyCode ?? "USD"]?.rate ?? 1
-    }
-    const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
-    const totalCost = Number(searchParams.get('amount')) + totalFees;
 
     return (
         <div className="w-full relative space-y-6">
@@ -390,7 +403,10 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                         className="size-4"
                                                     />
                                                     {CURRENCIES[currencyCode ?? "USD"]?.symbol}
-                                                    {CURRENCIES[currencyCode ?? "USD"]?.rate}
+                                                    {fxRate}
+                                                    <span className="text-xs text-gray-500">
+                                                        {fx.isFetching && <LoadingSpinner className="size-3" />}
+                                                    </span>
                                                 </Badge>
                                             </span>
                                         </div>

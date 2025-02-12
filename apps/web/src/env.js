@@ -29,6 +29,11 @@ export const env = createEnv({
       process.env.VERCEL ? z.string().min(1) : z.string().url(),
     ),
     AUTH_SECRET: z.string(),
+    COINS_PH_API_HOST: z.string(),
+    COINS_PH_API_KEY: z.string(),
+    COINS_PH_API_SECRET: z.string(),
+    OPENAI_API_KEY: z.string(),
+    COINS_REVERSE_PROXY_API_GATEWAY: z.string(),
   },
 
   /**
@@ -80,6 +85,11 @@ export const env = createEnv({
     NEXT_PUBLIC_MERCURY_URL: process.env.NEXT_PUBLIC_MERCURY_URL,
     NEXT_PUBLIC_MERCURY_JWT: process.env.NEXT_PUBLIC_MERCURY_JWT,
     NEXT_PUBLIC_NATIVE_CONTRACT_ID: process.env.NEXT_PUBLIC_NATIVE_CONTRACT_ID,
+    COINS_PH_API_HOST: process.env.COINS_PH_API_HOST,
+    COINS_PH_API_KEY: process.env.COINS_PH_API_KEY,
+    COINS_PH_API_SECRET: process.env.COINS_PH_API_SECRET,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    COINS_REVERSE_PROXY_API_GATEWAY: process.env.COINS_REVERSE_PROXY_API_GATEWAY,
   },
 
   /**

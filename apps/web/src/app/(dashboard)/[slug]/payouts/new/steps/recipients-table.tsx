@@ -22,7 +22,7 @@ import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, shortAddress } from "@freeli
 import { Client, RecipientType } from "@prisma/client"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Building2, CheckCircle2, Search, UserPlus, X } from "lucide-react"
+import { Building2, CheckCircle2, Search, UploadIcon, UserPlus, X } from "lucide-react"
 import Link from "next/link"
 import React, { useEffect, useRef } from "react"
 import toast from "react-hot-toast"
@@ -189,6 +189,17 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                   Personal
                 </ToggleGroupItem>
               </ToggleGroup>
+
+              <Button
+                variant="outline"
+                className="text-xs gap-2"
+                onClick={() => {
+                  queryParams({ set: { import: 'csv' } })
+                }}
+              >
+                <UploadIcon className="h-3.5 w-3.5" />
+                Load from CSV
+              </Button>
             </div>
           </div>
 

@@ -46,9 +46,14 @@ program
 
         const coinsPHService = new CoinsPHService();
         const account = await coinsPHService.getAccount();
+        if (!account.success) {
+            console.error('Error fetching account', account);
+            console.error(account.error);
+            return;
+        }
         // Show current balances
         console.log('\n💰 Current Balances:');
-        account.balances.forEach((balance) => {
+        account.res.balances.forEach((balance) => {
             BALANCES[balance.asset] = balance.free;
             console.log(`${balance.asset}: ${balance.free.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
         });
@@ -227,4 +232,28 @@ program.command('monitor')
         console.log(details);
     });
 
+
+program.command('history')
+    .description('Monitor a cashout')
+    .action(async () => {
+        const coinsPHService = new CoinsPHService();
+        const history = await coinsPHService.getOrderHistory();
+        console.log(history);
+
+    });
+
+program.command('get-deposit-address')
+    .option('-e, --email <email>', 'Email')
+    .argument('<coin>', 'Coin')
+    .argument('<network>', 'Network')
+    .description('Get a deposit address')
+    .action(async (coin, network, options) => {
+        const coinsPHService = new CoinsPHService();
+        const address = await coinsPHService.getSubAccountDepositAddress({
+            coin,
+            network,
+            email: options.email
+        });
+        console.log(address);
+    });
 program.parse();

@@ -3,6 +3,7 @@ import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { activityRouter } from "./routers/activity";
 import { clientsRouter } from "./routers/clients";
 import { coinsPHRouter } from "./routers/coinsph";
+import { fxRouter } from "./routers/fx";
 import { invoicingRouter } from "./routers/invoicing";
 import { ledgerRouter } from "./routers/ledger";
 import { walletRouter } from "./routers/wallet";
@@ -20,7 +21,8 @@ export const appRouter = createTRPCRouter({
   ledger: ledgerRouter,
   webhook: webhookRouter,
   clients: clientsRouter,
-  activity: activityRouter
+  activity: activityRouter,
+  fx: fxRouter
 });
 
 // export type definition of API
