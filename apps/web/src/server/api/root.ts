@@ -2,10 +2,10 @@ import { userRouter } from "@/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { activityRouter } from "./routers/activity";
 import { clientsRouter } from "./routers/clients";
-import { coinsPHRouter } from "./routers/coinsph";
 import { fxRouter } from "./routers/fx";
 import { invoicingRouter } from "./routers/invoicing";
 import { ledgerRouter } from "./routers/ledger";
+import { orchestratorRouter } from "./routers/orchestrator";
 import { walletRouter } from "./routers/wallet";
 import { webhookRouter } from "./routers/webhook";
 /**
@@ -15,14 +15,14 @@ import { webhookRouter } from "./routers/webhook";
  */
 export const appRouter = createTRPCRouter({
   users: userRouter,
-  coinsph: coinsPHRouter,
   invoicing: invoicingRouter,
   wallet: walletRouter,
   ledger: ledgerRouter,
   webhook: webhookRouter,
   clients: clientsRouter,
   activity: activityRouter,
-  fx: fxRouter
+  fx: fxRouter,
+  orchestrator: orchestratorRouter
 });
 
 // export type definition of API

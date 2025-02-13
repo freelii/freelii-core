@@ -40,6 +40,12 @@
       ],
       "@freelii/utils/*": [
         "../../packages/utils/src/*"
+      ],
+      "@orchestrator/*": [
+        "./src/server/services/orchestrator/*"
+      ],
+      "@services/*": [
+        "./src/server/services/*"
       ]
     }
   },

@@ -32,14 +32,14 @@ export class UserService extends BaseService {
                 },
             });
         } else if (paymentMethod === "blockchain") {
-            if (!walletAddress || !network) {
-                throw new Error("Missing required fields for blockchain account");
+            if (!walletAddress) {
+                throw new Error(`1 Missing required fields for blockchain account ${walletAddress} ${network}`);
             }
             const blockchainAccount = await this.db.blockchainAccount.create({
                 data: {
                     user_id: user.id,
                     address: walletAddress,
-                    network: network,
+                    network: network ?? "stellar",
                     environment: "testnet",
                 },
             });

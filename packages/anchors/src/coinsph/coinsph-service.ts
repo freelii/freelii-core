@@ -1,12 +1,15 @@
 import axios from 'axios';
 import crypto from 'crypto';
-import { Quote, QuoteRequest } from '../shared/interfaces';
+import { Anchor } from '../shared';
+import { AnchorQuote, GetQuoteParams, PaymentRail } from '../shared/interfaces';
 import {
     Account,
     CashOutParams,
     CashOutResponse,
     COINS_CASH_OUT_ERRORS,
     COINS_ERRORS,
+    CoinsPHQuote,
+    CoinsResponse,
     FiatOrderDetails,
     FiatOrderHistoryRequest,
     FiatOrderHistoryResponse,
@@ -16,7 +19,10 @@ import {
     SubAccountDepositAddressResponse
 } from './coinsph.interfaces';
 
-export class CoinsPHService {
+export class CoinsPHService extends Anchor {
+    name = "CoinsPH";
+    supportedPaymentRails = [PaymentRail.CRYPTO];
+    supportedCurrencies = ["USDC", "EURC", "PHP"];
 
     private useProxy = process.env.USE_COINS_PH_PROXY === 'true';
 
@@ -58,6 +64,10 @@ export class CoinsPHService {
         return process.env.COINS_PH_API_SECRET;
     }
 
+    get fee(): number {
+        return 0.05;
+    }
+
     test() {
         console.log('Hello from CoinsPHService!!');
         console.log('apiHost', this.apiHost);
@@ -73,6 +83,18 @@ export class CoinsPHService {
         console.log('signing with', this.apiSecret);
         const signature = crypto.createHmac('sha256', this.apiSecret).update(message).digest('hex');
         return signature;
+    }
+
+    supportsTransfer(sourceCurrency: string, destinationCurrency: string, paymentRail: PaymentRail): boolean {
+        if (!this.supportedPaymentRails.includes(paymentRail)) {
+            return false;
+        }
+        const supportedPairs = {
+            'USDC': ['PHP'],
+            'EURC': ['PHP'],
+            'PHP': ['USDC', 'EURC']
+        }
+        return supportedPairs[sourceCurrency as keyof typeof supportedPairs]?.includes(destinationCurrency);
     }
 
     /**
@@ -114,19 +136,27 @@ expiry	Quote expire time seconds.
   }
 }
      */
-    async getQuote(params: QuoteRequest): Promise<{ success: true; res: Quote } | { success: false; error: string }> {
+    async getQuote(params: GetQuoteParams): Promise<AnchorQuote> {
         try {
-            const { sourceCurrency, targetCurrency, sourceAmount, targetAmount } = params;
+            const { sourceCurrency, targetCurrency, ...amountConfig } = params;
             const timestamp = Date.now().toString();
             const path = 'openapi/convert/v1/get-quote';
 
-            let messageToSign = `sourceCurrency=${sourceCurrency}`;
-            if (sourceAmount) {
-                messageToSign += `&sourceAmount=${sourceAmount}`;
+            let messageToSign = '';
+
+            // Add source amount if it exists
+            if ('sourceAmount' in amountConfig) {
+                messageToSign += `sourceAmount=${amountConfig.sourceAmount}`;
             }
-            if (targetAmount) {
-                messageToSign += `&targetAmount=${targetAmount}`;
+            // Add source currency if it exists
+            messageToSign += `&sourceCurrency=${sourceCurrency}`;
+
+            // Add target amount if it exists
+            if ('targetAmount' in amountConfig) {
+                messageToSign += `&targetAmount=${amountConfig.targetAmount}`;
             }
+
+            // Add target currency if it exists and timestamp
             messageToSign += `&targetCurrency=${targetCurrency}&timestamp=${timestamp}`;
 
             console.log('messageToSign', messageToSign);
@@ -136,25 +166,36 @@ expiry	Quote expire time seconds.
             console.log('url', url);
             console.log('apiKey', this.apiKey);
 
-            const response = await axios.post(url, null, {
+            const response = await axios.post<CoinsResponse<CoinsPHQuote>>(url, null, {
                 headers: {
                     'X-COINS-APIKEY': `${this.apiKey}`
                 }
             })
 
-            console.log('response', response.data);
-
-            if (response.data.status !== 0) {
+            console.log('response from coinsph', response.data);
+            if ('status' in response.data && response.data.status !== 0) {
                 if (response.data.status === COINS_ERRORS.INSUFFICIENT_BALANCE) {
-                    return { success: false, error: 'Insufficient balance' };
+                    throw new Error('Insufficient balance');
                 } else if (response.data.status === COINS_ERRORS.INVALID_SIGNATURE) {
-                    return { success: false, error: 'Invalid signature' };
+                    throw new Error('Invalid signature');
                 }
-                throw new Error(`Error fetching quote: ${response?.data?.error}`);
+                if ('error' in response.data) {
+                    throw new Error(`Error fetching quote: ${response?.data?.error}`);
+                }
+                throw new Error(`Error fetching quote`);
             }
-            return { success: true, res: response.data.data };
+            if (!('data' in response.data)) {
+                throw new Error('Error fetching quote');
+            }
+            const data = response.data.data;
+            return {
+                quoteId: data?.quoteId,
+                fee: this.fee,
+                exchangeRate: Number(data?.price),
+                expiresIn: Number(data?.expiry ?? 0)
+            }
         } catch (error) {
-            console.error('Error fetching quote:', error);
+            console.error((error as Error)?.message ?? 'Error fetching quote:', error);
             throw error;
         }
     }
@@ -166,7 +207,8 @@ expiry	Quote expire time seconds.
      * @param quoteId - ID of the quote to accept
      * @returns Accepted quote
      */
-    async acceptQuote(quoteId: string): Promise<{ success: true; res: Quote } | { success: false; error: string }> {
+    // TODO: movi todo esta intefaz
+    async acceptQuote(quoteId: string): Promise<{ success: true; res: CoinsPHQuote } | { success: false; error: string }> {
         try {
             const path = 'openapi/convert/v1/accept-quote';
             const timestamp = Date.now().toString();

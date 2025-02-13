@@ -42,20 +42,20 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
-    const fx = api.fx.getFxForSource.useQuery({
+    const quote = api.orchestrator.getQuote.useQuery({
         sourceCurrency: "USDC",
         targetCurrency: "PHP",
-        sourceAmount: 10
+        amount: 10
     }, {
         // Refetch when the component mounts or window regains focus
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         // Set up refetch interval based on expiry
         refetchInterval: (data) => {
-            if (data?.state?.data?.success) {
-                if (!data?.state?.data?.res.expiry) return false;
+            if (data?.state?.data?.quote) {
+                if (!data?.state?.data?.quote.expiresIn) return false;
                 // Calculate milliseconds until expiry
-                return Number(data.state.data.res.expiry) * 1000;
+                return Number(data.state.data.quote.expiresIn) * 1000;
             }
             return false;
         }
@@ -115,12 +115,12 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
     const { fxRate, recipientAmount, totalCost } = useMemo(() => {
-        const fxRate = currencyCode !== "USD" && fx.data ? fx.data.success ? Number(fx.data.res.price) : 1 : 1;
+        const fxRate = currencyCode !== "USD" && quote.data ? quote.data.quote.exchangeRate ? Number(quote.data.quote.exchangeRate) : 1 : 1;
         const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
         const totalCost = Number(searchParams.get('amount')) + totalFees;
 
         return { fxRate, recipientAmount, totalCost };
-    }, [fx.data, currencyCode, searchParams, totalFees]);
+    }, [quote.data, currencyCode, searchParams, totalFees]);
 
     // Show loading state if data is being fetched
     if (isLoading) {
@@ -405,7 +405,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                     {CURRENCIES[currencyCode ?? "USD"]?.symbol}
                                                     {fxRate}
                                                     <span className="text-xs text-gray-500">
-                                                        {fx.isFetching && <LoadingSpinner className="size-3" />}
+                                                        {quote.isFetching && <LoadingSpinner className="size-3" />}
                                                     </span>
                                                 </Badge>
                                             </span>
@@ -516,7 +516,6 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                         </div>
 
                     </div>
-
 
                     {/* Action Buttons */}
                     <div className="flex items-center justify-end">

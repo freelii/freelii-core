@@ -6,7 +6,7 @@ import { XLMIcon } from "@/ui/icons/xlm-icon"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { Badge, Button, ExpandingArrow, Tabs, TabsContent, TabsList, TabsTrigger } from "@freelii/ui"
 import { CURRENCIES } from "@freelii/utils/constants"
-import { cn, maskFirstDigits } from "@freelii/utils/functions"
+import { cn, maskFirstDigits, shortAddress } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import Link from "next/link"
 
@@ -137,10 +137,25 @@ export function WithdrawalMethods() {
                                         <XLMIcon size={20} />
                                         <div>
                                             <div className="text-sm font-medium">{account.network}</div>
-                                            <div className="text-xs text-gray-500">{account.address}</div>
+                                            <div className="text-xs text-gray-500">{shortAddress(account.address)}</div>
                                         </div>
                                     </div>
                                 </div>
+                                <Link href={`/dashboard/withdrawals/request?to=${account.id}`}>
+                                    <Button
+                                        variant="outline"
+                                        className="group text-xs px-3 py-2 flex items-center gap-2"
+                                    >
+                                        Withdraw
+                                        <ExpandingArrow className="size-4 -ml-2" />
+                                        <FlagIcon
+                                            currencyCode={"USDC-Hardcoded"}
+                                            className="ml-2 transition-transform duration-200 group-hover:scale-110 group-hover:brightness-110"
+                                        />
+                                        <div className="font-xs">USDC</div>
+
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
                     ))}

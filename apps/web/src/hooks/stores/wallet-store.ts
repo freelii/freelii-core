@@ -36,7 +36,6 @@ export const useWalletStore = create<WalletState>()(
 
       getSelectedWallet: () => {
         const { wallets, selectedWalletId } = get()
-        console.log('Selected wallet ID:', selectedWalletId, wallets);
         return wallets.find(w => w.id === selectedWalletId)
       },
     }),

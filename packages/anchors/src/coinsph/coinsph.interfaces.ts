@@ -191,3 +191,26 @@ export interface SubAccountDepositAddressResponse {
     address: string;
     addressTag: string;
 }
+
+export interface CoinsResponse<T> {
+    status: number;
+    code: number;
+    msg: string;
+    data: T;
+}
+
+export interface CoinsPHQuote {
+    quoteId: string;
+    sourceCurrency: string;
+    targetCurrency: string;
+    sourceAmount: string;
+    price: string;
+    targetAmount: string;
+    expiry: string;
+}
+
+export interface CoinsError {
+    status: number;
+    code: number;
+    message: string;
+}

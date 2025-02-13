@@ -104,14 +104,14 @@ export class ClientService extends BaseService {
             console.log('network', network);
             console.log('paymentMethod', paymentMethod);
             if ((walletAddress && network) || paymentMethod === "blockchain") {
-                if (!walletAddress || !network) {
-                    throw new Error("Missing required fields for blockchain account");
+                if (!walletAddress) {
+                    throw new Error(`Missing required fields for blockchain account ${walletAddress} ${network}`);
                 }
                 const blockchainAccount = await tx.blockchainAccount.create({
                     data: {
                         client_id: client.id,
                         address: walletAddress,
-                        network: network,
+                        network: network ?? "stellar",
                         environment: "testnet",
                     },
                 });

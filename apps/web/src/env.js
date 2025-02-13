@@ -35,7 +35,7 @@ export const env = createEnv({
     COINS_PH_PROXY_API_HOST: z.string(),
     COINS_PH_PROXY_API_KEY: z.string(),
     COINS_PH_PROXY_API_SECRET: z.string(),
-    USE_COINS_PH_PROXY: z.boolean(),
+    USE_COINS_PH_PROXY: z.string(),
     OPENAI_API_KEY: z.string(),
   },
 
