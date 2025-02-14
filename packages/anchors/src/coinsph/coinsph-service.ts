@@ -1,7 +1,7 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import { Anchor } from '../shared';
-import { AnchorQuote, GetQuoteParams, PaymentRail } from '../shared/interfaces';
+import { AnchorQuote, AnchorRate, GetQuoteParams, PaymentRail, QuoteParams } from '../shared/interfaces';
 import {
     Account,
     CashOutParams,
@@ -24,13 +24,20 @@ export class CoinsPHService extends Anchor {
     supportedPaymentRails = [PaymentRail.CRYPTO];
     supportedCurrencies = ["USDC", "EURC", "PHP"];
 
-    private useProxy = process.env.USE_COINS_PH_PROXY === 'true';
+    private readonly useProxy: boolean;
+
+    constructor() {
+        super();
+        this.useProxy = process.env.USE_COINS_PH_PROXY === 'true';
+        if (this.useProxy) {
+            console.log('Using Coins.ph through Proxy');
+        }
+    }
 
     // Coins.ph API Host
     private get apiHost(): string {
         // Make sure we're using the reverse proxy API gateway
         if (this.useProxy && process.env.COINS_PH_PROXY_API_HOST) {
-            console.log('Using proxy');
             return process.env.COINS_PH_PROXY_API_HOST;
         }
 
@@ -43,7 +50,6 @@ export class CoinsPHService extends Anchor {
     // Coins.ph API Key
     private get apiKey(): string {
         if (this.useProxy && process.env.COINS_PH_PROXY_API_KEY) {
-            console.log('Using proxy');
             return process.env.COINS_PH_PROXY_API_KEY;
         }
         if (!process.env.COINS_PH_API_KEY) {
@@ -55,7 +61,6 @@ export class CoinsPHService extends Anchor {
     // Coins.ph API Secret
     private get apiSecret(): string {
         if (this.useProxy && process.env.COINS_PH_PROXY_API_SECRET) {
-            console.log('Using proxy');
             return process.env.COINS_PH_PROXY_API_SECRET;
         }
         if (!process.env.COINS_PH_API_SECRET) {
@@ -70,8 +75,6 @@ export class CoinsPHService extends Anchor {
 
     test() {
         console.log('Hello from CoinsPHService!!');
-        console.log('apiHost', this.apiHost);
-        console.log('apiKey', this.apiKey);
     }
 
     /**
@@ -80,7 +83,6 @@ export class CoinsPHService extends Anchor {
      * @returns Signed message
      */
     signMessage(message: string) {
-        console.log('signing with', this.apiSecret);
         const signature = crypto.createHmac('sha256', this.apiSecret).update(message).digest('hex');
         return signature;
     }
@@ -136,7 +138,7 @@ expiry	Quote expire time seconds.
   }
 }
      */
-    async getQuote(params: GetQuoteParams): Promise<AnchorQuote> {
+    async requestQuote(params: GetQuoteParams): Promise<AnchorQuote> {
         try {
             const { sourceCurrency, targetCurrency, ...amountConfig } = params;
             const timestamp = Date.now().toString();
@@ -262,6 +264,32 @@ expiry	Quote expire time seconds.
             });
 
             return { success: true, res: response.data };
+        } catch (error) {
+            console.error('Error fetching account:', error);
+            throw error;
+        }
+    }
+
+    async getRate(params: QuoteParams): Promise<AnchorRate> {
+        try {
+            const path = 'openapi/quote/v1/ticker/price';
+            const queryParams = new URLSearchParams({
+                symbol: `${params.sourceCurrency}${params.targetCurrency}`,
+            });
+            const messageToSign = queryParams.toString();
+            const signature = this.signMessage(messageToSign);
+            const response = await axios.get(`${this.apiHost}/${path}`, {
+                params: {
+                    ...Object.fromEntries(queryParams),
+                    signature
+                },
+                headers: { 'X-COINS-APIKEY': `${this.apiKey}` }
+            });
+
+            return {
+                exchangeRate: Number(response.data.price),
+                expiresIn: Number(response.data.expiry ?? 0)
+            };
         } catch (error) {
             console.error('Error fetching account:', error);
             throw error;

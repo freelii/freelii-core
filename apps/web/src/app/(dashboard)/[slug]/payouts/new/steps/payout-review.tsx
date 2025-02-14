@@ -7,7 +7,7 @@ import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useCopyToClipboard, useRouterStuff } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, FX_REFRESH_INTERVAL, TESTNET } from "@freelii/utils"
 import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
 import { BlockchainAccount, EwalletAccount, FiatAccount, Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
@@ -15,6 +15,8 @@ import { Check, Download, Edit2, XCircle } from "lucide-react"
 import { useMemo, useState } from "react"
 import { toast } from "react-hot-toast"
 import { AccountDetails } from "./account-details"
+
+
 
 interface PaymentDetails {
     recipient: Recipient;
@@ -37,8 +39,8 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     const { searchParams } = useRouterStuff();
     const [, copyToClipboard] = useCopyToClipboard();
 
-    const recipientId = searchParams.get('recipientId');
-    const selectedAccount = searchParams.get('recipientAccount');
+    const recipientId = searchParams?.get('recipientId');
+    const selectedAccount = searchParams?.get('recipientAccount');
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
@@ -52,10 +54,10 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
         refetchOnWindowFocus: true,
         // Set up refetch interval based on expiry
         refetchInterval: (data) => {
-            if (data?.state?.data?.quote) {
-                if (!data?.state?.data?.quote.expiresIn) return false;
+            if (data?.state?.data?.rate) {
+                if (!data?.state?.data?.rate.expiresIn) return FX_REFRESH_INTERVAL;
                 // Calculate milliseconds until expiry
-                return Number(data.state.data.quote.expiresIn) * 1000;
+                return Number(data.state.data.rate.expiresIn) * 1000;
             }
             return false;
         }
@@ -115,9 +117,9 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     const totalFees = (paymentDetails.fees.processingFee + paymentDetails.fees.serviceCharge) * 0
     const { fxRate, recipientAmount, totalCost } = useMemo(() => {
-        const fxRate = currencyCode !== "USD" && quote.data ? quote.data.quote.exchangeRate ? Number(quote.data.quote.exchangeRate) : 1 : 1;
-        const recipientAmount = (Number(searchParams.get('amount')) ?? 0) * fxRate;
-        const totalCost = Number(searchParams.get('amount')) + totalFees;
+        const fxRate = currencyCode !== "USD" && quote.data ? quote.data.rate.exchangeRate ? Number(quote.data.rate.exchangeRate) : 1 : 1;
+        const recipientAmount = (Number(searchParams?.get('amount')) ?? 0) * fxRate;
+        const totalCost = Number(searchParams?.get('amount')) + totalFees;
 
         return { fxRate, recipientAmount, totalCost };
     }, [quote.data, currencyCode, searchParams, totalFees]);
@@ -225,10 +227,10 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     const handleConfirm = async () => {
         try {
-            if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(searchParams.get('amount')) ?? 0)) {
+            if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(searchParams?.get('amount') ?? 0))) {
                 toast.error("Insufficient balance")
                 return;
-            } else if (Number(searchParams.get('amount')) <= 0) {
+            } else if (Number(searchParams?.get('amount') ?? 0) <= 0) {
                 toast.error("Invalid amount for payment")
                 return;
             }
@@ -243,7 +245,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
                 const at = await transfer({
                     to: (recipientAccount as BlockchainAccount).address,
-                    amount: toStroops(Number(searchParams.get('amount'))),
+                    amount: toStroops(Number(searchParams?.get('amount') ?? 0)),
                     sacAddress: TESTNET.XLM_SAC
                 })
 
@@ -255,7 +257,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                         txHash: at?.txHash,
                         senderId: account.user_id,
                         recipientId: client.id,
-                        amount: toStroops(Number(searchParams.get('amount'))),
+                        amount: toStroops(Number(searchParams?.get('amount') ?? 0)),
                         currency: "USDC",
                         reference: `Payment to ${client.name}`
                     });
@@ -263,7 +265,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
             } else {
                 const at = await transfer({
                     to: "GDUDPV3UBLHL2ZUC7XTERLVE5LPFNRK4DOU3GFM7U4AJEB3L7UMH3PPW",
-                    amount: toStroops(Number(searchParams.get('amount'))),
+                    amount: toStroops(Number(searchParams?.get('amount') ?? 0)),
                     sacAddress: TESTNET.XLM_SAC
                 })
                 console.log('at:', at);
@@ -273,7 +275,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                     txHash: at?.txHash ?? "",
                     senderId: account.user_id,
                     recipientId: client.id,
-                    amount: toStroops(Number(searchParams.get('amount'))),
+                    amount: toStroops(Number(searchParams?.get('amount') ?? 0)),
                     currency: "USD",
                     reference: `Payment to ${client.name}`
                 });
@@ -350,7 +352,7 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
                                                     {fromStroops(account.main_balance?.amount ?? 0, 2)}
                                                 </span>
                                             </div>
-                                            {hasEnoughBalance(account.main_balance?.amount ?? 0, toStroops(searchParams.get('amount')) ?? 0) ?
+                                            {hasEnoughBalance(account.main_balance?.amount ?? 0, toStroops(searchParams?.get('amount') ?? 0)) ?
                                                 <span className="text-[10px] text-gray-500">Available balance</span> :
                                                 <span className="text-[10px] text-red-500">Insufficient balance</span>
                                             }

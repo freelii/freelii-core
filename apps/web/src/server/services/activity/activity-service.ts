@@ -86,7 +86,6 @@ export class ActivityService extends BaseService {
             }
         });
 
-        console.log('invoicesCreated:', invoicesCreated)
 
         const invoiceCreatedSorted = this.summarizeInvoiceReceived(invoicesCreated, 'created')
         // Card creation

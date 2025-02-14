@@ -1,5 +1,5 @@
 import { CoinsPHService } from "./coinsph/coinsph-service";
-import { Anchor, PaymentRail, type AnchorQuote } from "./shared";
+import { Anchor, AnchorRate, PaymentRail } from "./shared";
 
 
 
@@ -19,36 +19,36 @@ export class AnchorService {
         sourceCurrency: string,
         targetCurrency: string,
         paymentRail: PaymentRail
-    ): Promise<Array<{ anchor: Anchor; quote: AnchorQuote }>> {
+    ): Promise<Array<{ anchor: Anchor; rate: AnchorRate }>> {
         const availableAnchors = this.anchors.filter(anchor =>
             anchor.supportsTransfer(sourceCurrency, targetCurrency, paymentRail)
         );
 
-        const quotesPromises = availableAnchors.map(async anchor => {
+        // TODO: add a check to see if the amount is too large for the anchor
+
+        const ratesPromises = availableAnchors.map(async anchor => {
             try {
                 console.log('anchor quote', {
                     sourceCurrency,
                     targetCurrency,
-                    sourceAmount: amount.toString(),
                 });
-                const quote = await anchor.getQuote({
+                const rate = await anchor.getRate({
                     sourceCurrency,
                     targetCurrency,
-                    sourceAmount: amount.toString(),
                 });
-                return { anchor, quote };
+                return { anchor, rate };
             } catch (error) {
                 console.error(`Failed to get quote from ${anchor.name}:`, error);
                 return null;
             }
         });
 
-        const quotes = await Promise.all(quotesPromises);
+        const rates = await Promise.all(ratesPromises);
 
-        console.log('quotes', quotes);
+        console.log('rates', rates);
 
-        return quotes.filter((quote): quote is { anchor: Anchor; quote: AnchorQuote } =>
-            quote !== null
+        return rates.filter((rate): rate is { anchor: Anchor; rate: AnchorRate } =>
+            rate !== null
         );
     }
 
@@ -62,7 +62,7 @@ export class AnchorService {
             prioritizeFee?: boolean;
             prioritizeExchangeRate?: boolean;
         } = {}
-    ): Promise<{ anchor: Anchor; quote: AnchorQuote }> {
+    ): Promise<{ anchor: Anchor; rate: AnchorRate }> {
         const availableAnchors = await this.getAvailableAnchors(
             amount,
             sourceCurrency,
@@ -75,20 +75,15 @@ export class AnchorService {
         }
 
         // Score each anchor based on preferences
-        const scoredAnchors = availableAnchors.map(({ anchor, quote }): { anchor: Anchor, quote: AnchorQuote, score: number } => {
+        const scoredAnchors = availableAnchors.map(({ anchor, rate }): { anchor: Anchor, rate: AnchorRate, score: number } => {
             let score = 0;
-
-            if (preferences.prioritizeFee) {
-                // Lower fee is better
-                score += (1 / quote.fee) * 100;
-            }
 
             if (preferences.prioritizeExchangeRate) {
                 // Higher exchange rate is better
-                score += quote.exchangeRate * 100;
+                score += rate.exchangeRate * 100;
             }
 
-            return { anchor, quote, score };
+            return { anchor, rate, score };
         });
 
         // Sort by score and return the best option
@@ -99,8 +94,8 @@ export class AnchorService {
             throw new Error(`No anchor found for ${sourceCurrency} to ${destinationCurrency} on ${paymentRail}`);
         }
 
-        const { anchor, quote } = scoredAnchors[0];
+        const { anchor, rate } = scoredAnchors[0];
 
-        return { anchor, quote };
+        return { anchor, rate };
     }
 }

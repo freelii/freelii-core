@@ -1,7 +1,7 @@
 import {
     AnchorService,
     PaymentRail,
-    type GetQuoteParams,
+    type GetQuoteParams
 } from '@freelii/anchors';
 import { BaseService } from '@services/base-service';
 
@@ -13,7 +13,7 @@ export class OrchestratorService extends BaseService {
      * @param targetCurrency - The target currency
      * @returns The quote
      */
-    async getQuote({ sourceCurrency, targetCurrency, ...amountConfig }: GetQuoteParams) {
+    async getRate({ sourceCurrency, targetCurrency, ...amountConfig }: GetQuoteParams) {
         const anchorService = new AnchorService();
         let amount: number | undefined;
         if ('sourceAmount' in amountConfig) {
@@ -24,7 +24,6 @@ export class OrchestratorService extends BaseService {
         if (!amount) {
             throw new Error('Amount is required');
         }
-        console.log('getQuote', amount, sourceCurrency, targetCurrency, PaymentRail.CRYPTO);
         return anchorService.getOptimalAnchor(
             amount,
             sourceCurrency,
@@ -32,4 +31,5 @@ export class OrchestratorService extends BaseService {
             PaymentRail.CRYPTO
         );
     }
+
 }

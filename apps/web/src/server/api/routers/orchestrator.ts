@@ -9,17 +9,12 @@ export const orchestratorRouter = createTRPCRouter({
         targetCurrency: z.string(),
         amount: z.number()
     })).query(async ({ input, ctx }) => {
-        console.log('getQuote', input);
         const orchestratorService = new OrchestratorService({ db: ctx.db, session: ctx.session });
-        console.log('orchestratorService', {
-            sourceCurrency: input.sourceCurrency,
-            targetCurrency: input.targetCurrency,
-            targetAmount: input.amount.toString()
-        });
-        return await orchestratorService.getQuote({
+        const rate = await orchestratorService.getRate({
             sourceCurrency: input.sourceCurrency,
             targetCurrency: input.targetCurrency,
             sourceAmount: input.amount.toString()
         });
+        return rate;
     })
 })

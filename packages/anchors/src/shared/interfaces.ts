@@ -16,19 +16,28 @@
 //     expiry: string;
 // }
 
-export interface QuoteForTarget {
-    targetAmount: string;
+export interface QuoteParams {
     sourceCurrency: string;
     targetCurrency: string;
 }
 
-export interface QuoteForSource {
-    sourceAmount: string;
-    sourceCurrency: string;
-    targetCurrency: string;
+export interface QuoteForTarget extends QuoteParams {
+    targetAmount: string;
 }
+
+export interface QuoteForSource extends QuoteParams {
+    sourceAmount: string;
+}
+
 
 export type GetQuoteParams = QuoteForTarget | QuoteForSource;
+
+// Define common types
+export type AnchorRate = {
+    exchangeRate: number;
+    expiresIn?: number; // in seconds
+}
+
 
 // Define common types
 export type AnchorQuote = {

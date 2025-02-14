@@ -365,4 +365,17 @@ program.command('get-deposit-address')
         });
         console.log(address);
     });
+
+program.command('live-quote')
+    .description('Get a live quote')
+    .argument('<sourceCurrency>', 'Source currency')
+    .argument('<targetCurrency>', 'Target currency')
+    .action(async (sourceCurrency, targetCurrency) => {
+        const coinsPHService = new CoinsPHService();
+        const quote = await coinsPHService.getLiveQuote({
+            sourceCurrency,
+            targetCurrency
+        });
+        console.log(quote);
+    });
 program.parse();

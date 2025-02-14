@@ -1,7 +1,9 @@
 import type {
     AnchorQuote,
+    AnchorRate,
     GetQuoteParams,
-    PaymentRail
+    PaymentRail,
+    QuoteParams
 } from "./interfaces";
 
 // Abstract base class that all anchors must implement
@@ -11,9 +13,14 @@ export abstract class Anchor {
     abstract supportedCurrencies: string[];
 
     // Get quote for a specific transfer
-    abstract getQuote(
+    abstract requestQuote(
         params: GetQuoteParams
     ): Promise<AnchorQuote>;
+
+    // Get live fx rate for a specific trading pair
+    abstract getRate(
+        params: QuoteParams
+    ): Promise<AnchorRate>;
 
     // Check if anchor supports this type of transfer
     abstract supportsTransfer(
