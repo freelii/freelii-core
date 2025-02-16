@@ -82,9 +82,33 @@ export default function NewRecipientPage() {
         const currency = formData.country === "Philippines" ? "PHP" : formData.country === "Mexico" ? "MXN" : "USD"
         setFormData({ ...formData, currency })
 
-        const newRecipient = await createRecipient.mutateAsync(formData);
+        const client = {
+            type: formData.type,
+            name: formData.name,
+            email: formData.email,
+            tax_number: formData.taxNumber,
+            street: formData.street,
+            city: formData.city,
+            state: formData.state,
+            country: formData.country,
+            zipCode: formData.zipCode,
+            paymentAccount: {
+                paymentMethod: formData.paymentMethod,
+                country: formData.country,
+                accountNumber: formData.accountNumber,
+                bankName: formData.bankName,
+                accountHolderName: formData.accountHolderName,
+                transferMethod: formData.transferMethod,
+                accountType: formData.accountType,
+                walletAddress: formData.walletAddress,
+                ewalletProvider: formData.ewalletProvider,
+                mobileNumber: formData.mobileNumber,
+            }
+        }
+
+        const newRecipient = await createRecipient.mutateAsync(client);
         // If comes from payments, redirect to payments
-        if (searchParams.get("from") === "payments") {
+        if (searchParams?.get("from") === "payments") {
             void router.push(`/dashboard/payouts/new?recipientId=${newRecipient.id}`)
         } else {
             void router.push(`/dashboard/recipients`)
@@ -93,8 +117,8 @@ export default function NewRecipientPage() {
 
     const steps = [
         { id: 0, name: "Recipient Type", component: TypeStep },
-        { id: 1, name: "Payment Method", component: PaymentMethodStep },
-        { id: 2, name: "Basic Information", component: BasicInfoStep },
+        { id: 1, name: "Basic Information", component: BasicInfoStep },
+        { id: 2, name: "Payment Method", component: PaymentMethodStep },
         { id: 3, name: "Payment Details", component: BankingStep },
         { id: 4, name: "Review", component: ReviewStep },
     ]
@@ -400,9 +424,11 @@ function PaymentMethodStep({ formData, setFormData }: { formData: FormData, setF
                         >
                             <div className="flex-1 text-left">
                                 <p className="font-medium text-[15px] text-gray-900">Bank Transfer</p>
-                                <p className="text-[13px] text-gray-500 mt-0.5">
-                                    ACH/Wire transfer to bank account
-                                </p>
+                                {formData.country === "United States" && (
+                                    <p className="text-[13px] text-gray-500 mt-0.5">
+                                        ACH/Wire transfer to bank account
+                                    </p>
+                                )}
                             </div>
                             <div className={`size-5 rounded-full border flex items-center justify-center
                                 ${formData.paymentMethod === "fiat"
@@ -779,10 +805,9 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                         <div className="border-t pt-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-500">Account Holder Name</span>
-                                    {!showAccountHolderNameForm && (
-                                        <span className="text-sm">{formData.accountHolderName || formData.name}</span>
-                                    )}
+                                    <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                                        Account Holder Name
+                                    </label>
                                 </div>
                                 <button
                                     type="button"
@@ -792,6 +817,9 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                                     {showAccountHolderNameForm ? "Hide" : formData.accountHolderName ? "Edit" : "Use different name"}
                                 </button>
                             </div>
+                            {!showAccountHolderNameForm && (
+                                <span className="text-sm">{formData.accountHolderName || formData.name}</span>
+                            )}
 
                             {showAccountHolderNameForm && (
                                 <div className="mt-3">
@@ -832,7 +860,8 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                         <>
                             <div>
                                 <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                                    CLABE</label>
+                                    CLABE
+                                </label>
                                 <Input
                                     type="text"
                                     name="accountNumber"
@@ -850,41 +879,58 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                     ) : formData.country === "United States" ? (
                         <>
                             <div>
-                                <label className="block text-sm font-medium mb-1">Bank Name</label>
+                                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                                    Bank Name
+                                </label>
                                 <Input
                                     type="text"
                                     name="bankName"
                                     value={formData.bankName}
                                     onChange={handleChange}
-                                    placeholder="Enter bank name"
-                                    className="w-full"
+                                    placeholder="e.g. Chase, Wells Fargo"
+                                    className="w-full h-[36px] shadow-sm text-[15px]"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Account Type</label>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, accountType: "checking" })}
-                                        className={`p-4 border rounded-lg text-left ${formData.accountType === "checking" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
-                                    >
-                                        <h3 className="font-medium">Checking</h3>
-                                        <p className="text-sm text-gray-500">Personal or business checking</p>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, accountType: "savings" })}
-                                        className={`p-4 border rounded-lg text-left ${formData.accountType === "savings" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
-                                    >
-                                        <h3 className="font-medium">Savings</h3>
-                                        <p className="text-sm text-gray-500">Personal savings account</p>
-                                    </button>
+                                <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                                    Account Type
+                                </label>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    {["checking", "savings"].map((type) => (
+                                        <button
+                                            key={type}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, accountType: type as "checking" | "savings" })}
+                                            className={`flex items-center p-4 border rounded-lg hover:border-gray-300 transition-colors
+                                                    ${formData.accountType === type
+                                                    ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                                                    : "border-gray-200"}`}
+                                        >
+                                            <div className="flex-1 text-left">
+                                                <p className="font-medium text-gray-900 capitalize">
+                                                    {type}
+                                                </p>
+                                                <p className="text-sm text-gray-500">
+                                                    {type === "checking" ? "Personal or business" : "Personal savings"}
+                                                </p>
+                                            </div>
+                                            <div className={`size-5 rounded-full border flex items-center justify-center
+                                                    ${formData.accountType === type
+                                                    ? "border-blue-600 bg-blue-600"
+                                                    : "border-gray-300"}`}
+                                            >
+                                                {formData.accountType === type && (
+                                                    <div className="size-2 rounded-full bg-white" />
+                                                )}
+                                            </div>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Routing Number</label>
+                                <label className="block text-[13px] font-medium text-gray-700 mb-1">Routing Number</label>
                                 <Input
                                     type="text"
                                     name="routingNumber"
@@ -900,7 +946,7 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-1">Account Number</label>
+                                <label className="block text-[13px] font-medium text-gray-700 mb-1">Account Number</label>
                                 <Input
                                     type="text"
                                     name="accountNumber"
@@ -960,30 +1006,6 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                                     className="w-full"
                                 />
                             </div>
-
-                            {formData.country === "Philippines" && (
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Transfer Method</label>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, transferMethod: "instapay" })}
-                                            className={`p-4 border rounded-lg text-left ${formData.transferMethod === "instapay" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
-                                        >
-                                            <h3 className="font-medium">InstaPay</h3>
-                                            <p className="text-sm text-gray-500">Real-time transfer</p>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData({ ...formData, transferMethod: "pesonet" })}
-                                            className={`p-4 border rounded-lg text-left ${formData.transferMethod === "pesonet" ? "border-[#4ab3e8] bg-blue-50" : ""}`}
-                                        >
-                                            <h3 className="font-medium">PESONet</h3>
-                                            <p className="text-sm text-gray-500">Same-day batch processing</p>
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </>
                     )}
                 </div>
@@ -1032,10 +1054,26 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                         </div>
                     </div>
 
+                    <div>
+                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
+                            Mobile Number
+                        </label>
+                        <Input
+                            type="tel"
+                            name="mobileNumber"
+                            value={formData.mobileNumber}
+                            onChange={handleChange}
+                            placeholder="+63 XXX XXX XXXX"
+                            className="w-full h-[36px] shadow-sm text-[15px] font-mono"
+                        />
+                        <p className="mt-2 text-[13px] text-gray-500">
+                            This number must match your e-wallet account
+                        </p>
+                    </div>
 
                     {/* Additional fields for Coins.ph */}
                     {formData.ewalletProvider === "coins_ph" && (
-                        <div className="space-y-4">
+                        <div className="space-y-4 animate-in fade-in-0 duration-300">
                             <div>
                                 <label className="block text-[13px] font-medium text-gray-700 mb-1">
                                     Account Number
@@ -1054,23 +1092,6 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                             </div>
                         </div>
                     )}
-
-                    <div>
-                        <label className="block text-[13px] font-medium text-gray-700 mb-1">
-                            Mobile Number
-                        </label>
-                        <Input
-                            type="tel"
-                            name="mobileNumber"
-                            value={formData.mobileNumber}
-                            onChange={handleChange}
-                            placeholder="+63 XXX XXX XXXX"
-                            className="w-full h-[36px] shadow-sm text-[15px] font-mono"
-                        />
-                        <p className="mt-2 text-[13px] text-gray-500">
-                            This number must match your e-wallet account
-                        </p>
-                    </div>
 
                 </div>
             )}

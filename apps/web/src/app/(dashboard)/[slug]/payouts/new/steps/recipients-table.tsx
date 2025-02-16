@@ -2,28 +2,27 @@
 
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
-import { XLMIcon } from "@/ui/icons/xlm-icon"
 import { WalletDropdown } from "@/ui/layout/sidebar/wallet-dropdown"
-import { recipientFormatter } from "@/ui/recipients-table/recipient-formatter"
 import { Recipient, RecipientsTable } from "@/ui/recipients-table/recipients-table"
-import { USDCBadge } from "@/ui/shared/badges/usdc-badge"
-import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
 import {
-  Badge, BlurImage, Button,
+  BlurImage,
+  Button,
   ExpandingArrow,
-  Input, Label,
+  Input,
+  Label,
+  LoadingDots,
   Separator,
   Textarea,
-  ToggleGroup, ToggleGroupItem,
+  ToggleGroup,
+  ToggleGroupItem,
   useRouterStuff
 } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, shortAddress } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { Client, RecipientType } from "@prisma/client"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Building2, CheckCircle2, Search, UploadIcon, UserPlus, X } from "lucide-react"
-import Link from "next/link"
 import React, { useEffect, useRef } from "react"
 import toast from "react-hot-toast"
 import { AccountDetails } from "./account-details"
@@ -37,24 +36,29 @@ type RecipientsTableProps = {
 }
 
 export default function NewPayment({ mode = 'default', onNext, onBack }: RecipientsTableProps) {
-  const { queryParams, searchParams } = useRouterStuff()
+  const { queryParams, searchParams, router } = useRouterStuff()
   const { account } = useWallet();
 
   const [selectedRecipient, setSelectedRecipient] = React.useState<Recipient | null>(null)
   const detailsCardRef = useRef<HTMLDivElement>(null)
   const [recipientTypeFilter, setRecipientTypeFilter] = React.useState<string | null>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [amount, setAmount] = React.useState<string>(searchParams.get('amount') ?? '')
+  const [amount, setAmount] = React.useState<string>(searchParams?.get('amount') ?? '')
   const [selectedAccount, setSelectedAccount] = React.useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   // tRPC procedures
-  const trpcUtils = api.useUtils()
-  const removeRecipient = api.clients.archive.useMutation({
+  const initiatePayment = api.orchestrator.initiatePayment.useMutation({
     onError: ClientTRPCErrorHandler,
-    onSuccess: () => {
-      void trpcUtils.clients.search.invalidate()
+    onSuccess: (data) => {
+      if (data.success) {
+        void router.push(`/dashboard/payouts/${data.state.id}`)
+      } else {
+        toast.error(data.error ?? 'Failed to initiate payment')
+      }
     }
   })
+
   const { data: clients, isFetching: loading } = api.clients.search.useQuery({
     query: searchQuery,
     page: 1,
@@ -83,15 +87,14 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
 
 
   useEffect(() => {
-    if (searchParams.get('recipientId')) {
+    if (searchParams?.get('recipientId')) {
       const recipientId = searchParams.get('recipientId')
       const recipient = filteredRecipients?.find(recipient => recipient.id === parseInt(recipientId!, 10))
       if (recipient) {
-        const formattedRecipient = recipientFormatter(recipient)
-        setSelectedRecipient(formattedRecipient)
-        console.log(formattedRecipient, formattedRecipient.ewallet_accounts)
-        setSelectedAccount(formattedRecipient.fiat_accounts?.[0]?.id ?? formattedRecipient?.blockchain_accounts?.[0]?.id ?? formattedRecipient?.ewallet_accounts?.[0]?.id ?? null)
-        queryParams({ set: { recipientAccount: formattedRecipient.fiat_accounts?.[0]?.id ?? formattedRecipient?.blockchain_accounts?.[0]?.id ?? formattedRecipient?.ewallet_accounts?.[0]?.id ?? "" } })
+        setSelectedRecipient(recipient)
+        const paymentDestination = recipient?.payment_destinations[0];
+        setSelectedAccount(paymentDestination?.id);
+        queryParams({ set: { recipientAccount: paymentDestination?.id } })
       }
     }
     // if (searchParams.get('recipientAccount')) {
@@ -122,11 +125,20 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
     }
   }, [selectedRecipient])
 
-  const handleRemoveRecipient = async (id: number) => {
-    await removeRecipient.mutateAsync({ id })
-    void trpcUtils.clients.search.invalidate()
-    setSelectedRecipient(null)
-    toast.success('Recipient archived')
+  const handleInitiatePayment = async () => {
+    if (selectedRecipient && amount && selectedAccount && account) {
+      setIsSubmitting(true)
+      await initiatePayment.mutateAsync({
+        sourceAmount: Number(amount),
+        recipientId: selectedRecipient.id,
+        destinationId: selectedAccount,
+        walletId: account.id
+      }).finally(() => {
+        setIsSubmitting(false)
+      })
+    } else {
+      toast.error('Please select a recipient, amount, and account');
+    }
   }
 
 
@@ -203,7 +215,8 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
             </div>
           </div>
 
-          <RecipientsTable recipients={filteredRecipients.map(recipientFormatter)}
+          <RecipientsTable
+            recipients={filteredRecipients}
             loading={loading}
             selectedRecipient={selectedRecipient}
             onRecipientSelect={(row) => {
@@ -312,9 +325,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
 
                       {/* Update the account details preview */}
                       <AccountDetails selectedAccount={
-                        selectedRecipient.fiat_accounts?.find(account => account.id === selectedAccount) ??
-                        selectedRecipient.blockchain_accounts?.find(account => account.id === selectedAccount) ??
-                        selectedRecipient.ewallet_accounts?.find(account => account.id === selectedAccount) ??
+                        selectedRecipient.payment_destinations?.find(account => account.id === selectedAccount) ??
                         null
                       } />
 
@@ -345,7 +356,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                                 const value = e.target.value;
                                 setAmount(value);
                                 // Update URL without causing a scroll/navigation
-                                const newParams = new URLSearchParams(searchParams);
+                                const newParams = new URLSearchParams(searchParams ?? '');
                                 newParams.set('amount', value);
                                 window.history.replaceState(null, '', `?${newParams.toString()}`);
                               }}
@@ -384,12 +395,14 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
                         </div>
 
                         <Button
-                          className="w-full mt-6 group"
+                          className="w-full mt-6 group h-8"
                           disabled={!amount || !selectedRecipient}
-                          onClick={onNext}
+                          onClick={handleInitiatePayment}
                         >
-                          Continue to Review
-                          <ExpandingArrow className="size-3 transition-all duration-300 ease-in-out" />
+                          {isSubmitting ? <LoadingDots color="white" /> : <>
+                            Continue to Review
+                            <ExpandingArrow className="size-3 transition-all duration-300 ease-in-out" />
+                          </>}
                         </Button>
                       </div>
                     </>
@@ -429,96 +442,9 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
             </div>
           </div>
         )}
-        {mode === 'default' && selectedRecipient && (
-          <div
-            ref={detailsCardRef}
-            className="animate-in slide-in-from-right duration-300"
-          >
-            <div className="p-6 bg-white h-full border-l border-gray-200">
-              <RecipientDetails recipient={selectedRecipient} onRemove={handleRemoveRecipient} />
-            </div>
-          </div>
-        )}
-
       </div>
     </div >
   )
 }
 
-interface RecipientDetailsProps {
-  recipient: Recipient
-  onRemove: (id: number) => void
-}
-
-function RecipientDetails({ recipient, onRemove }: RecipientDetailsProps) {
-  return (
-    <div className="transition-opacity duration-200 delay-150 opacity-100">
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <p className="text-base font-semibold">{recipient.name}</p>
-
-        </div>
-        <p className="text-xs text-gray-500">{recipient.email}</p>
-      </div>
-
-      <div className="space-y-6">
-        {/* Fiat Accounts Section */}
-        {recipient.fiat_accounts && recipient.fiat_accounts.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium">Bank Accounts</h3>
-            <div className="space-y-2">
-              {recipient.fiat_accounts.map((account) => (
-                <div key={account.id} className="p-3 bg-gray-50 rounded-md space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium flex items-center gap-1">
-                      {account.bank_name}
-                      <Badge className="text-xs bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 px-1.5 py-0.5">
-                        <FlagIcon
-                          currencyCode={account.iso_currency}
-                          size={14}
-                        />
-                        {account.iso_currency}
-                      </Badge>
-                    </span>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Account: ••••{account.account_number.slice(-4)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Blockchain Accounts Section */}
-        {recipient.blockchain_accounts && recipient.blockchain_accounts.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium">Digital Accounts</h3>
-            <div className="space-y-2">
-              {recipient.blockchain_accounts.map((account) => (
-                <div key={account.id} className="p-3 bg-gray-50 rounded-md space-y-1">
-                  <span className="text-sm font-medium flex items-center gap-1 w-full justify-between">
-                    Digital US Dollar <USDCBadge />
-                  </span>
-                  <Link href={`https://stellar.expert/explorer/testnet/contract/${account.address}`}>
-                    <span className="px-2 pr-6 inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200">
-                      <XLMIcon className="h-3 w-3 mr-2" />
-                      {shortAddress(account.address)}
-                    </span>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2 pt-2">
-          <Button variant="danger" className="p-2 text-xs" onClick={() => onRemove(recipient.id)}>
-            Remove Recipient
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
 

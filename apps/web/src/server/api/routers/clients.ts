@@ -4,6 +4,7 @@ import {
     ClientGetSchema,
     ClientSearchSchema
 } from "@/server/services/client/schemas";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const clientsRouter = createTRPCRouter({
@@ -16,8 +17,10 @@ export const clientsRouter = createTRPCRouter({
     create: protectedProcedure
         .input(ClientCreateSchema)
         .mutation(async ({ ctx, input }) => {
-            const clientService = new ClientService({ db: ctx.db, session: ctx.session });
-            return clientService.createClient(input);
+            return ctx.db.$transaction(async (tx) => {
+                const clientService = new ClientService({ db: tx, session: ctx.session });
+                return clientService.createClient(input);
+            });
         }),
     get: protectedProcedure
         .input(ClientGetSchema)
@@ -30,6 +33,12 @@ export const clientsRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const clientService = new ClientService({ db: ctx.db, session: ctx.session });
             return clientService.archiveClient(input);
+        }),
+    archiveMany: protectedProcedure
+        .input(z.array(z.number()))
+        .mutation(async ({ ctx, input }) => {
+            const clientService = new ClientService({ db: ctx.db, session: ctx.session });
+            return clientService.archiveMany(input);
         }),
 });
 

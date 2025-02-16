@@ -5,7 +5,6 @@ import { PageContent } from "@/ui/layout/page-content"
 import { NavSteps } from "@/ui/shared/nav-steps"
 import { MaxWidthWrapper } from "@freelii/ui"
 import * as React from "react"
-import PayoutPreview from "./steps/payout-review"
 import SetupRecipients from "./steps/setup-recipients"
 
 
@@ -24,7 +23,7 @@ export default function NewPaymentPage() {
   ]
 
   return (
-    <PageContent titleBackButtonLink="/dashboard/payouts" title="New Payment">
+    <PageContent>
       <MaxWidthWrapper>
         <NavSteps currentStep={step} steps={steps} setStep={setStep} />
         <div className="">
@@ -32,9 +31,6 @@ export default function NewPaymentPage() {
           {step === stepIds.recipient &&
             <SetupRecipients onNext={() => setStep(stepIds.confirm)} onBack={() => setStep(stepIds.recipient)} />
           }
-          {step === stepIds.confirm && (
-            <PayoutPreview onEdit={() => setStep(stepIds.recipient)} />
-          )}
         </div>
       </MaxWidthWrapper>
 

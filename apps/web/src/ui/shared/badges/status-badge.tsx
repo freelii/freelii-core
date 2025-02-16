@@ -16,7 +16,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ className, text, useIc
     if (["inactive", "error", "failed"].includes(text.toLocaleLowerCase())) {
         Icon = XCircle;
         [bgColor, textColor] = ["bg-red-50 text-red-700 border-red-200", "text-red-700"]
-    } else if (["pending", "processing"].includes(text.toLocaleLowerCase())) {
+    } else if (["pending", "processing", "not started", "not_started"].includes(text.toLocaleLowerCase())) {
         Icon = Clock;
         [bgColor, textColor] = ["bg-yellow-50 text-yellow-700 border-yellow-200", "text-yellow-700"]
     }
@@ -24,7 +24,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ className, text, useIc
     return (
         <Badge className={cn("flex items-center gap-1", bgColor, className)}>
             {useIcon && <Icon className="size-3" />}
-            <span className={cn("text-xs capitalize", textColor)}>{text}</span>
+            <span className={cn("text-xs capitalize", textColor)}>{text?.replaceAll("_", " ").toLowerCase()}</span>
         </Badge>
     )
 }

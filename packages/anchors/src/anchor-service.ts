@@ -13,6 +13,14 @@ export class AnchorService {
         ]
     }
 
+    getAnchor(name: string): Anchor {
+        const anchor = this.anchors.find(anchor => anchor.name === name);
+        if (!anchor) {
+            throw new Error(`Anchor ${name} not found`);
+        }
+        return anchor;
+    }
+
     // Get all available anchors for a specific transfer
     async getAvailableAnchors(
         amount: number,

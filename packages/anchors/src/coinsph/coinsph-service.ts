@@ -1,7 +1,7 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import { Anchor } from '../shared';
-import { AnchorQuote, AnchorRate, GetQuoteParams, PaymentRail, QuoteParams } from '../shared/interfaces';
+import { AnchorQuote, AnchorRate, CashoutParams, GetQuoteParams, PaymentRail, QuoteParams } from '../shared/interfaces';
 import {
     Account,
     CashOutParams,
@@ -69,8 +69,13 @@ export class CoinsPHService extends Anchor {
         return process.env.COINS_PH_API_SECRET;
     }
 
-    get fee(): number {
-        return 0.05;
+    get fee(): string {
+        return "0.05";
+    }
+
+    // PHP markup
+    get markup(): number {
+        return 0.2; // +0.20 PHP markup
     }
 
     test() {
@@ -140,6 +145,7 @@ expiry	Quote expire time seconds.
      */
     async requestQuote(params: GetQuoteParams): Promise<AnchorQuote> {
         try {
+
             const { sourceCurrency, targetCurrency, ...amountConfig } = params;
             const timestamp = Date.now().toString();
             const path = 'openapi/convert/v1/get-quote';
@@ -160,8 +166,11 @@ expiry	Quote expire time seconds.
 
             // Add target currency if it exists and timestamp
             messageToSign += `&targetCurrency=${targetCurrency}&timestamp=${timestamp}`;
-
-            console.log('messageToSign', messageToSign);
+            console.log('messageToSign before slice', messageToSign);
+            if (messageToSign.startsWith('&')) {
+                messageToSign = messageToSign.slice(1);
+            }
+            console.log('messageToSign after slice', messageToSign);
             const signature = this.signMessage(messageToSign);
 
             const url = `${this.apiHost}/${path}?${messageToSign}&signature=${signature}`;
@@ -194,7 +203,12 @@ expiry	Quote expire time seconds.
                 quoteId: data?.quoteId,
                 fee: this.fee,
                 exchangeRate: Number(data?.price),
-                expiresIn: Number(data?.expiry ?? 0)
+                expiresIn: Number(data?.expiry ?? 0),
+                sourceCurrency: sourceCurrency,
+                targetCurrency: targetCurrency,
+                sourceAmount: amountConfig.sourceAmount ?? "0",
+                targetAmount: amountConfig.targetAmount ?? "0",
+                total: "0" // TODO: Calculate total
             }
         } catch (error) {
             console.error((error as Error)?.message ?? 'Error fetching quote:', error);
@@ -214,14 +228,9 @@ expiry	Quote expire time seconds.
         try {
             const path = 'openapi/convert/v1/accept-quote';
             const timestamp = Date.now().toString();
-            const queryParams = new URLSearchParams({ quoteId, timestamp });
-            const messageToSign = queryParams.toString();
+            const messageToSign = `quoteId=${quoteId}&timestamp=${timestamp}`;
             const signature = this.signMessage(messageToSign);
-            const response = await axios.post(`${this.apiHost}/${path}`, null, {
-                params: {
-                    ...Object.fromEntries(queryParams),
-                    signature
-                },
+            const response = await axios.post(`${this.apiHost}/${path}?${messageToSign}&signature=${signature}`, null, {
                 headers: { 'X-COINS-APIKEY': `${this.apiKey}` }
             });
             console.log('response', response.data);
@@ -234,7 +243,7 @@ expiry	Quote expire time seconds.
             }
             return { success: true, res: response.data.data };
         } catch (error) {
-            console.error('Error accepting quote:', error);
+            console.error('Error accepting quote:', (error as Error)?.message ?? 'Unknown error');
             throw error;
         }
     }
@@ -270,6 +279,14 @@ expiry	Quote expire time seconds.
         }
     }
 
+    /**
+     * Get live fx rate for a specific trading pair
+     * GET /openapi/quote/v1/ticker/price
+     * This endpoint returns the live fx rate for a specific trading pair.
+     * NOTE: This should include our actual Markup (PHP markup)
+     * @param params - Quote parameters
+     * @returns Live fx rate
+     */
     async getRate(params: QuoteParams): Promise<AnchorRate> {
         try {
             const path = 'openapi/quote/v1/ticker/price';
@@ -286,8 +303,10 @@ expiry	Quote expire time seconds.
                 headers: { 'X-COINS-APIKEY': `${this.apiKey}` }
             });
 
+            const exchangeRate = Number(response.data.price) + this.markup;
+
             return {
-                exchangeRate: Number(response.data.price),
+                exchangeRate,
                 expiresIn: Number(response.data.expiry ?? 0)
             };
         } catch (error) {
@@ -325,6 +344,8 @@ expiry	Quote expire time seconds.
             const timestamp = Date.now().toString();
             const internalOrderId = Date.now().toString(); // Generate a unique ID based on timestamp
 
+            console.log('params', params)
+
             // Prepare request body
             const requestBody = {
                 internalOrderId,
@@ -345,6 +366,9 @@ expiry	Quote expire time seconds.
 
             const queryParams = new URLSearchParams({ timestamp });
             const messageToSign = `${queryParams.toString()}${JSON.stringify(requestBody)}`;
+
+            console.log('messageToSign', messageToSign)
+
             const signature = this.signMessage(messageToSign);
 
             const response = await axios.post(
@@ -423,11 +447,20 @@ expiry	Quote expire time seconds.
      * @returns Guarded channel subject
      */
     channelSubjectGuard(channelSubject: string): string {
-        const availableChannelSubjects = ['gcash', 'coins.ph']
+        const availableChannelSubjects = ['PH_GCASH', 'PH_MAYA', 'PH_COINS_PH']
         if (!availableChannelSubjects.includes(channelSubject)) {
             throw new Error('Invalid channel subject');
         }
-        return channelSubject;
+        let channelSubjectName = channelSubject;
+        switch (channelSubject) {
+            case 'PH_GCASH':
+                channelSubjectName = 'gcash';
+            case 'PH_MAYA':
+                channelSubjectName = 'maya';
+            case 'PH_COINS_PH':
+                channelSubjectName = 'coins.ph';
+        }
+        return channelSubjectName;
     }
 
     /**
@@ -652,4 +685,71 @@ expiry	Quote expire time seconds.
         }
     }
 
+    /**
+     * Request a cash-out operation
+     * This method implements the abstract requestCashout method from the base Anchor class
+     */
+    async requestCashout(params: CashoutParams): Promise<CashOutResponse> {
+        console.log('params', params)
+        // Map the generic cashout params to Coins.ph specific params
+        const coinsCashoutParams: CashOutParams = {
+            amount: params.targetAmount.toString(),
+            currency: params.targetCurrency,
+            channelName: this.getChannelNameFromProvider(params.recipientDetails.ewalletProvider),
+            channelSubject: params.recipientDetails.ewalletProvider ?? 'coins.ph',
+            recipientAccountNumber: params.recipientDetails.accountNumber,
+            recipientName: params.recipientDetails.name,
+            recipientAddress: '', // Optional in Coins.ph
+            recipientMobile: params.recipientDetails.mobileNumber,
+        };
+
+        // Call the existing cashout method
+        return this.cashout(coinsCashoutParams);
+    }
+
+    /**
+     * Helper method to map e-wallet provider to Coins.ph channel name
+     */
+    private getChannelNameFromProvider(provider?: string): "INSTAPAY" | "SWIFTPAY_PESONET" {
+        switch (provider?.toUpperCase()) {
+            case 'PH_GCASH':
+                return "INSTAPAY";
+            case 'PH_MAYA':
+                return "INSTAPAY";
+            case 'PH_COINS_PH':
+                return "INSTAPAY";
+            default:
+                return "SWIFTPAY_PESONET"; // Default to PESONet for bank transfers
+        }
+    }
+
+    async getLiquidationAddress(): Promise<string> {
+        return "GDLS6OIZ3TOC7NXHB3OZKHXLUEZV4EUANOMOOMOHUZAZHLLGNN43IALX";
+    }
+
+    async convertCurrency(
+        sourceCurrency: string,
+        destinationCurrency: string,
+        sourceAmount: number,
+        expectedTargetAmount: number,
+    ): Promise<number> {
+        console.log(`Will convert ${sourceAmount} ${sourceCurrency} to ${expectedTargetAmount} ${destinationCurrency}`);
+        const quote = await this.requestQuote({
+            sourceCurrency: sourceCurrency.toString(),
+            targetCurrency: destinationCurrency.toString(),
+            targetAmount: expectedTargetAmount.toString()
+        });
+        console.log(`Quote: ${JSON.stringify(quote)}`);
+        // Positive: we're eating the difference, Negative: we're making money
+        const sourceAmountDifference = Number(quote.sourceAmount) - sourceAmount;
+        console.log(`Source amount difference: ${sourceAmountDifference}`);
+        if (sourceAmountDifference > this.AMOUNT_WE_MAY_EAT_AS_A_COMPANY_TO_HAVE_CUSTOMERS_HAPPY) {
+            throw new Error(`Source amount difference of ${sourceAmountDifference} is greater than the maximum allowed amount of ${this.AMOUNT_WE_MAY_EAT_AS_A_COMPANY_TO_HAVE_CUSTOMERS_HAPPY}`);
+        }
+        console.log(`Accepting quote ${quote.quoteId}`);
+        await this.acceptQuote(quote.quoteId);
+        return sourceAmountDifference;
+    }
+
+    readonly AMOUNT_WE_MAY_EAT_AS_A_COMPANY_TO_HAVE_CUSTOMERS_HAPPY = 20;
 }

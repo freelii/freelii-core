@@ -1,6 +1,7 @@
 import type {
     AnchorQuote,
     AnchorRate,
+    CashoutParams,
     GetQuoteParams,
     PaymentRail,
     QuoteParams
@@ -28,4 +29,19 @@ export abstract class Anchor {
         destinationCurrency: string,
         paymentRail: PaymentRail
     ): boolean;
+
+    // Request a cash-out operation
+    abstract requestCashout(
+        params: CashoutParams
+    ): Promise<any>;
+
+    abstract getLiquidationAddress(): Promise<string>;
+
+    abstract convertCurrency(
+        sourceCurrency: string,
+        destinationCurrency: string,
+        sourceAmount: number,
+        expectedTargetAmount: number,
+    ): Promise<number>;
+
 }

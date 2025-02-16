@@ -1,24 +1,19 @@
-
-// export interface QuoteRequest {
-//     sourceCurrency: string;
-//     targetCurrency: string;
-//     sourceAmount?: string;
-//     targetAmount?: string;
-// }
-
-// export interface Quote {
-//     quoteId: string;
-//     sourceCurrency: string;
-//     targetCurrency: string;
-//     sourceAmount: string;
-//     price: string;
-//     targetAmount: string;
-//     expiry: string;
-// }
+export enum PaymentRail {
+    CRYPTO = "crypto",
+    FIAT = "fiat"
+}
 
 export interface QuoteParams {
     sourceCurrency: string;
     targetCurrency: string;
+}
+
+export interface RecipientDetails {
+    name: string;
+    accountNumber: string;
+    bankName?: string;
+    ewalletProvider?: string;
+    mobileNumber?: string;
 }
 
 export interface QuoteForTarget extends QuoteParams {
@@ -29,27 +24,29 @@ export interface QuoteForSource extends QuoteParams {
     sourceAmount: string;
 }
 
+export interface GetQuoteParams extends QuoteParams {
+    sourceAmount?: string;
+    targetAmount?: string;
+    quoteId?: string;
+    recipientDetails?: RecipientDetails;
+}
 
-export type GetQuoteParams = QuoteForTarget | QuoteForSource;
+export interface CashoutParams extends QuoteParams {
+    targetAmount: number;
+    recipientDetails: RecipientDetails;
+}
 
-// Define common types
-export type AnchorRate = {
+export interface AnchorRate {
     exchangeRate: number;
     expiresIn?: number; // in seconds
 }
 
-
-// Define common types
-export type AnchorQuote = {
-    quoteId?: string;
-    fee: number;
-    exchangeRate: number;
-    expiresIn: number; // in seconds
-}
-
-export enum PaymentRail {
-    WIRE = 'wire',
-    SEPA = 'sepa',
-    ACH = 'ach',
-    CRYPTO = 'crypto',
+export interface AnchorQuote extends AnchorRate {
+    quoteId: string;
+    sourceCurrency: string;
+    targetCurrency: string;
+    sourceAmount: string;
+    targetAmount: string;
+    fee: string;
+    total: string;
 }

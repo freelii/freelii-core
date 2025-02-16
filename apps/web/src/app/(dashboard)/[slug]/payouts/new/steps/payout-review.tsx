@@ -1,13 +1,12 @@
 "use client"
 
-import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
 import { Recipient } from "@/ui/recipients-table/recipients-table"
 import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, Separator, useCopyToClipboard, useRouterStuff } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, FX_REFRESH_INTERVAL, TESTNET } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
 import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
 import { BlockchainAccount, EwalletAccount, FiatAccount, Wallet } from "@prisma/client"
 import { AnimatePresence, motion } from "framer-motion"
@@ -39,44 +38,17 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
     const { searchParams } = useRouterStuff();
     const [, copyToClipboard] = useCopyToClipboard();
 
-    const recipientId = searchParams?.get('recipientId');
-    const selectedAccount = searchParams?.get('recipientAccount');
+    const paymentId = searchParams?.get('paymentId');
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
-    const quote = api.orchestrator.getQuote.useQuery({
-        sourceCurrency: "USDC",
-        targetCurrency: "PHP",
-        amount: 10
-    }, {
-        // Refetch when the component mounts or window regains focus
-        refetchOnMount: true,
-        refetchOnWindowFocus: true,
-        // Set up refetch interval based on expiry
-        refetchInterval: (data) => {
-            if (data?.state?.data?.rate) {
-                if (!data?.state?.data?.rate.expiresIn) return FX_REFRESH_INTERVAL;
-                // Calculate milliseconds until expiry
-                return Number(data.state.data.rate.expiresIn) * 1000;
-            }
-            return false;
-        }
-    })
-    const registerPayment = api.ledger.registerPayment.useMutation({
-        onError: ClientTRPCErrorHandler
-    });
-    const { data: client, isLoading: isLoadingClient } = api.clients.get.useQuery({ id: Number(recipientId) }, {
-        enabled: !!recipientId
+    const { data: payment, isLoading: isLoadingPayment } = api.orchestrator.getPaymentState.useQuery({ paymentId: paymentId! }, {
+        enabled: !!paymentId
     })
 
-    const paymentDetails = useMemo<PaymentDetails>(() => ({
-        recipient: client!,
-        originAccount: account!,
-        fees: {
-            processingFee: 0.00,
-            serviceCharge: 0.00
-        },
-    }), [client, account])
+    const { data: client, isLoading: isLoadingClient } = api.clients.get.useQuery({ id: Number(payment?.recipient_id) }, {
+        enabled: !!payment?.recipient_id
+    })
 
     const [isConfirmed, setIsConfirmed] = useState(false)
     const [isProcessing, setIsProcessing] = useState(false)
@@ -84,12 +56,10 @@ export default function PayoutReview({ onEdit, onConfirm }: PayoutReviewProps) {
 
     const recipientAccount = useMemo(() => {
         if (client) {
-            return client.blockchain_accounts?.find(acc => acc.id === selectedAccount)
-                ?? client.fiat_accounts?.find(acc => acc.id === selectedAccount)
-                ?? client.ewallet_accounts?.find(acc => acc.id === selectedAccount)
+            return client.payment_destinations.find(dest => dest.id === payment?.destination)
         }
         return null;
-    }, [client, selectedAccount])
+    }, [client, payment])
 
     const isInstant = useMemo(() => {
         return (recipientAccount as BlockchainAccount)?.network === 'stellar'

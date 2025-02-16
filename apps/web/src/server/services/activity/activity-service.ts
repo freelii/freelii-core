@@ -1,11 +1,11 @@
-import { Invoice, Transactions, Wallet } from "@prisma/client";
+import { Invoice, PaymentOrchestrationState, Wallet } from "@prisma/client";
 import dayjs from "dayjs";
 import { BaseService } from "../base-service";
 
 
 interface ITransfer {
     type: 'transfer_out'
-    raw: Transactions
+    raw: PaymentOrchestrationState
 }
 
 interface INewWallet {
@@ -45,7 +45,7 @@ export class ActivityService extends BaseService {
         })
         const activity = this.summarizeWalletCreation(newWallets)
         // Transfer
-        const transactions = await this.db.transactions.findMany({
+        const payments = await this.db.paymentOrchestrationState.findMany({
             where: {
                 sender_id: Number(this.session.user.id),
                 created_at: {
@@ -56,7 +56,7 @@ export class ActivityService extends BaseService {
                 created_at: 'desc'
             }
         });
-        const transfers = this.summarizeTransfers(transactions)
+        const transfers = this.summarizeTransfers(payments)
         // Deposit
         // Withdrawal
         // Invoice received
@@ -115,14 +115,14 @@ export class ActivityService extends BaseService {
         return activity;
     }
 
-    summarizeTransfers(transactions: Transactions[]): ActivityMap {
+    summarizeTransfers(payments: PaymentOrchestrationState[]): ActivityMap {
         const activity: ActivityMap = {};
-        transactions.forEach(transaction => {
-            const timestamp = dayjs(transaction.created_at).unix();
+        payments.forEach(payment => {
+            const timestamp = dayjs(payment.created_at).unix();
             if (!activity[timestamp]) {
                 activity[timestamp] = [];
             }
-            activity[timestamp].push({ type: 'transfer_out', raw: transaction });
+            activity[timestamp].push({ type: 'transfer_out', raw: payment });
         });
         return activity;
     }

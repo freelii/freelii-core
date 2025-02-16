@@ -1,9 +1,11 @@
-import { EwalletProvider, FiatAccountType, Prisma, RecipientType, TransferMethod } from "@prisma/client";
+import { Prisma, RecipientType } from "@prisma/client";
 import { z } from "zod";
 import { BaseService } from "../base-service";
+import { PaymentAccountService } from "../payment-account/payment-account-service";
 import { ClientCreateSchema } from "./schemas/client-create.schema";
 import { ClientGetSchema } from "./schemas/client-get.schema";
 import { ClientSearchSchema } from "./schemas/client-search.schema";
+
 
 export class ClientService extends BaseService {
     /**
@@ -32,9 +34,13 @@ export class ClientService extends BaseService {
                 created_at: "desc",
             }, include: {
                 address: true,
-                fiat_accounts: true,
-                blockchain_accounts: true,
-                ewallet_accounts: true,
+                payment_destinations: {
+                    include: {
+                        fiat_account: true,
+                        blockchain_account: true,
+                        ewallet_account: true,
+                    }
+                },
             }
         });
     }
@@ -45,94 +51,46 @@ export class ClientService extends BaseService {
          * @returns The created client
          */
     async createClient(input: z.infer<typeof ClientCreateSchema>) {
-        const { name, email, tax_number, street, city, state, country, zipCode, paymentMethod, bankName, accountNumber, routingNumber, accountType, accountHolderName, walletAddress, network, ewalletProvider, mobileNumber, transferMethod } = input;
+        const { name, email, tax_number, street, city, state, country, zipCode, paymentAccount } = input;
 
-        return this.db.$transaction(async (tx) => {
-            const client = await tx.client.create({
+
+        const client = await this.db.client.create({
+            data: {
+                user_id: Number(this.session.user.id),
+                name,
+                email,
+                tax_number,
+                verification_status: "PENDING",
+                recipient_type: input.type === "company"
+                    ? RecipientType.BUSINESS
+                    : RecipientType.INDIVIDUAL,
+            },
+        });
+
+        // Address
+        if (street && city && country) {
+            await this.db.address.create({
                 data: {
-                    user_id: Number(this.session.user.id),
-                    name,
-                    email,
-                    tax_number,
-                    verification_status: "PENDING",
-                    recipient_type: input.type === "company"
-                        ? RecipientType.BUSINESS
-                        : RecipientType.INDIVIDUAL,
+                    client_id: client.id,
+                    street,
+                    city,
+                    country,
+                    zip_code: zipCode,
                 },
             });
-            // Address
-            if (street && city && country) {
-                const address = await tx.address.create({
-                    data: {
-                        client_id: client.id,
-                        street,
-                        city,
-                        country,
-                        zip_code: zipCode,
-                    },
-                });
-                console.log('Address created', address);
-            }
+        }
 
-            // Fiat Account
-            if (paymentMethod === "fiat") {
-                if (
-                    !accountNumber
-                ) {
-                    throw new Error("Missing required fields for fiat account");
-                }
-                const fiatAccount = await tx.fiatAccount.create({
-                    data: {
-                        client_id: client.id,
-                        alias: bankName ?? "",
-                        account_number: accountNumber,
-                        routing_number: routingNumber ?? "",
-                        account_type: accountType === "checking" ? FiatAccountType.CHECKING : FiatAccountType.SAVINGS,
-                        account_holder_name: accountHolderName ?? "",
-                        bank_name: bankName ?? "",
-                        bank_address: street ?? "",
-                        bank_city: city ?? "",
-                        bank_state: state ?? "",
-                        bank_zip: zipCode ?? "",
-                        iso_currency: "USD",
-                        transfer_method: transferMethod === "instapay" ? TransferMethod.PH_INSTAPAY : transferMethod === "pesonet" ? TransferMethod.PH_PESONET : undefined,
-                    },
-                });
-                console.log('Fiat account created', fiatAccount);
-            }
-            console.log('walletAddress', walletAddress);
-            console.log('network', network);
-            console.log('paymentMethod', paymentMethod);
-            if ((walletAddress && network) || paymentMethod === "blockchain") {
-                if (!walletAddress) {
-                    throw new Error(`Missing required fields for blockchain account ${walletAddress} ${network}`);
-                }
-                const blockchainAccount = await tx.blockchainAccount.create({
-                    data: {
-                        client_id: client.id,
-                        address: walletAddress,
-                        network: network ?? "stellar",
-                        environment: "testnet",
-                    },
-                });
-                console.log('Blockchain account created', blockchainAccount);
-            }
-            if (paymentMethod === "ewallet") {
-                if (!ewalletProvider || !mobileNumber) {
-                    throw new Error("Missing required fields for ewallet account");
-                }
-                const ewalletAccount = await tx.ewalletAccount.create({
-                    data: {
-                        client_id: client.id,
-                        mobile_number: mobileNumber,
-                        ewallet_provider: ewalletProvider === "gcash" ? EwalletProvider.PH_GCASH : ewalletProvider === "maya" ? EwalletProvider.PH_MAYA : ewalletProvider === "coins_ph" ? EwalletProvider.PH_COINS_PH : undefined,
-                        iso_currency: "PHP",
-                    },
-                });
-                console.log('Ewallet account created', ewalletAccount);
-            }
-            return client;
+        const paymentAccountService = new PaymentAccountService({
+            db: this.db,
+            session: this.session,
         });
+
+        if (!paymentAccount.accountHolderName) {
+            paymentAccount.accountHolderName = name;
+        }
+
+        await paymentAccountService.createPaymentAccount(paymentAccount, client.id);
+        return client;
     }
 
     async getClient(input: z.infer<typeof ClientGetSchema>) {
@@ -141,9 +99,13 @@ export class ClientService extends BaseService {
             where: { id, is_archived: false },
             include: {
                 address: true,
-                fiat_accounts: true,
-                blockchain_accounts: true,
-                ewallet_accounts: true,
+                payment_destinations: {
+                    include: {
+                        fiat_account: true,
+                        blockchain_account: true,
+                        ewallet_account: true,
+                    }
+                },
             }
         });
         if (client?.user_id !== Number(this.session.user.id)) {
@@ -159,6 +121,13 @@ export class ClientService extends BaseService {
             data: {
                 is_archived: true,
             }
+        });
+    }
+
+    async archiveMany(input: Array<number>) {
+        await this.db.client.updateMany({
+            where: { id: { in: input }, is_archived: false },
+            data: { is_archived: true },
         });
     }
 

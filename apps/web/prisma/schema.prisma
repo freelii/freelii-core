@@ -53,40 +53,43 @@ model User {
     emailVerified DateTime?
 
     // Relationships
-    generated_invoices  Invoice[]           @relation("GeneratedInvoices")
-    received_invoices   Invoice[]           @relation("ReceivedInvoices")
-    clients             Client[]
-    accounts            Account[]
-    sessions            Session[]
-    wallets             Wallet[]
-    transactions        Transactions[]
-    fiat_accounts       FiatAccount[]
-    ewallet_accounts    EwalletAccount[]
-    blockchain_accounts BlockchainAccount[]
+    generated_invoices        Invoice[]                   @relation("GeneratedInvoices")
+    received_invoices         Invoice[]                   @relation("ReceivedInvoices")
+    clients                   Client[]
+    accounts                  Account[]
+    sessions                  Session[]
+    wallets                   Wallet[]
+    transactions              Transactions[]
+    fiat_accounts             FiatAccount[]
+    ewallet_accounts          EwalletAccount[]
+    blockchain_accounts       BlockchainAccount[]
+    PaymentOrchestrationState PaymentOrchestrationState[]
 
     @@map("users")
 }
 
 // Client model
 model Client {
-    id                  Int                 @id @default(autoincrement())
-    name                String
-    email               String?
-    address             Address?
-    verification_status VerificationStatus  @default(PENDING)
-    recipient_type      RecipientType       @default(BUSINESS)
-    tax_number          String? // VAT/Tax ID
-    created_at          DateTime            @default(now())
-    updated_at          DateTime            @updatedAt
-    is_archived         Boolean             @default(false)
-    user_id             Int
+    id                           Int                         @id @default(autoincrement())
+    name                         String
+    email                        String?
+    address                      Address?
+    verification_status          VerificationStatus          @default(PENDING)
+    recipient_type               RecipientType               @default(BUSINESS)
+    tax_number                   String? // VAT/Tax ID
+    created_at                   DateTime                    @default(now())
+    updated_at                   DateTime                    @updatedAt
+    is_archived                  Boolean                     @default(false)
+    user_id                      Int
     // Relationships
-    user                User                @relation(fields: [user_id], references: [id])
-    invoices            Invoice[]           @relation("ClientInvoices")
-    transactions        Transactions[]
-    fiat_accounts       FiatAccount[]
-    blockchain_accounts BlockchainAccount[]
-    ewallet_accounts    EwalletAccount[]
+    user                         User                        @relation(fields: [user_id], references: [id])
+    invoices                     Invoice[]                   @relation("ClientInvoices")
+    transactions                 Transactions[]
+    fiat_accounts                FiatAccount[]
+    blockchain_accounts          BlockchainAccount[]
+    ewallet_accounts             EwalletAccount[]
+    payment_orchestration_states PaymentOrchestrationState[]
+    payment_destinations         PaymentDestination[]
 
     @@index([user_id])
     @@map("clients")
@@ -106,6 +109,8 @@ model BlockchainAccount {
 
     user_id Int?
     user    User? @relation(fields: [user_id], references: [id])
+
+    payment_destinations PaymentDestination[]
 
     @@index([client_id])
     @@index([user_id])
@@ -136,6 +141,8 @@ model FiatAccount {
     user_id Int?
     user    User? @relation(fields: [user_id], references: [id])
 
+    payment_destinations PaymentDestination[]
+
     @@index([client_id])
     @@index([user_id])
     @@map("fiat_accounts")
@@ -147,6 +154,7 @@ model EwalletAccount {
     updated_at DateTime @updatedAt
 
     iso_currency     String
+    account_number   String?
     mobile_number    String?
     ewallet_provider EwalletProvider?
 
@@ -155,6 +163,8 @@ model EwalletAccount {
 
     user_id Int?
     user    User? @relation(fields: [user_id], references: [id])
+
+    payment_destinations PaymentDestination[]
 
     @@index([client_id])
     @@index([user_id])
@@ -303,12 +313,13 @@ model Wallet {
     updated_at          DateTime @updatedAt
 
     // Relationships
-    user_id         Int
-    user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    balances        WalletBalance[] @relation("WalletToBalance")
-    main_balance_id String?
-    main_balance    WalletBalance?  @relation("MainBalance", fields: [main_balance_id], references: [id])
-    Transactions    Transactions[]
+    user_id                   Int
+    user                      User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+    balances                  WalletBalance[]             @relation("WalletToBalance")
+    main_balance_id           String?
+    main_balance              WalletBalance?              @relation("MainBalance", fields: [main_balance_id], references: [id])
+    Transactions              Transactions[]
+    PaymentOrchestrationState PaymentOrchestrationState[]
 
     @@unique([user_id, alias])
     @@unique([address, network])
@@ -343,6 +354,7 @@ enum TransactionType {
 }
 
 enum TransactionStatus {
+    NOT_STARTED
     PENDING
     COMPLETED
     FAILED
@@ -378,4 +390,89 @@ enum EwalletProvider {
     PH_GCASH
     PH_MAYA
     PH_COINS_PH
+}
+
+enum PaymentOrchestrationStatus {
+    NOT_STARTED
+    PENDING
+    SENT_TO_RECIPIENT
+    COMPLETED
+    FAILED
+}
+
+enum PaymentRail {
+    STELLAR
+    WIRE
+    ACH
+    SEPA
+    PH_INSTAPAY
+    PH_PESONET
+    MX_SPEI
+}
+
+model PaymentDestination {
+    id           String      @id @default(uuid())
+    created_at   DateTime    @default(now())
+    updated_at   DateTime    @updatedAt
+    payment_rail PaymentRail
+    currency     String
+    is_default   Boolean     @default(false)
+
+    // References to specific account types
+    fiat_account_id       String?
+    fiat_account          FiatAccount?       @relation(fields: [fiat_account_id], references: [id])
+    blockchain_account_id String?
+    blockchain_account    BlockchainAccount? @relation(fields: [blockchain_account_id], references: [id])
+    ewallet_account_id    String?
+    ewallet_account       EwalletAccount?    @relation(fields: [ewallet_account_id], references: [id])
+
+    // Relationship with Client
+    client_id Int
+    client    Client @relation(fields: [client_id], references: [id])
+
+    payment_orchestration_states PaymentOrchestrationState[]
+
+    @@index([client_id])
+    @@index([fiat_account_id])
+    @@index([blockchain_account_id])
+    @@index([ewallet_account_id])
+    @@map("payment_destinations")
+}
+
+model PaymentOrchestrationState {
+    id                   String                     @id @default(uuid())
+    created_at           DateTime                   @default(now())
+    updated_at           DateTime                   @updatedAt
+    status               PaymentOrchestrationStatus @default(NOT_STARTED)
+    tx_id                String?
+    tx_hash              String?
+    source_currency      String
+    target_currency      String
+    source_amount        Int
+    target_amount        Int
+    exchange_rate        Int
+    anchor               String
+    recipient_id         Int
+    sender_id            Int
+    wallet_id            String
+    sent_to_recipient_at DateTime?
+    sent_at              DateTime?
+    completed_at         DateTime?
+    failed_at            DateTime?
+    failed_reason        String?
+
+    // Destination
+    destination_id String?
+    destination    PaymentDestination? @relation(fields: [destination_id], references: [id])
+
+    // Relationships
+    recipient Client @relation(fields: [recipient_id], references: [id])
+    sender    User   @relation(fields: [sender_id], references: [id])
+    wallet    Wallet @relation(fields: [wallet_id], references: [id])
+
+    @@index([recipient_id])
+    @@index([sender_id])
+    @@index([wallet_id])
+    @@index([anchor])
+    @@map("payment_orchestration_states")
 }

@@ -1,9 +1,19 @@
+import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler";
+import { api } from "@/trpc/react";
 import { Badge, Button, Checkbox, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
 import { cn } from "@freelii/utils/functions";
-import { Address, BlockchainAccount, Client, EwalletAccount, FiatAccount, RecipientType, VerificationStatus } from "@prisma/client";
+import {
+    Address, BlockchainAccount,
+    Client,
+    EwalletAccount,
+    FiatAccount,
+    PaymentDestination,
+    RecipientType,
+    VerificationStatus
+} from "@prisma/client";
 import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import { Building2, CheckCircle2, Clock, CreditCard, Send, Shield, UserPlus } from "lucide-react";
+import { Archive, Building2, CheckCircle2, Clock, CreditCard, Send, Shield, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -13,73 +23,96 @@ import { FlagIcon } from "../shared/flag-icon";
 
 export type Recipient = Client & {
     address?: Address | null
-    fiat_accounts?: FiatAccount[]
-    blockchain_accounts?: BlockchainAccount[]
-    ewallet_accounts?: EwalletAccount[]
+    payment_destinations?: PaymentDestination[]
 }
 
-const getPaymentMethodLabel = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
-    if ('network' in account) {
-        return 'stellar'
+const getPaymentMethodLabel = (destination: PaymentDestination & {
+    ewallet_account?: EwalletAccount | null,
+    blockchain_account?: BlockchainAccount | null,
+    fiat_account?: FiatAccount | null
+}) => {
+    switch (destination.payment_rail) {
+        case 'STELLAR':
+            return destination.blockchain_account ? 'Stellar' : 'Unknown'
+        case 'PH_INSTAPAY':
+        case 'PH_PESONET':
+            if (destination.ewallet_account?.ewallet_provider) {
+                return destination.ewallet_account.ewallet_provider.replace('PH_', '')
+            }
+            if (destination.fiat_account) {
+                return destination.fiat_account.bank_name || 'Bank Transfer'
+            }
+            return 'Bank Transfer'
+        case 'WIRE':
+            return destination.fiat_account?.bank_name || 'Wire Transfer'
+        case 'ACH':
+            return destination.fiat_account?.bank_name || 'ACH'
+        case 'SEPA':
+            return destination.fiat_account?.bank_name || 'SEPA'
+        case 'MX_SPEI':
+            return destination.fiat_account?.bank_name || 'SPEI'
+        default:
+            return 'Unknown'
     }
-    // SPEI (Mexico)
-    if ('bank_name' in account && account.iso_currency === 'MXN') {
-        return 'SPEI'
-    }
-    // Philippines Bank
-    if ('bank_name' in account && account.iso_currency === 'PHP') {
-        return account.bank_name
-    }
-    // E-wallets (Philippines)
-    if ('ewallet_provider' in account && account.iso_currency === 'PHP' && account.ewallet_provider) {
-        return account.ewallet_provider.replace('PH_', '')
-    }
-    // Default case
-    return 'bank_name' in account ? account.bank_name : account.ewallet_provider?.replace('PH_', '')
 }
 
-
-const getPaymentMethodFlag = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
-    if ('network' in account) {
-        return 'USDC-Hardcoded'
-    }
-    return account.iso_currency
+const getPaymentMethodFlag = (destination: PaymentDestination) => {
+    return destination.currency
 }
 
-const getPaymentMethodDescription = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
-    if ('network' in account) {
-        return 'USDC'
+const getPaymentMethodDescription = (destination: PaymentDestination & {
+    ewallet_account?: EwalletAccount | null,
+    fiat_account?: FiatAccount | null
+}) => {
+    if (destination.ewallet_account?.mobile_number) {
+        return destination.ewallet_account.mobile_number
     }
-    return account.iso_currency
+    if (destination.fiat_account?.account_number) {
+        return `****${destination.fiat_account.account_number.slice(-4)}`
+    }
+    return destination.currency
 }
 
-const getAverageTransferTime = (account: FiatAccount | EwalletAccount | BlockchainAccount) => {
-    if ('network' in account) {
-        return 'Instant'
+const getAverageTransferTime = (destination: PaymentDestination) => {
+    switch (destination.payment_rail) {
+        case 'STELLAR':
+            return 'Instant'
+        case 'PH_INSTAPAY':
+            return '~15 minutes'
+        case 'PH_PESONET':
+            return '~2 hours'
+        case 'WIRE':
+            return '2-3 business days'
+        case 'ACH':
+            return '1-2 business days'
+        case 'SEPA':
+            return '1 business day'
+        default:
+            return 'Varies'
     }
-    if (account.iso_currency === 'MXN') {
-        return 'less than 1 hour'
-    }
-    if (account.iso_currency === 'PHP') {
-        return '~2 hours'
-    }
-    return '1-2 days'
 }
 
-const PaymentMethod = ({ account, defaultCollapsed = true }: { account: FiatAccount | EwalletAccount | BlockchainAccount, defaultCollapsed?: boolean }) => {
+const PaymentMethod = ({ destination, defaultCollapsed = true }: {
+    destination: PaymentDestination & {
+        ewallet_account?: EwalletAccount | null,
+        blockchain_account?: BlockchainAccount | null,
+        fiat_account?: FiatAccount | null
+    },
+    defaultCollapsed?: boolean
+}) => {
     return (
         <HoverCard>
             <HoverCardTrigger asChild>
                 <div className="flex items-center gap-1.5 bg-gray-50 rounded-full border border-gray-200 w-fit group px-1 py-1">
                     <FlagIcon
-                        currencyCode={getPaymentMethodFlag(account)}
+                        currencyCode={getPaymentMethodFlag(destination)}
                         size={16}
                     />
                     <span className={cn(
                         "text-xs font-medium",
                         !defaultCollapsed && "hidden group-hover:block"
                     )}>
-                        {getPaymentMethodLabel(account)}
+                        {getPaymentMethodLabel(destination)}
                     </span>
                 </div>
             </HoverCardTrigger>
@@ -87,13 +120,13 @@ const PaymentMethod = ({ account, defaultCollapsed = true }: { account: FiatAcco
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2">
                         <FlagIcon
-                            currencyCode={getPaymentMethodFlag(account)}
+                            currencyCode={getPaymentMethodFlag(destination)}
                             className="w-6 h-6"
                             size={20}
                         />
                         <div>
-                            <h4 className="text-sm font-medium">{getPaymentMethodLabel(account)}</h4>
-                            <p className="text-xs text-gray-500">{getPaymentMethodDescription(account)}</p>
+                            <h4 className="text-sm font-medium">{getPaymentMethodLabel(destination)}</h4>
+                            <p className="text-xs text-gray-500">{getPaymentMethodDescription(destination)}</p>
                         </div>
                     </div>
 
@@ -108,7 +141,7 @@ const PaymentMethod = ({ account, defaultCollapsed = true }: { account: FiatAcco
                         </div>
                         <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-500">Average transfer time</span>
-                            <span className="font-medium">{getAverageTransferTime(account)}</span>
+                            <span className="font-medium">{getAverageTransferTime(destination)}</span>
                         </div>
                         <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-500">Success rate</span>
@@ -118,7 +151,7 @@ const PaymentMethod = ({ account, defaultCollapsed = true }: { account: FiatAcco
 
                     <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md mt-1">
                         <Clock className="h-3 w-3 text-gray-500" />
-                        <span className="text-xs text-gray-600">Added on {dayjs(account.created_at).format('MMMM D, YYYY')}</span>
+                        <span className="text-xs text-gray-600">Added on {dayjs(destination.created_at).format('MMMM D, YYYY')}</span>
                     </div>
                 </div>
             </HoverCardContent>
@@ -235,11 +268,7 @@ export const columns: ColumnDef<Recipient>[] = [
         header: "Payment Methods",
         cell: ({ row }) => {
             const recipient = row.original
-            const fiatAccounts = recipient.fiat_accounts || []
-            const ewalletAccounts = recipient.ewallet_accounts || []
-            const blockchainAccounts = recipient.blockchain_accounts || []
-            const allAccounts = [...fiatAccounts, ...ewalletAccounts, ...blockchainAccounts]
-
+            const allAccounts = recipient.payment_destinations || [];
             if (allAccounts.length === 0) {
                 return (
                     <div className="text-xs text-gray-500 flex items-center gap-2">
@@ -253,13 +282,13 @@ export const columns: ColumnDef<Recipient>[] = [
 
             if (allAccounts.length === 1) {
                 return (
-                    <PaymentMethod account={allAccounts[0]!} />
+                    <PaymentMethod destination={allAccounts[0]!} />
                 )
             } else {
                 return (
                     <div className="flex flex-wrap gap-1">
                         {allAccounts.map((account) => (
-                            <PaymentMethod key={account.id} account={account} defaultCollapsed={false} />
+                            <PaymentMethod key={account.id} destination={account} defaultCollapsed={false} />
                         ))}
                     </div>
                 )
@@ -279,9 +308,10 @@ interface RecipientsTableProps {
 interface FloatingActionsBarProps {
     selectedCount: number;
     onClose: () => void;
+    onArchive: () => void;
 }
 
-const FloatingActionsBar = ({ selectedCount, onClose }: FloatingActionsBarProps) => {
+const FloatingActionsBar = ({ selectedCount, onClose, onArchive }: FloatingActionsBarProps) => {
     return (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center gap-6 z-50">
             <div className="flex items-center gap-2">
@@ -308,6 +338,15 @@ const FloatingActionsBar = ({ selectedCount, onClose }: FloatingActionsBarProps)
                 >
                     <Send className="h-4 w-4" />
                     Send verification amount
+                </Button>
+
+                <Button
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={onArchive}
+                >
+                    <Archive className="h-4 w-4" />
+                    Archive
                 </Button>
 
                 <Button
@@ -357,6 +396,25 @@ export function RecipientsTable({
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({})
+
+
+    // tRPC procedures
+    const utils = api.useUtils()
+    const { mutateAsync: archiveMany } = api.clients.archiveMany.useMutation({
+        onSuccess: () => {
+            toast.success('Recipients archived!')
+            utils.clients.invalidate()
+        },
+        onError: ClientTRPCErrorHandler
+    })
+
+    const handleArchiveMany = async () => {
+        const id = toast.loading('Archiving recipients...')
+        await archiveMany(Object.keys(rowSelection).map(Number)).finally(() => {
+            toast.dismiss(id)
+            setRowSelection({})
+        })
+    }
 
     const TableComponent = useReactTable({
         data: recipients,
@@ -478,6 +536,7 @@ export function RecipientsTable({
                 <FloatingActionsBar
                     selectedCount={selectedRows}
                     onClose={() => setRowSelection({})}
+                    onArchive={handleArchiveMany}
                 />
             )}
         </>

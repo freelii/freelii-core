@@ -2,9 +2,6 @@
 
 import { XLMIcon } from "@/ui/icons/xlm-icon";
 import {
-  ArrowsOppositeDirectionX,
-  ArrowsOppositeDirectionY,
-  CreditCard,
   Facebook,
   GreekTemple,
   InvoiceDollar,
@@ -43,36 +40,36 @@ const NAV_AREAS: SidebarNavAreas<{
           //   icon: ConnectedDots,
           //   href: `/${slug}/accounts${queryString}`,
           // },
-          {
-            name: "Deposits",
-            icon: ArrowsOppositeDirectionX,
-            href: `/${slug}/deposits${queryString}`,
-          },
-          {
-            name: "Withdrawals",
-            icon: ArrowsOppositeDirectionY,
-            href: `/${slug}/withdrawals${queryString}`,
-          },
+          // {
+          //   name: "Deposits",
+          //   icon: ArrowsOppositeDirectionX,
+          //   href: `/${slug}/deposits${queryString}`,
+          // },
+          // {
+          //   name: "Withdrawals",
+          //   icon: ArrowsOppositeDirectionY,
+          //   href: `/${slug}/withdrawals${queryString}`,
+          // },
           {
             name: "Payouts",
             icon: MoneyBills2,
             href: `/${slug}/payouts${queryString}`,
           },
-          {
-            name: "Invoices",
-            icon: InvoiceDollar,
-            href: `/${slug}/invoices${queryString}`,
-          },
+          // {
+          //   name: "Invoices",
+          //   icon: InvoiceDollar,
+          //   href: `/${slug}/invoices${queryString}`,
+          // },
           {
             name: "Recipients",
             icon: Users6,
             href: `/${slug}/recipients${queryString}`,
           },
-          {
-            name: "Cards",
-            icon: CreditCard,
-            href: `/${slug}/cards${queryString}`,
-          },
+          // {
+          //   name: "Cards",
+          //   icon: CreditCard,
+          //   href: `/${slug}/cards${queryString}`,
+          // },
           // {
           //   name: "Deposits",
           //   icon: CreditCard,

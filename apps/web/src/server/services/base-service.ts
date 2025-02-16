@@ -1,7 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
+import type { DefaultArgs } from "@prisma/client/runtime/library";
+
+export type Connection = Omit<
+    PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 export interface BaseServiceOptions {
-    db: PrismaClient;
+    db: Connection;
     session?: {
         user: {
             id: string;
@@ -10,7 +16,7 @@ export interface BaseServiceOptions {
 }
 
 export class BaseService {
-    protected db: PrismaClient;
+    protected db: Connection;
     protected session: {
         user: {
             id: string;

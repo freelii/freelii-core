@@ -3,7 +3,6 @@
 import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { api } from "@/trpc/react"
 import { ITransactionDetails } from "@/ui/transactions-table/transaction-details"
-import TransactionsTable from "@/ui/transactions-table/transactions-table"
 import { useWallet } from "@/wallet/useWallet"
 import { Button, LoadingSpinner } from "@freelii/ui"
 import { fromStroops } from "@freelii/utils/functions"
@@ -148,7 +147,7 @@ export default function PageClient() {
           </div>
 
           {/* Recent Transactions */}
-          <div className="border border-gray-200 rounded-lg bg-white">
+          {/* <div className="border border-gray-200 rounded-lg bg-white">
             <div className="p-4 flex items-center justify-between">
               <h2 className="text-xl font-semibold">Recent Transactions</h2>
               <div className="flex items-center gap-2">
@@ -156,10 +155,10 @@ export default function PageClient() {
                   <Clock className="h-4 w-4 mr-2" />
                   Scheduled
                 </Button> */}
-                {/* <Link href="/dashboard/transactions">
+          {/* <Link href="/dashboard/transactions">
                   <Button variant="ghost" className="text-sm">View All</Button>
                 </Link> */}
-              </div>
+          {/* </div>
             </div>
             <TransactionsTable
               isLoading={isLoadingTx}
@@ -167,7 +166,7 @@ export default function PageClient() {
               onRowClick={handleTransactionClick}
               selectedRowId={selectedTransaction?.id}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Right Column - Network Details & Activity */}
@@ -216,7 +215,12 @@ export default function PageClient() {
                       <div className="flex-1">
                         <p className="text-sm">
                           <span className="text-xs font-medium text-gray-600">
-                            {fromStroops(activity.raw.amount, 2)}
+                            {(activity.raw.source_amount / 100).toLocaleString('en-US', {
+                              style: 'currency',
+                              currency: activity.raw.source_currency === "USDC" ? "USD" : activity.raw.source_currency,
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
                           </span>
                           <span className="ml-1">payment sent </span>
                         </p>

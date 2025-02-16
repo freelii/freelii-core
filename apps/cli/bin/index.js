@@ -45,7 +45,7 @@ program
 
 
         const coinsPHService = new CoinsPHService();
-        const account = await coinsPHService.getAccount();
+        let account = await coinsPHService.getAccount();
         if (!account.success) {
             console.error('Error fetching account', account);
             console.error(account.error);
@@ -79,30 +79,35 @@ program
             targetAmount: amount.toString()
         });
 
-        const quoteResponse = await coinsPHService.getQuote({
+        const quoteResponse = await coinsPHService.requestQuote({
             sourceCurrency: sourceCurrency,
             targetCurrency: targetCurrency,
             targetAmount: amount.toString()
         });
-        if (!quoteResponse.success) {
-            console.error('Error getting quote', quoteResponse);
-            console.error(quoteResponse.error);
-            return;
-        }
-        const quote = quoteResponse.res;
 
-        console.log(quote);
+        const targetAmount = quoteResponse.targetAmount;
+        const exchangeRate = quoteResponse.exchangeRate;
+        const quoteId = quoteResponse.quoteId;
+        const sourceAmount = Number(targetAmount) / exchangeRate;
+
+        console.log('quoteResponse', quoteResponse);
+        console.log('targetAmount', targetAmount);
+        console.log('sourceAmount', sourceAmount);
+        console.log('exchangeRate', exchangeRate);
+        console.log('quoteId', quoteId);
+
+
 
         console.log('\n📊 Quote Summary:');
-        console.log(`You will get: ${targetAmount.toLocaleString(undefined, { style: 'currency', currency: targetCurrency === "USDC" ? "USD" : targetCurrency })} for ${sourceAmount.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}`);
-        console.log(`Rate: ${quote.exchangeRate.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}`);
+        console.log(`You will get: ${targetAmount} ${targetCurrency} for ${sourceAmount} ${sourceCurrency}`);
+        console.log(`Rate: ${exchangeRate}`);
 
         // Confirm transaction
         const shouldProceed = await confirm({
             message: 'Would you like to proceed with this exchange?',
         });
         if (shouldProceed) {
-            const confirm = await coinsPHService.acceptQuote(quote.quoteId);
+            const confirm = await coinsPHService.acceptQuote(quoteId);
             console.log(confirm);
             if (!confirm.success) {
                 console.error('Error confirming quote', confirm);
@@ -114,10 +119,10 @@ program
             console.log(`\n${amount.toLocaleString(undefined, { style: 'currency', currency: targetCurrency === "USDC" ? "USD" : targetCurrency })} deposited to your account!`);
             console.log(`\nConversion Cost: ${sourceAmount.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}!`);
 
-            const account = await coinsPHService.getAccount();
+            account = await coinsPHService.getAccount();
             // Show current balances
             console.log('\n💰 New Balances:');
-            account.balances.forEach((balance) => {
+            account.res?.balances?.forEach((balance) => {
                 console.log(`${balance.asset}: ${balance.free.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
             });
         } else {
@@ -145,7 +150,7 @@ program
 
 
         const coinsPHService = new CoinsPHService();
-        const account = await coinsPHService.getAccount();
+        let account = await coinsPHService.getAccount();
         if (!account.success) {
             console.error('Error fetching account', account);
             console.error(account.error);
@@ -224,12 +229,20 @@ program
             console.log(`\n${amount.toLocaleString(undefined, { style: 'currency', currency: targetCurrency === "USDC" ? "USD" : targetCurrency })} deposited to your account!`);
             console.log(`\nConversion Cost: ${sourceAmount.toLocaleString(undefined, { style: 'currency', currency: sourceCurrency === "USDC" ? "USD" : sourceCurrency })}!`);
 
-            const account = await coinsPHService.getAccount();
-            // Show current balances
+            account = await coinsPHService.getAccount();
+            if (!account.success) {
+                console.error('Error fetching account', account);
+                console.error(account.error);
+                return;
+            }
+
+            // Show new balances
             console.log('\n💰 New Balances:');
-            account.balances.forEach((balance) => {
+            account.res?.balances?.forEach((balance) => {
+                BALANCES[balance.asset] = balance.free;
                 console.log(`${balance.asset}: ${balance.free.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
             });
+
         } else {
             console.log('\n❌ Transaction cancelled');
         }

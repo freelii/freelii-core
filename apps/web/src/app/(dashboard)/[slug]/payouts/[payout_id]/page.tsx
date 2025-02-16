@@ -1,211 +1,654 @@
 "use client"
 
-import { useFixtures } from "@/fixtures/useFixtures"
+import { useWalletStore } from "@/hooks/stores/wallet-store"
+import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
+import { InstantBadge } from "@/ui/shared/badges/instant-badge"
+import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
-import { Badge, BlurImage, MaxWidthWrapper, Separator } from "@freelii/ui"
-import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, fromFormattedToNumber, noop, pluralize, toUSD } from "@freelii/utils"
-import { Building2, CheckCircle2, Download } from "lucide-react"
+import { useWallet } from "@/wallet/useWallet"
+import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, MaxWidthWrapper, Separator } from "@freelii/ui"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
+import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import { AnimatePresence, motion } from "framer-motion"
+import { Check, Download, Edit2, XCircle } from "lucide-react"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
-import { type Payout } from "../../payouts/page-payouts"
+import toast from "react-hot-toast"
+import { AccountDetails } from "../new/steps/account-details"
 import { PayoutNotFound } from "./payout-not-found"
 
+dayjs.extend(relativeTime)
+
 export default function PayoutDetailsPage() {
-    const params = useParams()
-    const { getSinglePayout } = useFixtures()
-    const [payoutDetails, setPayoutDetails] = useState<Payout | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const { account, transfer } = useWallet();
+    const { setSelectedWalletId, selectedWalletId } = useWalletStore();
+    const params = useParams();
+    const paymentId = params?.payout_id as string;
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [transferStep, setTransferStep] = useState<'idle' | 'initiating' | 'processing' | 'confirming'>('idle');
 
     useEffect(() => {
-        const fetchPayout = async () => {
-            try {
-                const payout = await getSinglePayout(params.payout_id as string)
-                setPayoutDetails(payout ?? null)
-            } catch (error) {
-                console.error('Error fetching payout:', error)
-            } finally {
-                setIsLoading(false)
-            }
+        if (account && account.id !== selectedWalletId) {
+            setSelectedWalletId(account.id);
         }
+    }, [account, selectedWalletId]);
 
-        fetchPayout().then(noop).catch(noop)
-    }, [params.payout_id, getSinglePayout])
+    // tRPC procedures
+    const { mutateAsync: processPaymentSettled, isPending: isProcessingPaymentSettled } = api.orchestrator.processPaymentSettled.useMutation();
+    const { data: payment, isLoading: isLoadingPayment } = api.orchestrator.getPaymentState.useQuery({ paymentId: paymentId! }, {
+        enabled: !!paymentId
+    })
+    const { data: paymentInstructions, isLoading: isLoadingPaymentInstructions } = api.orchestrator.getPaymentInstructions.useQuery({ paymentId: paymentId! }, {
+        enabled: !!paymentId
+    })
+    const { mutateAsync: confirmBlockchainConfirmation } = api.orchestrator.confirmBlockchainConfirmation.useMutation({})
 
-    if (isLoading) {
-        return <div>Loading...</div> // Replace with proper loading component
-    }
+    // Show loading state if data is being fetched
+    if (isLoadingPayment) {
+        return (
+            <div className="w-full relative space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] gap-6">
+                    {/* Left side skeleton */}
+                    <div className="space-y-6">
+                        <div className="p-6 rounded-lg border border-gray-200 animate-pulse">
+                            <div className="space-y-6">
+                                {/* Recipient skeleton */}
+                                <div className="flex items-start gap-3">
+                                    <div className="size-12 rounded-full bg-gray-200" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-4 bg-gray-200 rounded w-1/2" />
+                                        <div className="h-3 bg-gray-200 rounded w-2/3" />
+                                    </div>
+                                </div>
 
-    if (!payoutDetails) {
-        return <PayoutNotFound />
-    }
-
-    const totalAmount = toUSD(fromFormattedToNumber(payoutDetails.amount), payoutDetails.currency)
-    const processingFee = fromFormattedToNumber(payoutDetails.amount) * 0.001
-    const serviceCharge = 10
-    const totalFees = processingFee + serviceCharge
-    const finalTotal = totalAmount + totalFees
-
-    return (
-        <PageContent title="Payout Details">
-            <MaxWidthWrapper>
-                <div className="w-full relative space-y-6 animate-in fade-in duration-300">
-                    {/* Header with Status */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Badge className="bg-green-50 text-green-700">
-                                <CheckCircle2 className="size-3" />
-                                {payoutDetails.progress}
-                            </Badge>
-                            <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
-                                <Download className="size-4" />
-                                Download Receipt
-                            </button>
+                                {/* Account details skeleton */}
+                                <div className="space-y-3 pt-4">
+                                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                                    <div className="h-10 bg-gray-200 rounded" />
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-[2fr,1fr] gap-6">
-                        {/* Left side - Payment Details */}
+                    {/* Right side skeleton */}
+                    <div className="space-y-6">
+                        <div className="p-6 rounded-lg border border-gray-200 animate-pulse">
+                            <div className="grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-6">
+                                <div className="space-y-6">
+                                    {/* Payment details header skeleton */}
+                                    <div className="space-y-2">
+                                        <div className="h-5 bg-gray-200 rounded w-1/3" />
+                                        <div className="h-4 bg-gray-200 rounded w-2/3" />
+                                    </div>
+
+                                    {/* Payment breakdown skeleton */}
+                                    <div className="space-y-4 pt-4">
+                                        {[1, 2, 3, 4].map((_, i) => (
+                                            <div key={i} className="flex justify-between items-center">
+                                                <div className="h-4 bg-gray-200 rounded w-1/3" />
+                                                <div className="h-4 bg-gray-200 rounded w-1/4" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Timeline skeleton */}
+                                <div className="space-y-4 pl-3">
+                                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                                    <div className="space-y-6 pt-4">
+                                        {[1, 2, 3].map((_, i) => (
+                                            <div key={i} className="pl-8 border-l-2 border-gray-200">
+                                                <div className="space-y-2">
+                                                    <div className="h-3 bg-gray-200 rounded w-1/2" />
+                                                    <div className="h-2 bg-gray-200 rounded w-1/3" />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    const hasRequiredData = account && payment && payment?.recipient && payment.destination;
+
+    if (!payment) {
+        return <PayoutNotFound />
+    }
+
+    // Show error state if required data is missing
+    if (!hasRequiredData) {
+        return (
+            <div className="w-full h-[600px] flex items-center justify-center">
+                <div className="text-center space-y-4">
+                    <div className="size-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+                        <XCircle className="size-6 text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                        <p className="font-medium">Invalid Payment Details</p>
+                        <p className="text-sm text-gray-500">
+                            {!payment.recipient ? "Recipient not found. " : ""}
+                            {!payment.destination ? "Payment method not selected. " : ""}
+                            {!account ? "Wallet not connected. " : ""}
+                            Please try again.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (payment?.wallet_id !== selectedWalletId) {
+        return (<div className="w-full h-[600px] flex items-center justify-center">
+            <div className="text-center space-y-4">
+                <div className="size-12 rounded-full bg-red-50 flex items-center justify-center mx-auto">
+                    <XCircle className="size-6 text-red-500" />
+                </div>
+                <div className="space-y-2">
+                    <p className="font-medium">Invalid Wallet</p>
+                    <span className="text-sm text-gray-500">
+                        {`Please select the correct wallet to view this payout.`}
+                        <br />
+                        Selected wallet: {payment?.wallet_id}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                        Current wallet: {selectedWalletId}
+                    </span>
+                    <p className="text-sm text-gray-500">
+                        Please try again.
+                    </p>
+                </div>
+            </div>
+        </div>)
+    }
+
+    const handleTransfer = async () => {
+        try {
+            if (!payment) {
+                toast.error("Payment not found")
+                return;
+            }
+
+            if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(payment.source_amount))) {
+                toast.error("Insufficient balance")
+                return;
+            } else if (Number(payment.source_amount) <= 0) {
+                toast.error("Invalid amount for payment")
+                return;
+            }
+
+            setIsProcessing(true)
+            setTransferStep('initiating')
+
+            const liquidationAddress = paymentInstructions?.walletAddress;
+            if (!liquidationAddress) {
+                toast.error("Liquidation address not found")
+                return;
+            }
+
+            setTransferStep('processing')
+
+            // Start a timer to update the UI after 1 second
+            setTimeout(() => {
+                setTransferStep('confirming')
+            }, 2500)
+
+            // Perform the transfer
+            const at = await transfer({
+                to: liquidationAddress,
+                amount: toStroops(Number(payment.source_amount)),
+                sacAddress: TESTNET.XLM_SAC
+            })
+
+            if (at?.txHash) {
+                await confirmBlockchainConfirmation({
+                    paymentId: payment.id,
+                    txId: at?.txHash,
+                    txHash: at?.txHash,
+                });
+            }
+
+            setIsProcessing(false)
+            setIsConfirmed(true)
+            setTransferStep('idle')
+        } catch (error) {
+            console.error(error)
+            toast.error("Error processing payment")
+            setIsProcessing(false)
+            setTransferStep('idle')
+        }
+    }
+
+    const currencyCode = payment?.source_currency;
+    const totalCost = parseInt(payment?.source_amount, 10) / 100;
+    const recipientAmount = parseInt(payment?.target_amount, 10) / 100;
+    const isEwallet = !!payment?.destination?.ewallet_account;
+    const isInstant = payment?.is_instant;
+
+    const onEdit = () => {
+        console.log('onEdit')
+    }
+
+    const handleConfirm = () => {
+        console.log('handleConfirm')
+    }
+
+    const loadingStates = {
+        initiating: {
+            title: "Initiating Transfer",
+            description: "Please wait while we prepare your transfer..."
+        },
+        processing: {
+            title: "Processing Payment",
+            description: "Your payment is being processed ..."
+        },
+        confirming: {
+            title: "Confirming Transaction",
+            description: "Almost done! Confirming your transaction..."
+        }
+    }
+
+    return (
+        <PageContent>
+            <MaxWidthWrapper className="space-y-6 p-10">
+                <div className="w-full relative space-y-6">
+                    {/* Title Section */}
+                    <div className="border-b border-gray-200 pb-5">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <h1 className="text-2xl font-semibold text-gray-900">Review Payment</h1>
+                                <div className="flex items-center gap-2">
+                                    <StatusBadge text={payment?.status} />
+                                    <span className="text-sm text-gray-500">
+                                        Created {dayjs(payment?.created_at).fromNow()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-[1fr,2fr] gap-6">
+                        {/* Left side - Recipient Details */}
                         <div className="space-y-6">
                             <div className="p-6 rounded-lg border border-gray-200">
+                                <div className="space-y-6">
+                                    {/* Recipient Card */}
+                                    <div className="">
+                                        <div className="flex items-start gap-3">
+                                            <BlurImage
+                                                src={`${DICEBEAR_SOLID_AVATAR_URL}${payment?.recipient?.name}`}
+                                                width={48}
+                                                height={48}
+                                                alt={payment?.recipient?.name}
+                                                className="size-12 shrink-0 overflow-hidden rounded-full"
+                                            />
+                                            <div className="flex-1">
+                                                <p className="font-medium">{payment?.recipient.name}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-xs text-gray-500">{payment?.recipient?.email}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <AccountDetails selectedAccount={payment?.destination} />
+                                    </div>
+
+                                    <Separator />
+
+                                    {/* Origin Account */}
+                                    <div className="">
+                                        <h4 className="text-sm font-medium mb-3">Paying From</h4>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium">{account.alias}</span>
+                                                {/* <span className="text-xs text-gray-500">
+                                        {shortAddress(paymentDetails.originAccount?.address)}
+                                    </span> */}
+                                            </div>
+
+                                            <div className="flex items-start justify-between gap-3">
+
+                                                <div className="flex flex-col items-end">
+                                                    <div className="flex items-center gap-1">
+                                                        {/* <FlagIcon
+                                                currencyCode={CURRENCIES.USDC?.shortName}
+                                                className="size-3"
+                                            /> */}
+                                                        <span className="text-sm font-medium">
+                                                            {fromStroops(account.main_balance?.amount ?? 0, 2)}
+                                                        </span>
+                                                    </div>
+                                                    {hasEnoughBalance(account?.main_balance?.amount ?? 0, toStroops(payment?.source_amount ?? 0)) ?
+                                                        <span className="text-[10px] text-gray-500">Available balance</span> :
+                                                        <span className="text-[10px] text-red-500">Insufficient balance</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right - Payment Details */}
+                        <div className="space-y-6">
+                            <div className="p-6 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-[2fr,1fr] gap-6">
                                 <div className="space-y-6">
                                     <div>
                                         <h3 className="font-medium text-lg">Payment Details</h3>
                                         <p className="text-sm text-gray-500 mt-2">
-                                            Payment to {payoutDetails.recipients.length} {pluralize(payoutDetails.recipients.length, 'recipient')}
+                                            Review the payment breakdown before confirming
                                         </p>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        {/* Cost Breakdown */}
+                                    <div className="mt-6 space-y-6">
+                                        <Separator />
+                                        {/* Amount and FX Details */}
                                         <div className="space-y-3">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-gray-600">Total amount</span>
-                                                <span className="font-medium flex items-center gap-1">
-                                                    <FlagIcon currencyCode={payoutDetails.currency} size={12} />
-                                                    {CURRENCIES[payoutDetails.currency]?.symbol}
-                                                    {totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                                </span>
-                                            </div>
 
-                                            <Separator />
 
+                                            {/* FX Details */}
+                                            {currencyCode !== "USD" && <div className="rounded-lg bg-gray-50 p-3 space-y-2">
+                                                <div className="flex justify-between text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex">
+                                                            <FlagIcon
+                                                                currencyCode={payment.source_currency}
+                                                                className="size-4 rounded-full border-2 border-white"
+                                                            />
+                                                            <FlagIcon
+                                                                currencyCode={payment.target_currency}
+                                                                className="size-4 -ml-2 rounded-full border-2 border-white"
+                                                            />
+
+                                                        </div>
+                                                        <span>Exchange Rate</span>
+                                                    </div>
+                                                    <span className="flex items-center gap-2 font-medium">
+                                                        <Badge className="flex items-center gap-1.5 py-0.5 pl-1 pr-2">
+                                                            <FlagIcon
+                                                                currencyCode={payment.target_currency}
+                                                                className="size-4"
+                                                            />
+                                                            {CURRENCIES[payment.target_currency ?? "USD"]?.symbol}
+                                                            {(Number(payment?.exchange_rate) / 100.00).toFixed(2)}
+                                                        </Badge>
+                                                    </span>
+                                                </div>
+                                            </div>}
+
+                                            {/* Fees */}
                                             <div className="space-y-2">
                                                 <div className="flex justify-between text-sm">
-                                                    <span className="text-gray-600">Processing fee</span>
-                                                    <span className="font-medium flex items-center gap-1">
-                                                        <FlagIcon currencyCode={payoutDetails.currency} size={12} />
-                                                        {CURRENCIES[payoutDetails.currency]?.symbol}
-                                                        {processingFee.toFixed(2)}
+                                                    <span className="text-gray-600">Processing fee (free)</span>
+                                                    <span className="font-medium">
+                                                        $0.00
                                                     </span>
                                                 </div>
 
                                                 <div className="flex justify-between text-sm">
                                                     <span className="text-gray-600">Service charge</span>
-                                                    <span className="font-medium flex items-center gap-1">
-                                                        <FlagIcon currencyCode={payoutDetails.currency} size={12} />
-                                                        {CURRENCIES[payoutDetails.currency]?.symbol}
-                                                        {serviceCharge.toFixed(2)}
+                                                    <span className="font-medium">
+                                                        $0.00
                                                     </span>
                                                 </div>
                                             </div>
 
                                             <Separator />
 
+                                            {/* Total */}
                                             <div className="flex justify-between text-sm font-medium">
                                                 <span>Total cost</span>
                                                 <span className="flex items-center gap-1">
-                                                    <FlagIcon currencyCode={payoutDetails.currency} size={12} />
-                                                    {CURRENCIES[payoutDetails.currency]?.symbol}
-                                                    {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                    {/* <FlagIcon
+                                            currencyCode={account.main_balance?.currency}
+                                            size={16}
+                                        /> */}
+                                                    {totalCost.toLocaleString('en-US', { style: 'currency', currency: payment.source_currency === "USDC" ? "USD" : payment.source_currency, minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Timestamps */}
-                            <div className="p-4 rounded-lg border border-gray-200">
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-600">Next Payment</span>
-                                        <span>{new Date(payoutDetails.nextPayment).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right side - Recipients */}
-                        <div className="p-6 rounded-lg border border-gray-200">
-                            <div className="space-y-6">
-                                <div>
-                                    <h3 className="font-medium text-lg">Recipients</h3>
-                                    <div className="flex items-center gap-2 mt-3">
-                                        <div className="flex -space-x-2">
-                                            {payoutDetails.recipients.map((recipient, index) => (
-                                                <BlurImage
-                                                    key={recipient.id}
-                                                    src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
-                                                    width={12}
-                                                    height={12}
-                                                    alt={recipient.name}
-                                                    className="size-6 shrink-0 overflow-hidden rounded-full border-2 border-white"
-                                                    style={{ zIndex: payoutDetails.recipients.length - index }}
-                                                />
-                                            ))}
-                                        </div>
-                                        <div className="text-sm text-gray-600">
-                                            {payoutDetails.recipients.map((recipient, index) => (
-                                                <span key={recipient.id}>
-                                                    {index > 0 && index === payoutDetails.recipients.length - 1 && " and "}
-                                                    {index > 0 && index < payoutDetails.recipients.length - 1 && ", "}
-                                                    {recipient.name}
+                                            <div className="flex font-medium justify-between text-sm">
+                                                <span>Recipient will receive</span>
+                                                <span className=" flex items-center gap-1">
+                                                    {isInstant && <FlagIcon
+                                                        currencyCode={payment.target_currency}
+                                                        size={16}
+                                                    />}
+                                                    {payment.target_currency !== "USD" && <FlagIcon
+                                                        currencyCode={payment.target_currency}
+                                                        size={16}
+                                                    />}
+                                                    {recipientAmount.toLocaleString('en-US', { style: 'currency', currency: payment.target_currency === "USDC" ? "USD" : payment.target_currency, minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
-                                            ))}
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
+                                {/* Right */}
+                                <div className="space-y-6">
+                                    <div className="pl-3">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                Payment Timeline
+                                            </p>
+                                        </div>
 
-                                <div className="space-y-4">
-                                    {payoutDetails.recipients.map((recipient) => (
-                                        <div key={recipient.id} className="rounded-lg border border-gray-200 p-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <BlurImage
-                                                        src={`${DICEBEAR_SOLID_AVATAR_URL}${recipient.name}`}
-                                                        width={12}
-                                                        height={12}
-                                                        alt={recipient.name}
-                                                        className="size-8 shrink-0 overflow-hidden rounded-full"
-                                                    />
-                                                    <div>
-                                                        <p className="font-medium">{recipient.name}</p>
-                                                        {recipient.bankingDetails && (
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <Building2 className="size-3 text-gray-500" />
-                                                                <span className="text-xs text-gray-500">{recipient.bankingDetails.name}</span>
+                                        <div className="mt-4">
+                                            {/* Timeline steps */}
+                                            <div className="relative pl-8 border-l-2 border-blue-500 pb-6">
+                                                <div className="absolute left-0 -translate-x-[11px] size-5 rounded-full bg-blue-500 ring-4 ring-white" />
+                                                <div>
+                                                    <p className="font-medium text-sm text-gray-900">Payment Initiated</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">Today at {dayjs().format('h:mm A')}</p>
+                                                </div>
+                                            </div>
+
+
+                                            {!isInstant && (
+                                                <div className={cn("relative pl-8 border-l-2 border-gray-200 pb-6", !!payment.sent_to_recipient_at ? "border-blue-500" : "border-gray-200")}>
+                                                    {isProcessing ? (
+                                                        <>
+                                                            <div className="absolute left-0 -translate-x-[11px] size-5 rounded-full bg-blue-100 ring-4 ring-white flex items-center justify-center">
+                                                                <LoadingSpinner className="size-3 text-blue-500" />
                                                             </div>
-                                                        )}
-                                                    </div>
+                                                            <div className="animate-pulse">
+                                                                <p className="font-medium text-sm text-gray-900">Processing Payment</p>
+                                                                <p className="text-xs text-gray-500 mt-0.5">Validating transaction...</p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className={cn("absolute left-0 -translate-x-[11px] size-5 rounded-full bg-gray-100 ring-4 ring-white", !!payment.sent_to_recipient_at ? "bg-blue-500" : "bg-gray-100")} />
+                                                            <div>
+                                                                <p className="font-medium text-sm text-gray-900">{!!payment.sent_at ? "Processed" : "Processing"}</p>
+                                                                {payment.sent_at ? <p className="text-xs text-gray-500 mt-0.5">{dayjs(payment.sent_at).fromNow()}</p> :
+                                                                    <p className="text-xs text-gray-500 mt-0.5">Waiting for confirmation</p>
+                                                                }
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
+                                            )}
 
-                                                <div className="flex flex-col items-end">
-                                                    <div className="flex items-center gap-1">
-                                                        <FlagIcon currencyCode={payoutDetails.currency} size={12} />
-                                                        <span className="text-sm font-medium">
-                                                            {CURRENCIES[payoutDetails.currency]?.symbol}
-                                                            {(fromFormattedToNumber(payoutDetails.amount) / payoutDetails.recipients.length).toLocaleString()}
-                                                        </span>
+                                            {payment.sent_to_recipient_at && <div className="relative pl-8 border-l-2 border-gray-200 pb-6">
+                                                <div className={cn("absolute left-0 -translate-x-[11px] size-5 rounded-full bg-gray-100 ring-4 ring-white", !!payment.sent_to_recipient_at ? "bg-blue-500" : "bg-gray-100")} />
+                                                <div>
+                                                    <p className="font-medium text-sm text-gray-900">Sent to recipient</p>
+                                                    <p className="text-xs text-gray-500 mt-0.5">{dayjs(payment.sent_to_recipient_at).fromNow()}</p>
+                                                </div>
+                                            </div>}
+
+
+                                            <div className="relative pl-8 border-l-2 border-transparent">
+                                                <div className="absolute left-0 -translate-x-[11px] size-5 rounded-full bg-gray-100 ring-4 ring-white" />
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-medium text-sm text-gray-900">
+                                                            Expected Delivery
+                                                        </p>
+                                                        {isInstant && <InstantBadge />}
                                                     </div>
+                                                    <p className="text-xs text-gray-500 mt-0.5">
+                                                        {isInstant ? (
+                                                            "Instant delivery"
+                                                        ) : (
+                                                            isEwallet ? "1-2 hours" : `Within 24 hours`
+                                                        )}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
-                                    ))}
+
+                                        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                            <p className="text-xs text-gray-600">
+                                                All times are shown in your local timezone
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center justify-end">
+
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" onClick={onEdit} className="gap-2 text-xs">
+                                        <Edit2 className="size-4" />
+                                        Edit
+                                    </Button>
+                                    <Button disabled={isProcessing} onClick={handleTransfer}
+                                        className={cn(
+                                            "gap-2",
+                                            isProcessing && "opacity-50 py-3 px-6 w-full"
+                                        )}
+                                    >
+                                        {isProcessing ?
+                                            <LoadingDots className="size-4" color="white" /> :
+                                            "Confirm Payment"
+                                        }
+                                    </Button>
+                                    <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId: paymentId! })}
+                                        className={cn(
+                                            "gap-2",
+                                            isProcessing && "opacity-50 py-3 px-6 w-full"
+                                        )}
+                                    >
+                                        {isProcessingPaymentSettled ?
+                                            <LoadingDots className="size-4" color="white" /> :
+                                            "Process Payment"
+                                        }
+                                    </Button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+
+                    <AnimatePresence>
+                        {isConfirmed && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center"
+                            >
+                                <motion.div
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 0.9, opacity: 0 }}
+                                    className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 space-y-6 text-center"
+                                >
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ delay: 0.2, type: "spring" }}
+                                        className="size-16 rounded-full bg-green-100 mx-auto flex items-center justify-center"
+                                    >
+                                        <Check className="size-8 text-green-600" />
+                                    </motion.div>
+
+                                    <div className="space-y-2">
+                                        <h2 className="text-2xl font-semibold">Payment Confirmed!</h2>
+                                        <p className="text-gray-500">
+                                            Your payment of ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })} has been processed.
+                                            We&apos;ve sent you a confirmation email.
+                                        </p>
+                                    </div>
+
+                                    <div className="pt-4 space-y-3">
+                                        <Button
+                                            variant="outline"
+                                            className="w-full gap-2"
+                                            onClick={() => {
+                                                // Add download logic here
+                                            }}
+                                        >
+                                            <Download className="size-4" />
+                                            Download Confirmation
+                                        </Button>
+
+                                        <Button
+                                            className="w-full"
+                                            onClick={() => {
+                                                window.location.href = '/dashboard'
+                                            }}
+                                        >
+                                            Return to Dashboard
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {isProcessing && transferStep !== 'idle' && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center"
+                        >
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 space-y-6 text-center"
+                            >
+                                <div className="size-16 rounded-full bg-blue-100 mx-auto flex items-center justify-center">
+                                    <LoadingSpinner className="size-8 text-blue-600" />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h2 className="text-2xl font-semibold">{loadingStates[transferStep].title}</h2>
+                                    <p className="text-gray-500">
+                                        {loadingStates[transferStep].description}
+                                    </p>
+                                </div>
+
+                                <div className="w-full max-w-xs mx-auto space-y-2">
+                                    <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
+                                        <motion.div
+                                            className="h-full bg-blue-500"
+                                            initial={{ width: "0%" }}
+                                            animate={{ width: "100%" }}
+                                            transition={{ duration: 3 }}
+                                        />
+                                    </div>
+                                    <p className="text-sm text-gray-500">Please don't close this window</p>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
                 </div>
             </MaxWidthWrapper>
         </PageContent>
