@@ -10,7 +10,7 @@ import {
     useRouterStuff,
 } from "@freelii/ui";
 import { ArrowRight } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
     Dispatch,
     SetStateAction,
@@ -114,8 +114,6 @@ function ImportCsvModal({
     showImportCsvModal: boolean;
     setShowImportCsvModal: Dispatch<SetStateAction<boolean>>;
 }) {
-    const router = useRouter();
-    const { slug } = useParams() as { slug?: string };
     const { queryParams } = useRouterStuff();
     const searchParams = useSearchParams();
 
@@ -235,7 +233,7 @@ function ImportCsvModal({
                                         );
 
                                         const headers = rows[0];
-                                        const clientRows = rows.slice(1).filter(row => row.length === headers.length);
+                                        const clientRows = rows.slice(1).filter(row => row.length === headers?.length);
 
                                         // Process in chunks of 50
                                         const chunkSize = 50;
@@ -248,17 +246,17 @@ function ImportCsvModal({
                                                 Object.entries(mappableFields).forEach(([field, _]) => {
                                                     const mappedColumn = data[field as keyof typeof mappableFields];
                                                     if (mappedColumn) {
-                                                        const columnIndex = headers.indexOf(mappedColumn);
+                                                        const columnIndex = headers?.indexOf(mappedColumn) ?? -1;
                                                         if (columnIndex !== -1) {
-                                                            client[field] = row[columnIndex];
+                                                            client[field] = row[columnIndex] ?? "";
                                                         }
                                                     }
                                                 });
                                                 return client;
                                             });
-                                            await Promise.all(clients.map(client => createClients(
-                                                fillDefaults(client)
-                                            )));
+                                            // TODO fillDefaults(client)
+                                            // await Promise.all(clients.map(client => createClients(
+                                            // )));
                                         }
 
                                         toast.success(

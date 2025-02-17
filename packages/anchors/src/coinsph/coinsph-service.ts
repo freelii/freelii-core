@@ -204,10 +204,10 @@ expiry	Quote expire time seconds.
                 fee: this.fee,
                 exchangeRate: Number(data?.price),
                 expiresIn: Number(data?.expiry ?? 0),
-                sourceCurrency: sourceCurrency,
-                targetCurrency: targetCurrency,
-                sourceAmount: amountConfig.sourceAmount ?? "0",
-                targetAmount: amountConfig.targetAmount ?? "0",
+                sourceCurrency,
+                targetCurrency,
+                sourceAmount: data.sourceAmount ?? amountConfig.sourceAmount ?? "0",
+                targetAmount: data.targetAmount ?? amountConfig.targetAmount ?? "0",
                 total: "0" // TODO: Calculate total
             }
         } catch (error) {
@@ -302,8 +302,11 @@ expiry	Quote expire time seconds.
                 },
                 headers: { 'X-COINS-APIKEY': `${this.apiKey}` }
             });
-
-            const exchangeRate = Number(response.data.price) + this.markup;
+            if (response.data.code === -100011) {
+                throw new Error('Unsupported currency pair');
+            }
+            const exchangeRate = Number(response.data.price); // + this.markup;
+            console.log('exchangeRate', exchangeRate);
 
             return {
                 exchangeRate,
@@ -724,7 +727,32 @@ expiry	Quote expire time seconds.
     }
 
     async getLiquidationAddress(): Promise<string> {
-        return "GDLS6OIZ3TOC7NXHB3OZKHXLUEZV4EUANOMOOMOHUZAZHLLGNN43IALX";
+        // if (process.env.NODE_ENV !== 'production') {
+        //     return "GDLS6OIZ3TOC7NXHB3OZKHXLUEZV4EUANOMOOMOHUZAZHLLGNN43IALX";
+        // }
+        const path = '/openapi/wallet/v1/deposit/address';
+        const timestamp = Date.now().toString();
+        const coin = 'USDC';
+        const network = 'XLM';
+        const queryParams = new URLSearchParams({ coin, network, timestamp });
+        const messageToSign = queryParams.toString();
+
+        const signature = this.signMessage(messageToSign);
+
+        const url = `${this.apiHost}/${path}?${messageToSign}&signature=${signature}`;
+        const response = await axios.get(url, {
+            headers: {
+                'X-COINS-APIKEY': this.apiKey
+            }
+        });
+
+        console.log('response', response.data);
+
+        if (response.data?.address && typeof response.data.address === 'string' && response.data.address?.length > 0) {
+            return response.data.address;
+        }
+
+        throw new Error(`Error fetching liquidation address: ${response.data.error}`);
     }
 
     async convertCurrency(

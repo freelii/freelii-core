@@ -1,5 +1,6 @@
 "use client";
 
+import { noop } from "@freelii/utils/functions";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -13,7 +14,7 @@ import { useImportCsvModal } from "./import-csv-modal";
 export const ModalContext = createContext<{
   setShowImportCsvModal: Dispatch<SetStateAction<boolean>>;
 }>({
-  setShowImportCsvModal: () => { },
+  setShowImportCsvModal: noop,
 });
 
 export function ModalProvider({ children }: { children: ReactNode }) {

@@ -25,41 +25,36 @@ export const orchestratorRouter = createTRPCRouter({
         .input(InitiatePaymentSchema)
         .mutation(async ({ input, ctx }) => {
             const orchestratorService = new OrchestratorService({ db: ctx.db, session: ctx.session });
-            const payment = await orchestratorService.initiatePayment({
+            return orchestratorService.initiatePayment({
                 sourceAmount: input.sourceAmount.toString(),
                 senderId: Number(ctx.session.user.id),
                 walletId: input.walletId,
                 recipientId: input.recipientId,
                 destinationId: input.destinationId
             });
-            return payment;
         }),
     getPaymentState: protectedProcedure
         .input(GetPaymentSchema)
         .query(async ({ input, ctx }) => {
             const orchestratorService = new OrchestratorService({ db: ctx.db, session: ctx.session });
-            const payment = await orchestratorService.getPaymentState(input.paymentId);
-            return payment;
+            return orchestratorService.getPaymentState(input.paymentId);
         }),
     getPaymentInstructions: protectedProcedure
         .input(GetPaymentSchema)
         .query(async ({ input, ctx }) => {
             const orchestratorService = new OrchestratorService({ db: ctx.db, session: ctx.session });
-            const payment = await orchestratorService.getPaymentInstructions(input.paymentId);
-            return payment;
+            return orchestratorService.getPaymentInstructions(input.paymentId);
         }),
     confirmBlockchainConfirmation: protectedProcedure
         .input(ConfirmBlockchainConfirmationSchema)
         .mutation(async ({ input, ctx }) => {
             const orchestratorService = new OrchestratorService({ db: ctx.db, session: ctx.session });
-            const payment = await orchestratorService.processBlockchainConfirmation(input.paymentId, input.txId, input.txHash);
-            return payment;
+            return orchestratorService.processBlockchainConfirmation(input.paymentId, input.txId, input.txHash);
         }),
     processPaymentSettled: protectedProcedure
         .input(ProcessPaymentSettledSchema)
         .mutation(async ({ input, ctx }) => {
             const orchestratorService = new OrchestratorService({ db: ctx.db, session: ctx.session });
-            const payment = await orchestratorService.processPaymentSettled(input.paymentId);
-            return payment;
+            return orchestratorService.processPaymentSettled(input.paymentId);
         })
 })

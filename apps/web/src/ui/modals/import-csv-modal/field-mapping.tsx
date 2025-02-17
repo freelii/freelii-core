@@ -35,7 +35,7 @@ export function FieldMapping() {
                 for await (const partialObject of readStreamableValue(object)) {
                     if (partialObject) {
                         Object.entries(partialObject).forEach((entry) => {
-                            const [field, value] = entry as string[];
+                            const [field, value] = entry as [string, string];
                             if (
                                 Object.keys(mappableFields).includes(field) &&
                                 fileColumns.includes(value)
@@ -112,7 +112,7 @@ function FieldRow({
     const examples = useMemo(() => {
         if (!firstRows) return [];
         let values = firstRows?.map((row) => row[value]).filter(Boolean);
-        values = values.map((e) => truncate(e, 32) as string);
+        values = values.map((e) => truncate(e, 32)!);
         return values;
     }, [firstRows, value]);
 
@@ -128,7 +128,7 @@ function FieldRow({
                             align="end"
                             content={
                                 <div className="w-full p-2 md:w-48">
-                                    {(fileColumns || [])?.map((column) => (
+                                    {(fileColumns ?? [])?.map((column) => (
                                         <button
                                             key={column}
                                             onClick={() => {
@@ -180,7 +180,7 @@ function FieldRow({
                             <ul className="mt-0.5">
                                 {examples?.map((example, idx) => (
                                     <li
-                                        key={example + idx}
+                                        key={(example ?? "") + idx}
                                         className="block text-xs leading-tight text-gray-500"
                                     >
                                         <span className="translate-y-1 text-base text-gray-600">

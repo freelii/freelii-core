@@ -89,7 +89,7 @@ export class WalletService extends BaseService {
             const stellar = new StellarService({ wallet });
             const { wallet: stellarWallet, balancesToUpdate } = await stellar.getAccount();
             if (balancesToUpdate.length > 0) {
-                await this.db.$transaction(
+                await Promise.all(
                     balancesToUpdate.map(balance =>
                         this.db.walletBalance.update({
                             where: { id: balance.id },

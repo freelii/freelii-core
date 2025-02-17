@@ -20,7 +20,7 @@ export function SelectFile() {
 
         readLines(file, 4)
             .then((lines) => {
-                const { data, meta } = Papa.parse(lines, {
+                const { data, meta } = Papa.parse<Record<string, string>>(lines, {
                     worker: false,
                     skipEmptyLines: true,
                     header: true,
@@ -33,7 +33,7 @@ export function SelectFile() {
                     return;
                 }
 
-                if (!meta || !meta.fields || meta.fields.length <= 1) {
+                if (!meta?.fields || meta?.fields.length <= 1) {
                     setError("Failed to retrieve CSV column data.");
                     setFileColumns(null);
                     setFirstRows(null);
@@ -105,15 +105,18 @@ const readLines = async (file: File, count = 4): Promise<string> => {
     const decoder = new TextDecoder("utf-8");
     let { value: chunk, done: readerDone } = await reader.read();
     let content = "";
-    let result = [];
+    const result: Record<string, string>[] = [];
     while (!readerDone) {
         content += decoder.decode(chunk, { stream: true });
         const lines = content.split("\n");
         if (lines.length >= count) {
-            reader.cancel();
+            void reader.cancel();
             return lines.slice(0, count).join("\n");
         }
         ({ value: chunk, done: readerDone } = await reader.read());
     }
+
+    // ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return result.join("\n");
 };

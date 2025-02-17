@@ -3,13 +3,26 @@ import {
     PaymentRail,
     type GetQuoteParams
 } from '@freelii/anchors';
-import { PaymentOrchestrationStatus, TransactionStatus, type PrismaClient } from '@prisma/client';
+import {
+    PaymentOrchestrationState,
+    PaymentOrchestrationStatus,
+    TransactionStatus,
+    type PrismaClient
+} from '@prisma/client';
 import { BaseService } from '@services/base-service';
-import { Destination, PaymentOrchestrationConfig, PaymentOrchestrationResult, PaymentOrchestrationState, WebhookEvent } from './orchestrator.interfaces';
+import type {
+    PaymentOrchestrationConfig,
+    PaymentOrchestrationResult,
+    WebhookEvent
+} from './orchestrator.interfaces';
 
 interface BaseServiceOptions {
     db: PrismaClient;
-    session: any; // TODO: Define proper session type
+    session?: {
+        user: {
+            id: string;
+        }
+    }
 }
 
 export class OrchestratorService extends BaseService {
@@ -108,13 +121,13 @@ export class OrchestratorService extends BaseService {
 
             return {
                 success: true,
-                state: this.mapToInterface(state)
+                state
             };
         } catch (error) {
             console.error('Failed to initiate payment:', error);
             return {
                 success: false,
-                state: null as unknown as PaymentOrchestrationState,
+                state: null,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
         }
@@ -153,13 +166,13 @@ export class OrchestratorService extends BaseService {
 
             return {
                 success: true,
-                state: this.mapToInterface(state)
+                state
             };
         } catch (error) {
             console.error('Failed to process blockchain confirmation:', error);
             return {
                 success: false,
-                state: null as unknown as PaymentOrchestrationState,
+                state: null,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
         }
@@ -186,13 +199,13 @@ export class OrchestratorService extends BaseService {
 
             return {
                 success: true,
-                state: this.mapToInterface(state)
+                state
             };
         } catch (error) {
             console.error('Failed to process webhook:', error);
             return {
                 success: false,
-                state: null as unknown as PaymentOrchestrationState,
+                state: null,
                 error: error instanceof Error ? error.message : 'Unknown error'
             };
         }
@@ -220,21 +233,11 @@ export class OrchestratorService extends BaseService {
             }
         });
         console.log('state', this.session.user.id, state)
-        return state ? this.mapToInterface(state) : null;
+        return state ?? null;
     }
 
-    /**
-     * Map the database model to the interface type
-     */
-    private mapToInterface(state: any): PaymentOrchestrationState {
-        const destination = state.destination as Destination;
-        return {
-            ...state,
-            exchange_rate: state.exchange_rate ? BigInt(state.exchange_rate) : BigInt(0)
-        };
-    }
 
-    async processPaymentSettled(paymentId: string): Promise<any> {
+    async processPaymentSettled(paymentId: string) {
         try {
             const state = await this.db.paymentOrchestrationState.findUniqueOrThrow({
                 where: { id: paymentId },
@@ -295,7 +298,7 @@ export class OrchestratorService extends BaseService {
 
 
             // Trigger Cash-Out
-            const cashout = await anchor.requestCashout({
+            await anchor.requestCashout({
                 targetAmount: state.target_amount / 100,
                 sourceCurrency: state.source_currency,
                 targetCurrency: state.target_currency,

@@ -40,7 +40,7 @@ export async function generateCsvMapping(
     transferMethod: z.string().optional(),
   });
 
-  (async () => {
+  await new Promise<void>(async (resolve) => {
     const chatStream = openai.beta.chat.completions
       .stream({
         model: "gpt-4o-mini",
@@ -68,7 +68,8 @@ export async function generateCsvMapping(
 
     await chatStream.done();
     stream.done();
-  })();
+    resolve();
+  });
 
   return { object: stream.value };
 }

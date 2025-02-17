@@ -112,7 +112,7 @@ export class PaymentAccountService extends BaseService {
         }[country] ?? 'USDC';
     }
 
-    getAccountType(accountType?: string | undefined): FiatAccountType {
+    getAccountType(accountType?: string): FiatAccountType {
         return accountType === 'checking' ? FiatAccountType.CHECKING : FiatAccountType.SAVINGS;
     }
 

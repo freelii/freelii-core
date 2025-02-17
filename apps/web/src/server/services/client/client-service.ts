@@ -32,7 +32,8 @@ export class ClientService extends BaseService {
             take: limit,
             orderBy: {
                 created_at: "desc",
-            }, include: {
+            },
+            include: {
                 address: true,
                 payment_destinations: {
                     include: {

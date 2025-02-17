@@ -2,7 +2,6 @@ import { userRouter } from "@/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { activityRouter } from "./routers/activity";
 import { clientsRouter } from "./routers/clients";
-import { fxRouter } from "./routers/fx";
 import { invoicingRouter } from "./routers/invoicing";
 import { ledgerRouter } from "./routers/ledger";
 import { orchestratorRouter } from "./routers/orchestrator";
@@ -21,7 +20,6 @@ export const appRouter = createTRPCRouter({
   webhook: webhookRouter,
   clients: clientsRouter,
   activity: activityRouter,
-  fx: fxRouter,
   orchestrator: orchestratorRouter
 });
 

@@ -15,8 +15,8 @@ const program = new Command();
 
 // Hardcoded balances and rate for now
 const BALANCES = {
-    USD: 1000,
-    PHP: 25000,
+    USD: 0,
+    PHP: 0,
 };
 
 
@@ -65,10 +65,9 @@ program
             {
                 type: 'number',
                 name: 'amount',
-                message: `Enter the amount of ${targetCurrency} you want to receive:`,
+                message: `Enter the amount of ${sourceCurrency} you want to exchnage:`,
                 validate: (value) => {
                     if (value <= 0) return 'Please enter a positive amount';
-                    if (value > BALANCES[targetCurrency]) return 'Insufficient balance';
                     return true;
                 }
             }
@@ -76,19 +75,19 @@ program
         console.table({
             sourceCurrency: sourceCurrency,
             targetCurrency: targetCurrency,
-            targetAmount: amount.toString()
+            sourceAmount: amount.toString()
         });
 
         const quoteResponse = await coinsPHService.requestQuote({
             sourceCurrency: sourceCurrency,
             targetCurrency: targetCurrency,
-            targetAmount: amount.toString()
+            sourceAmount: amount.toString()
         });
 
         const targetAmount = quoteResponse.targetAmount;
         const exchangeRate = quoteResponse.exchangeRate;
         const quoteId = quoteResponse.quoteId;
-        const sourceAmount = Number(targetAmount) / exchangeRate;
+        const sourceAmount = quoteResponse.sourceAmount;
 
         console.log('quoteResponse', quoteResponse);
         console.log('targetAmount', targetAmount);
@@ -379,6 +378,14 @@ program.command('get-deposit-address')
         console.log(address);
     });
 
+program.command('get-liquidation-address')
+    .description('Get a liquidation address')
+    .action(async () => {
+        const coinsPHService = new CoinsPHService();
+        const address = await coinsPHService.getLiquidationAddress();
+        console.log('Liquidation Address:', address);
+    });
+
 program.command('live-quote')
     .description('Get a live quote')
     .argument('<sourceCurrency>', 'Source currency')
@@ -390,5 +397,28 @@ program.command('live-quote')
             targetCurrency
         });
         console.log(quote);
+    });
+
+program.command('account')
+    .description('Get account details')
+    .action(async () => {
+        const coinsPHService = new CoinsPHService();
+        const account = await coinsPHService.getAccount();
+        console.log('Account:', account.res.balances);
+    });
+
+
+program.command('rate')
+    .description('Get a rate')
+    .argument('<sourceCurrency>', 'Source currency')
+    .argument('<targetCurrency>', 'Target currency')
+    .action(async (sourceCurrency, targetCurrency) => {
+        const coinsPHService = new CoinsPHService();
+        const rate = await coinsPHService.getRate({
+            sourceCurrency,
+            targetCurrency,
+            sourceAmount: 1
+        });
+        console.log('Rate:', rate);
     });
 program.parse();

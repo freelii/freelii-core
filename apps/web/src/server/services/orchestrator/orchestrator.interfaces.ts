@@ -1,5 +1,5 @@
 import { PaymentRail } from "@freelii/anchors";
-import { EwalletProvider, TransactionStatus } from "@prisma/client";
+import { EwalletProvider, PaymentOrchestrationState, TransactionStatus } from "@prisma/client";
 
 export interface LiquidationAddress {
     id: string;
@@ -66,27 +66,6 @@ export type Destination =
     | InstapayRecipient
     | PesonetRecipient;
 
-export interface PaymentOrchestrationState {
-    id: string;
-    status: TransactionStatus;
-    tx_id?: string;
-    tx_hash?: string;
-    source_currency: string;
-    target_currency: string;
-    source_amount: string;
-    target_amount: string;
-    exchange_rate: number;
-    anchor: string;
-    recipient_id: number;
-    destination: Destination;
-    sender_id: number;
-    wallet_id: string;
-    created_at: Date;
-    updated_at: Date;
-    completed_at?: Date;
-    failed_at?: Date;
-    failed_reason?: string;
-}
 
 export interface PaymentOrchestrationConfig {
     sourceAmount: string;
@@ -98,7 +77,7 @@ export interface PaymentOrchestrationConfig {
 
 export interface PaymentOrchestrationResult {
     success: boolean;
-    state: PaymentOrchestrationState;
+    state: PaymentOrchestrationState | null;
     error?: string;
 }
 

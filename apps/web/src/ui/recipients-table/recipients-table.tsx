@@ -40,17 +40,17 @@ const getPaymentMethodLabel = (destination: PaymentDestination & {
                 return destination.ewallet_account.ewallet_provider.replace('PH_', '')
             }
             if (destination.fiat_account) {
-                return destination.fiat_account.bank_name || 'Bank Transfer'
+                return destination.fiat_account.bank_name ?? 'Bank Transfer'
             }
             return 'Bank Transfer'
         case 'WIRE':
-            return destination.fiat_account?.bank_name || 'Wire Transfer'
+            return destination.fiat_account?.bank_name ?? 'Wire Transfer'
         case 'ACH':
-            return destination.fiat_account?.bank_name || 'ACH'
+            return destination.fiat_account?.bank_name ?? 'ACH'
         case 'SEPA':
-            return destination.fiat_account?.bank_name || 'SEPA'
+            return destination.fiat_account?.bank_name ?? 'SEPA'
         case 'MX_SPEI':
-            return destination.fiat_account?.bank_name || 'SPEI'
+            return destination.fiat_account?.bank_name ?? 'SPEI'
         default:
             return 'Unknown'
     }
@@ -268,7 +268,7 @@ export const columns: ColumnDef<Recipient>[] = [
         header: "Payment Methods",
         cell: ({ row }) => {
             const recipient = row.original
-            const allAccounts = recipient.payment_destinations || [];
+            const allAccounts = recipient.payment_destinations ?? [];
             if (allAccounts.length === 0) {
                 return (
                     <div className="text-xs text-gray-500 flex items-center gap-2">
@@ -403,7 +403,7 @@ export function RecipientsTable({
     const { mutateAsync: archiveMany } = api.clients.archiveMany.useMutation({
         onSuccess: () => {
             toast.success('Recipients archived!')
-            utils.clients.invalidate()
+            void utils.clients.invalidate()
         },
         onError: ClientTRPCErrorHandler
     })
