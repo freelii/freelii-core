@@ -81,6 +81,11 @@ export class ClientService extends BaseService {
             });
         }
 
+        // Early return if no payment account is provided
+        if (!paymentAccount) {
+            return client;
+        }
+
         const paymentAccountService = new PaymentAccountService({
             db: this.db,
             session: this.session,

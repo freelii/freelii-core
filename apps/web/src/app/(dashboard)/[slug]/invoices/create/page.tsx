@@ -33,7 +33,7 @@ export default function CreateInvoicePage() {
     const { selectedWalletId } = useWalletStore()
     const [formData, setFormData] = useState<InvoiceFormData>(initialFormData)
 
-    const txId = searchParams.get("tx_id")
+    const txId = searchParams?.get("tx_id")
 
     // tRPC procedures
     const { data: clients } = api.clients.search.useQuery({ limit: 30 })

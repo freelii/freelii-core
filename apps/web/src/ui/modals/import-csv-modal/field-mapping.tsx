@@ -34,8 +34,8 @@ export function FieldMapping() {
                 setIsStreaming(true);
                 for await (const partialObject of readStreamableValue(object)) {
                     if (partialObject) {
-                        Object.entries(partialObject).forEach((entry) => {
-                            const [field, value] = entry as [string, string];
+                        Object.entries(partialObject as Record<string, string>).forEach((entry) => {
+                            const [field, value] = entry;
                             if (
                                 Object.keys(mappableFields).includes(field) &&
                                 fileColumns.includes(value)

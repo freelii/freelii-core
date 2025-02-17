@@ -6,6 +6,7 @@ import { useWallet } from "@/wallet/useWallet";
 import { Badge, Button, Input, LoadingDots, MaxWidthWrapper, useRouterStuff } from "@freelii/ui";
 import { CURRENCIES } from "@freelii/utils/constants";
 import { cn, fromStroops, hasEnoughBalance, shortAddress, toStroops } from "@freelii/utils/functions";
+import { BlockchainAccount, EwalletAccount, FiatAccount } from "@prisma/client";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { AnimatePresence, motion } from "framer-motion";
@@ -25,12 +26,12 @@ export default function WithdrawalsRequestPage() {
     const [isProcessing, setIsProcessing] = useState(false)
     const [isConfirmed, setIsConfirmed] = useState(false)
 
-    const to = searchParams.get('to');
+    const to = searchParams?.get('to');
     const { data: accounts } = api.users.listWithdrawalAccounts.useQuery();
 
     const [destination, currency] = useMemo(() => {
         if (accounts) {
-            let destination = accounts.blockchain_accounts?.find(acc => acc.id === to);
+            let destination: BlockchainAccount | FiatAccount | EwalletAccount | undefined = accounts.blockchain_accounts?.find(acc => acc.id === to);
             if (destination) { Object.assign(destination, { type: 'blockchain' }); } else {
                 destination = accounts.fiat_accounts?.find(acc => acc.id === to)
                 if (destination) { Object.assign(destination, { type: 'fiat' }); } else {
@@ -76,6 +77,18 @@ export default function WithdrawalsRequestPage() {
     const fxRate = CURRENCIES[currency]?.rate ?? 1
     const totalCost = (fxRate * Number(amount)) + totalFees
 
+    if (!destination) {
+        return (
+            <PageContent titleBackButtonLink="/dashboard/withdrawals" title="Request Withdrawal">
+                <MaxWidthWrapper>
+                    <div className="text-center py-12">
+                        <p className="text-gray-500">Please select a destination account first</p>
+                    </div>
+                </MaxWidthWrapper>
+            </PageContent>
+        )
+    }
+
     return (
         <PageContent titleBackButtonLink="/dashboard/withdrawals" title="Request Withdrawal">
             <MaxWidthWrapper>
@@ -100,7 +113,7 @@ export default function WithdrawalsRequestPage() {
                                             {/* Account Info Header */}
                                             <div className="p-4">
                                                 <div className="flex items-center gap-3">
-                                                    {destination.type === 'fiat' && (
+                                                    {('account_number' in destination && 'iso_currency' in destination) && (
                                                         <>
                                                             <div className="size-10 rounded-lg bg-blue-50 flex items-center justify-center">
                                                                 <Building2 className="size-5 text-blue-600" />
@@ -111,7 +124,7 @@ export default function WithdrawalsRequestPage() {
                                                             </div>
                                                         </>
                                                     )}
-                                                    {destination.type === 'ewallet' && (
+                                                    {('mobile_number' in destination && 'ewallet_provider' in destination) && (
                                                         <>
                                                             <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
                                                                 <Wallet2 className="size-5 text-primary" />
@@ -122,7 +135,7 @@ export default function WithdrawalsRequestPage() {
                                                             </div>
                                                         </>
                                                     )}
-                                                    {destination.type === 'blockchain' && (
+                                                    {('network' in destination) && (
                                                         <>
                                                             <div className="size-10 rounded-lg bg-purple-50 flex items-center justify-center">
                                                                 <Network className="size-5 text-purple-600" />
@@ -139,7 +152,7 @@ export default function WithdrawalsRequestPage() {
                                             {/* Account Details */}
                                             <div className="p-4 space-y-3 bg-gray-50">
                                                 <div className="grid grid-cols-2 gap-4">
-                                                    {destination.type === 'fiat' && (
+                                                    {('account_number' in destination) && (
                                                         <>
                                                             <div>
                                                                 <p className="text-xs text-gray-500 mb-1">Account number</p>
@@ -154,19 +167,19 @@ export default function WithdrawalsRequestPage() {
                                                             </div>
                                                         </>
                                                     )}
-                                                    {destination.type === 'ewallet' && (
+                                                    {'ewallet_provider' in destination && (
                                                         <>
                                                             <div>
-                                                                <p className="text-xs text-gray-500 mb-1">Account ID</p>
-                                                                <p className="text-sm">{destination.account_id}</p>
+                                                                <p className="text-xs text-gray-500 mb-1">Mobile Number</p>
+                                                                <p className="text-sm">{destination.mobile_number}</p>
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs text-gray-500 mb-1">Provider</p>
-                                                                <p className="text-sm">{destination.provider}</p>
+                                                                <p className="text-sm">{destination.ewallet_provider}</p>
                                                             </div>
                                                         </>
                                                     )}
-                                                    {destination.type === 'blockchain' && (
+                                                    {('network' in destination) && (
                                                         <>
                                                             <div>
                                                                 <p className="text-xs text-gray-500 mb-1">Address</p>
@@ -175,7 +188,7 @@ export default function WithdrawalsRequestPage() {
                                                             <div>
                                                                 <p className="text-xs text-gray-500 mb-1">Network</p>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <NetworkIcon network={destination.network} className="size-4" />
+                                                                    <NetworkIcon className="size-4" />
                                                                     <span className="text-sm">{destination.network}</span>
                                                                 </div>
                                                             </div>
@@ -204,9 +217,7 @@ export default function WithdrawalsRequestPage() {
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-sm text-gray-600">Estimated delivery</span>
                                                     <span className="text-sm">
-                                                        {destination.type === 'blockchain' ? 'Few minutes' :
-                                                            destination.type === 'ewallet' ? 'Instant' :
-                                                                '1-2 business days'}
+                                                        1-2 business days
                                                     </span>
                                                 </div>
                                             </div>
@@ -326,7 +337,7 @@ export default function WithdrawalsRequestPage() {
                                                         <span className="text-xs text-gray-500">USDC → {currency}</span>
                                                     </div>
                                                 </div>
-                                                <Badge variant="secondary" className="font-medium">
+                                                <Badge className="font-medium">
                                                     1 USDC = {CURRENCIES[currency]?.symbol}{CURRENCIES[currency]?.rate}
                                                 </Badge>
                                             </div>

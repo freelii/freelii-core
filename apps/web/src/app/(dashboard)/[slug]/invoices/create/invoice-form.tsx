@@ -116,7 +116,6 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
             city: newClientData?.address?.city ?? "",
             country: newClientData?.address?.country ?? "",
             zipCode: newClientData?.address?.zip_code ?? "",
-
         })
     }
 

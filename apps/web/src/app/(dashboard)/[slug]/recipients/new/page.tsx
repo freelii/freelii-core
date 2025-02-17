@@ -257,11 +257,11 @@ export default function NewRecipientPage() {
                                             <p className="text-[13px] text-gray-500 mt-0.5">
                                                 {currentStep >= 3 ? (
                                                     formData.paymentMethod === "fiat" ? (
-                                                        formData.bankName || "Enter bank details"
+                                                        formData.bankName ?? "Enter bank details"
                                                     ) : formData.paymentMethod === "ewallet" ? (
-                                                        formData.ewalletProvider || "Select provider"
+                                                        formData.ewalletProvider ?? "Select provider"
                                                     ) : formData.paymentMethod === "blockchain" ? (
-                                                        "Wallet details"
+                                                        formData.walletAddress ?? "Enter wallet address"
                                                     ) : "Pending"
                                                 ) : "Pending"}
                                             </p>
@@ -608,7 +608,7 @@ function BasicInfoStep({ formData, setFormData, showEmailForm, setShowEmailForm 
                                 <Input
                                     type="email"
                                     name="email"
-                                    value={formData.email || ''}
+                                    value={formData.email ?? ''}
                                     onChange={handleChange}
                                     placeholder="recipient@example.com"
                                     className="w-full"
@@ -818,7 +818,7 @@ function BankingStep({ formData, setFormData, showAccountHolderNameForm, setShow
                                 </button>
                             </div>
                             {!showAccountHolderNameForm && (
-                                <span className="text-sm">{formData.accountHolderName || formData.name}</span>
+                                <span className="text-sm">{formData.accountHolderName ?? formData.name}</span>
                             )}
 
                             {showAccountHolderNameForm && (
@@ -1189,7 +1189,7 @@ function ReviewStep({ formData, setFormData, showEmailForm, setShowEmailForm, sh
                                 <Input
                                     type="email"
                                     name="email"
-                                    value={formData.email || ''}
+                                    value={formData.email ?? ''}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="Enter email address"
                                     className="w-full"

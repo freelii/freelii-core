@@ -23,7 +23,12 @@ import { FlagIcon } from "../shared/flag-icon";
 
 export type Recipient = Client & {
     address?: Address | null
-    payment_destinations?: PaymentDestination[]
+    payment_destinations?: (PaymentDestination & {
+        id: string;
+        fiat_account: FiatAccount | null;
+        blockchain_account: BlockchainAccount | null;
+        ewallet_account: EwalletAccount | null;
+    })[]
 }
 
 const getPaymentMethodLabel = (destination: PaymentDestination & {

@@ -9,8 +9,8 @@ import {
   useRouterStuff,
   Users6
 } from "@freelii/ui";
-import { useParams, usePathname } from "next/navigation";
-import { type ReactNode, useMemo } from "react";
+import { useParams } from "next/navigation";
+import { type ReactNode } from "react";
 import { SidebarNav, type SidebarNavAreas } from "./sidebar-nav";
 import { WalletDropdown } from "./wallet-dropdown";
 
@@ -191,31 +191,30 @@ export function AppSidebarNav({
   toolContent?: ReactNode;
   newsContent?: ReactNode;
 }) {
-  const { slug } = useParams();
-  const pathname = usePathname();
+  const { slug } = useParams<{ slug: string }>()!;
   const { getQueryString } = useRouterStuff();
   //   const { data: session } = useSession();
   // TODO trpc  const { programs } = usePrograms();
 
-  const currentArea = useMemo(() => {
-    return pathname.startsWith("/account/settings")
-      ? "userSettings"
-      : pathname.startsWith(`/${String(slug)}/settings`)
-        ? "workspaceSettings"
-        : "default";
-  }, [slug, pathname]);
+  // const currentArea = useMemo(() => {
+  //   return pathname.startsWith("/account/settings")
+  //     ? "userSettings"
+  //     : pathname.startsWith(`/${String(slug)}/settings`)
+  //       ? "workspaceSettings"
+  //       : "default";
+  // }, [slug, pathname]);
 
   return (
     <SidebarNav
       areas={NAV_AREAS}
-      currentArea={currentArea}
+      currentArea="default"
       data={{
-        slug: (slug ?? "") as string,
+        slug: slug,
         queryString: getQueryString(undefined, {
           ignore: ["sortBy", "sortOrder"],
         }),
-        session: undefined, // TODO session || undefined,
-        showNews: pathname.startsWith(`/${String(slug)}/programs/`) ? false : true,
+        session: undefined,
+        showNews: false
       }}
       toolContent={toolContent}
       newsContent={newsContent}

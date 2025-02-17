@@ -4,7 +4,7 @@ import { BlockchainAccount, EwalletAccount, FiatAccount, PaymentDestination } fr
 
 
 
-export function AccountDetails({ selectedAccount }: { selectedAccount?: PaymentDestination & { ewallet_account?: EwalletAccount, blockchain_account?: BlockchainAccount, fiat_account?: FiatAccount } | null }) {
+export function AccountDetails({ selectedAccount }: { selectedAccount?: PaymentDestination & { ewallet_account?: EwalletAccount | null, blockchain_account?: BlockchainAccount | null, fiat_account?: FiatAccount | null } | null }) {
     const NoAccount = () => {
 
         return (

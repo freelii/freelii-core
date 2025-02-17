@@ -169,7 +169,7 @@ function NavItem({ item }: { item: NavItemType | NavSubItemType }) {
     const hrefWithoutQuery = href.split("?")[0];
     return exact
       ? pathname === hrefWithoutQuery
-      : pathname.startsWith(hrefWithoutQuery ?? "");
+      : pathname?.startsWith(hrefWithoutQuery ?? "");
   }, [pathname, href, exact]);
 
   return (

@@ -11,5 +11,5 @@ export const ClientCreateSchema = z.object({
     state: z.string().optional(),
     country: z.string().optional(),
     zipCode: z.string().optional(),
-    paymentAccount: CreateAccountSchema,
+    paymentAccount: CreateAccountSchema.optional(),
 });

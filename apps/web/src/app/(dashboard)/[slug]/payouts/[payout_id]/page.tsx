@@ -40,10 +40,10 @@ export default function PayoutDetailsPage() {
 
     // tRPC procedures
     const { mutateAsync: processPaymentSettled, isPending: isProcessingPaymentSettled } = api.orchestrator.processPaymentSettled.useMutation();
-    const { data: payment, isLoading: isLoadingPayment } = api.orchestrator.getPaymentState.useQuery({ paymentId: paymentId! }, {
+    const { data: payment, isLoading: isLoadingPayment } = api.orchestrator.getPaymentState.useQuery({ paymentId: paymentId }, {
         enabled: !!paymentId
     })
-    const { data: paymentInstructions, isLoading: isLoadingPaymentInstructions } = api.orchestrator.getPaymentInstructions.useQuery({ paymentId: paymentId! }, {
+    const { data: paymentInstructions, isLoading: isLoadingPaymentInstructions } = api.orchestrator.getPaymentInstructions.useQuery({ paymentId: paymentId }, {
         enabled: !!paymentId
     })
     const { mutateAsync: confirmBlockchainConfirmation } = api.orchestrator.confirmBlockchainConfirmation.useMutation({})
@@ -229,10 +229,10 @@ export default function PayoutDetailsPage() {
     }
 
     const currencyCode = payment?.source_currency;
-    const totalCost = parseInt(payment?.source_amount, 10) / 100;
-    const recipientAmount = parseInt(payment?.target_amount, 10) / 100;
+    const totalCost = payment?.source_amount / 100;
+    const recipientAmount = payment?.target_amount / 100;
     const isEwallet = !!payment?.destination?.ewallet_account;
-    const isInstant = payment?.is_instant;
+    const isInstant = !!payment?.destination?.blockchain_account;
 
     const onEdit = () => {
         console.log('onEdit')
@@ -274,7 +274,7 @@ export default function PayoutDetailsPage() {
                                 </div>
                             </div>
                             {searchParams?.get("debug") === "true" && <div>
-                                <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId: paymentId! })}
+                                <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId })}
                                     className={cn(
                                         "gap-2 h-6 bg-blue-500 text-white",
                                         isProcessing && "opacity-50 py-3 px-6 w-full"
@@ -285,7 +285,7 @@ export default function PayoutDetailsPage() {
                                         <LoadingDots className="size-4" color="black" /> :
                                         "payment received"
                                     }
-                                </Button>   <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId: paymentId! })}
+                                </Button>   <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId })}
                                     className={cn(
                                         "gap-2 h-6 bg-blue-500 text-white",
                                         isProcessing && "opacity-50 py-3 px-6 w-full"
@@ -659,7 +659,7 @@ export default function PayoutDetailsPage() {
                                             transition={{ duration: 3 }}
                                         />
                                     </div>
-                                    <p className="text-sm text-gray-500">Please don't close this window</p>
+                                    <p className="text-sm text-gray-500">Please don&apos;t close this window</p>
                                 </div>
                             </motion.div>
                         </motion.div>

@@ -4,6 +4,11 @@ import {
     type GetQuoteParams
 } from '@freelii/anchors';
 import {
+    BlockchainAccount,
+    Client,
+    EwalletAccount,
+    FiatAccount,
+    PaymentDestination,
     PaymentOrchestrationState,
     PaymentOrchestrationStatus,
     TransactionStatus,
@@ -23,6 +28,15 @@ interface BaseServiceOptions {
             id: string;
         }
     }
+}
+
+type PaymentOrchestrationStateWithRelations = PaymentOrchestrationState & {
+    recipient: Client;
+    destination: PaymentDestination & {
+        fiat_account: FiatAccount | null;
+        blockchain_account: BlockchainAccount | null;
+        ewallet_account: EwalletAccount | null;
+    } | null;
 }
 
 export class OrchestratorService extends BaseService {
@@ -214,7 +228,7 @@ export class OrchestratorService extends BaseService {
     /**
      * Get the current state of a payment
      */
-    async getPaymentState(paymentId: string): Promise<PaymentOrchestrationState | null> {
+    async getPaymentState(paymentId: string): Promise<PaymentOrchestrationStateWithRelations | null> {
         console.log('getPaymentState', paymentId, this.session.user.id)
         const state = await this.db.paymentOrchestrationState.findUnique({
             where: {

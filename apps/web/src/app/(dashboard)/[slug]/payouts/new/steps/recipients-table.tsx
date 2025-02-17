@@ -19,7 +19,7 @@ import {
   useRouterStuff
 } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
-import { Client, RecipientType } from "@prisma/client"
+import { RecipientType } from "@prisma/client"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Building2, CheckCircle2, Search, UploadIcon, UserPlus, X } from "lucide-react"
@@ -28,6 +28,7 @@ import toast from "react-hot-toast"
 import { AccountDetails } from "./account-details"
 
 dayjs.extend(relativeTime)
+
 
 type RecipientsTableProps = {
   mode?: 'default' | 'payout'
@@ -51,7 +52,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
   const initiatePayment = api.orchestrator.initiatePayment.useMutation({
     onError: ClientTRPCErrorHandler,
     onSuccess: (data) => {
-      if (data.success) {
+      if (data.success && data.state) {
         void router.push(`/dashboard/payouts/${data.state.id}`)
       } else {
         toast.error(data.error ?? 'Failed to initiate payment')
@@ -67,7 +68,7 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
 
 
   const filteredRecipients = React.useMemo(() => {
-    let filtered: Array<Client> = clients ?? [];
+    let filtered: Array<Recipient> = clients ?? [];
 
     // Filter by search query
     if (searchQuery) {
@@ -92,9 +93,11 @@ export default function NewPayment({ mode = 'default', onNext, onBack }: Recipie
       const recipient = filteredRecipients?.find(recipient => recipient.id === parseInt(recipientId!, 10))
       if (recipient) {
         setSelectedRecipient(recipient)
-        const paymentDestination = recipient?.payment_destinations[0];
-        setSelectedAccount(paymentDestination?.id);
-        queryParams({ set: { recipientAccount: paymentDestination?.id } })
+        const paymentDestination = recipient?.payment_destinations?.[0];
+        if (paymentDestination) {
+          setSelectedAccount(paymentDestination.id);
+          queryParams({ set: { recipientAccount: paymentDestination.id } })
+        }
       }
     }
     // if (searchParams.get('recipientAccount')) {

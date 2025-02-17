@@ -6,7 +6,7 @@ export function useRouterStuff() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const searchParamsObj = Object.fromEntries(searchParams);
+  const searchParamsObj = Object.fromEntries(searchParams ?? new URLSearchParams());
 
   const getQueryString = (
     kv?: Record<string, any>,
@@ -14,7 +14,7 @@ export function useRouterStuff() {
       ignore?: string[];
     },
   ) => {
-    const newParams = new URLSearchParams(searchParams);
+    const newParams = new URLSearchParams(searchParams ?? {});
     if (kv) {
       Object.entries(kv).forEach(([k, v]) => newParams.set(k, v));
     }
@@ -40,7 +40,7 @@ export function useRouterStuff() {
     getNewPath?: boolean;
     arrayDelimiter?: string;
   }) => {
-    const newParams = new URLSearchParams(searchParams);
+    const newParams = new URLSearchParams(searchParams ?? {});
     if (set) {
       Object.entries(set).forEach(([k, v]) =>
         newParams.set(k, Array.isArray(v) ? v.join(arrayDelimiter) : v),
@@ -54,9 +54,8 @@ export function useRouterStuff() {
       }
     }
     const queryString = newParams.toString();
-    const newPath = `${pathname}${
-      queryString.length > 0 ? `?${queryString}` : ""
-    }`;
+    const newPath = `${pathname}${queryString.length > 0 ? `?${queryString}` : ""
+      }`;
     if (getNewPath) return newPath;
     if (replace) {
       router.replace(newPath, { scroll: false });
