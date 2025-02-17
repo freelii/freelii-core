@@ -7,7 +7,7 @@ import { InstantBadge } from "@/ui/shared/badges/instant-badge"
 import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
-import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, MaxWidthWrapper, Separator } from "@freelii/ui"
+import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, MaxWidthWrapper, Separator, useRouterStuff, Webhook } from "@freelii/ui"
 import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
 import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
@@ -26,6 +26,7 @@ export default function PayoutDetailsPage() {
     const { account, transfer } = useWallet();
     const { setSelectedWalletId, selectedWalletId } = useWalletStore();
     const params = useParams();
+    const { searchParams } = useRouterStuff();
     const paymentId = params?.payout_id as string;
     const [isProcessing, setIsProcessing] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -272,6 +273,31 @@ export default function PayoutDetailsPage() {
                                     </span>
                                 </div>
                             </div>
+                            {searchParams?.get("debug") === "true" && <div>
+                                <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId: paymentId! })}
+                                    className={cn(
+                                        "gap-2 h-6 bg-blue-500 text-white",
+                                        isProcessing && "opacity-50 py-3 px-6 w-full"
+                                    )}
+                                >
+                                    <Webhook className="size-4" />
+                                    {isProcessingPaymentSettled ?
+                                        <LoadingDots className="size-4" color="black" /> :
+                                        "payment received"
+                                    }
+                                </Button>   <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId: paymentId! })}
+                                    className={cn(
+                                        "gap-2 h-6 bg-blue-500 text-white",
+                                        isProcessing && "opacity-50 py-3 px-6 w-full"
+                                    )}
+                                >
+                                    <Webhook className="size-4" />
+                                    {isProcessingPaymentSettled ?
+                                        <LoadingDots className="size-4" color="black" /> :
+                                        "cashout completed"
+                                    }
+                                </Button>
+                            </div>}
                         </div>
                     </div>
 
@@ -467,7 +493,7 @@ export default function PayoutDetailsPage() {
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <div className={cn("absolute left-0 -translate-x-[11px] size-5 rounded-full bg-gray-100 ring-4 ring-white", !!payment.sent_to_recipient_at ? "bg-blue-500" : "bg-gray-100")} />
+                                                            <div className={cn("absolute left-0 -translate-x-[11px] size-5 rounded-full bg-gray-100 ring-4 ring-white", (!!payment.sent_to_recipient_at || !!payment.sent_at) ? "bg-blue-500" : "bg-gray-100")} />
                                                             <div>
                                                                 <p className="font-medium text-sm text-gray-900">{!!payment.sent_at ? "Processed" : "Processing"}</p>
                                                                 {payment.sent_at ? <p className="text-xs text-gray-500 mt-0.5">{dayjs(payment.sent_at).fromNow()}</p> :
@@ -528,24 +554,13 @@ export default function PayoutDetailsPage() {
                                     </Button>
                                     <Button disabled={isProcessing} onClick={handleTransfer}
                                         className={cn(
-                                            "gap-2",
+                                            "gap-2 h-8",
                                             isProcessing && "opacity-50 py-3 px-6 w-full"
                                         )}
                                     >
                                         {isProcessing ?
                                             <LoadingDots className="size-4" color="white" /> :
                                             "Confirm Payment"
-                                        }
-                                    </Button>
-                                    <Button disabled={isProcessingPaymentSettled} onClick={() => processPaymentSettled({ paymentId: paymentId! })}
-                                        className={cn(
-                                            "gap-2",
-                                            isProcessing && "opacity-50 py-3 px-6 w-full"
-                                        )}
-                                    >
-                                        {isProcessingPaymentSettled ?
-                                            <LoadingDots className="size-4" color="white" /> :
-                                            "Process Payment"
                                         }
                                     </Button>
                                 </div>
