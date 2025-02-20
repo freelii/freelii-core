@@ -41,6 +41,9 @@
       "@freelii/utils/*": [
         "../../packages/utils/src/*"
       ],
+      "@freelii/anchors/*": [
+        "../../packages/anchors/src/*"
+      ],
       "@orchestrator/*": [
         "./src/server/services/orchestrator/*"
       ],
