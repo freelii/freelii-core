@@ -191,7 +191,7 @@ export function AppSidebarNav({
   toolContent?: ReactNode;
   newsContent?: ReactNode;
 }) {
-  const { slug } = useParams<{ slug: string }>()!;
+  const { slug } = useParams<{ slug: string }>() || { slug: '' };
   const { getQueryString } = useRouterStuff();
   //   const { data: session } = useSession();
   // TODO trpc  const { programs } = usePrograms();
