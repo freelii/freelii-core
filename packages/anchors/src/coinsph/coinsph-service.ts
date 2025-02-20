@@ -401,9 +401,9 @@ expiry	Quote expire time seconds.
      * @returns Guarded amount
      */
     amountGuard(strAmount: string): string {
-        // if (process.env.NODE_ENV !== 'production') {
-        //     return "1";
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+            return "1";
+        }
         const amount = Number(strAmount);
         if (Number.isNaN(amount)) {
             throw new Error('Invalid amount');
