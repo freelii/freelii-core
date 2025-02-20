@@ -8,7 +8,6 @@ const path = require('path');
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-console.log('Using API Host:', process.env.COINS_PH_API_HOST);
 const program = new Command();
 
 
@@ -292,6 +291,7 @@ program.command('cashout')
             validate: (value) => value.length > 0 ? true : 'Recipient name is required'
         });
 
+
         const recipientAccountNumber = await input({
             message: 'Enter recipient account number:',
             default: '09171586897',
@@ -314,9 +314,12 @@ program.command('cashout')
             channelName,
             channelSubject,
             recipientName,
-            recipientAccountNumber,
             recipientMobile: `+63${recipientMobile.substring(1)}` // Convert 09XX to +639XX format
         };
+
+        if (recipientAccountNumber) {
+            cashoutData.recipientAccountNumber = recipientAccountNumber;
+        }
 
         console.log('\n📝 Review your cashout details:');
         console.table(cashoutData);

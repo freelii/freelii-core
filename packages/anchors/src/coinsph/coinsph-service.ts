@@ -357,8 +357,8 @@ expiry	Quote expire time seconds.
                 channelName: this.channelNameGuard(params.channelName),
                 channelSubject: this.channelSubjectGuard(params.channelSubject),
                 extendInfo: {
-                    recipientAccountNumber: params.recipientAccountNumber,
                     recipientName: params.recipientName,
+                    ...(params.recipientAccountNumber && { recipientAccountNumber: params.recipientAccountNumber }),
                     ...(params.recipientAddress && { recipientAddress: params.recipientAddress }),
                     ...(params.remarks && { remarks: params.remarks }),
                     ...(params.recipientMobile && { recipientMobile: params.recipientMobile })
@@ -369,8 +369,6 @@ expiry	Quote expire time seconds.
 
             const queryParams = new URLSearchParams({ timestamp });
             const messageToSign = `${queryParams.toString()}${JSON.stringify(requestBody)}`;
-
-            console.log('messageToSign', messageToSign)
 
             const signature = this.signMessage(messageToSign);
 
@@ -403,9 +401,9 @@ expiry	Quote expire time seconds.
      * @returns Guarded amount
      */
     amountGuard(strAmount: string): string {
-        if (process.env.NODE_ENV !== 'production') {
-            return "1";
-        }
+        // if (process.env.NODE_ENV !== 'production') {
+        //     return "1";
+        // }
         const amount = Number(strAmount);
         if (Number.isNaN(amount)) {
             throw new Error('Invalid amount');
@@ -450,18 +448,24 @@ expiry	Quote expire time seconds.
      * @returns Guarded channel subject
      */
     channelSubjectGuard(channelSubject: string): string {
-        const availableChannelSubjects = ['PH_GCASH', 'PH_MAYA', 'PH_COINS_PH']
+        const availableChannelSubjects = ['gcash', 'maya', 'coins.ph', 'PH_GCASH', 'PH_MAYA', 'PH_COINS_PH']
         if (!availableChannelSubjects.includes(channelSubject)) {
             throw new Error('Invalid channel subject');
         }
         let channelSubjectName = channelSubject;
         switch (channelSubject) {
+            case 'gcash':
             case 'PH_GCASH':
                 channelSubjectName = 'gcash';
+                break;
+            case 'maya':
             case 'PH_MAYA':
                 channelSubjectName = 'maya';
+                break;
+            case 'coins.ph':
             case 'PH_COINS_PH':
                 channelSubjectName = 'coins.ph';
+                break;
         }
         return channelSubjectName;
     }

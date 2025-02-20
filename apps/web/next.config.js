@@ -24,6 +24,7 @@ const config = {
         'passkey-factory-sdk',
         'passkey-kit-sdk',
         'sac-sdk',
+        '@freelii/anchors'
     ]
 };
 
