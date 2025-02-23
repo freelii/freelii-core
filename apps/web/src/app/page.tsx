@@ -318,7 +318,7 @@ export default function Home() {
           <div className="space-y-6">
             {!hasSubmittedWaitlist && !showWaitlist && <WaitlistButton onClick={() => setShowWaitlist(true)} />}
           </div>
-          {hasSubmittedWaitlist && <p className="text-sm text-gray-500">Thank you for joining the waitlist! We'll be in touch soon.</p>}
+          {hasSubmittedWaitlist && <p className="text-sm text-gray-500">Thank you for joining the waitlist! We&apos;ll be in touch soon.</p>}
 
 
         </div>
