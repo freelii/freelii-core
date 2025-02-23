@@ -2,15 +2,17 @@
 
 import { api } from '@/trpc/react'
 import { Button, ExpandingArrow, Input } from '@freelii/ui'
-import { Loader2 } from 'lucide-react'
+import { cn } from '@freelii/utils/functions'
+import { Loader2, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface WaitlistFormProps {
   onSuccess: () => void;
+  onBack: () => void;
 }
 
-export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
+export function WaitlistForm({ onSuccess, onBack }: WaitlistFormProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,8 +52,26 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
 
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-4 mb-8">
-      <div className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
+      <div className="mb-8 group">
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            onBack();
+          }}
+          variant="ghost"
+          className="absolute top-2 right-2 h-8 w-8 group-hover:bg-gray-100 rounded-md transition-all duration-200 ease-in-out"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        <h3 className="text-2xl font-semibold bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
+          Join the waitlist
+        </h3>
+        <p className="text-sm text-gray-600 mt-2">
+          Be among the first to give your AI agents the power to handle payments.
+        </p>
+      </div>
+      <div className="flex flex-col gap-4">
         <div className="group relative">
           <Input
             id="name"
@@ -59,7 +79,9 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
             type="text"
             placeholder="Enter your name"
             required
-            className="w-full h-12 px-4 bg-white/[0.07] border-0 rounded-lg text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.09] transition-all duration-200 ease-in-out"
+            className="w-full h-12 px-4 bg-white/50 border border-gray-200/50 rounded-lg text-gray-800 placeholder:text-gray-400 
+            focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 focus:bg-white/80 
+            transition-all duration-200 ease-in-out"
           />
         </div>
         <div className="group relative">
@@ -72,30 +94,51 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             aria-describedby="email-error"
-            className="w-full h-12 px-4 bg-white/[0.07] border-0 rounded-lg text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.09] transition-all duration-200 ease-in-out"
+            className="w-full h-12 px-4 bg-white/50 border border-gray-200/50 rounded-lg text-gray-800 placeholder:text-gray-400 
+            focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 focus:bg-white/80 
+            transition-all duration-200 ease-in-out"
           />
         </div>
-        <div className="group relative">
+        <div className="group relative space-y-2">
           <textarea
             id="useCase"
             name="useCase"
-            placeholder="What are you planning to build? (optional)"
+            placeholder="Let us know what you're building"
             rows={3}
-            className="w-full px-4 py-3 bg-white/[0.07] border-0 rounded-lg text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.09] transition-all duration-200 ease-in-out resize-none"
+            className="w-full px-4 py-3 bg-white/50 border border-gray-200/50 rounded-lg text-gray-800 placeholder:text-gray-400 
+            focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 focus:bg-white/80 
+            transition-all duration-200 ease-in-out resize-none text-sm"
           />
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span className={cn(
+              "px-2 py-0.5 text-xs font-medium rounded-full",
+              "bg-gradient-to-r from-emerald-50 to-emerald-100",
+              "text-emerald-700",
+              "border border-emerald-200/30",
+              "shadow-sm shadow-emerald-100",
+              "flex items-center gap-1",
+              "group h-4 w-8"
+            )}>
+              <ExpandingArrow className='w-3 h-3' />
+            </span>
+            <span className="text-xs group-hover:text-emerald-700 transition-all duration-200 ease-in-out">We&apos;ll send $10 in credits to the most interesting use case each week!</span>
+          </div>
         </div>
         <Button
           type="submit"
           disabled={isLoading}
-          variant="outline"
-          className="group bg-black hover:bg-gray-900 border-none text-black text-xs font-medium hover:text-gray-300 p-2 text-neutral-200 w-full rounded-xl transition-all duration-300 ease-in-out focus:outline-none"
+          className="group bg-black hover:bg-gray-900 text-white font-medium py-3 px-4 rounded-lg 
+          transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black
+          disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            'Request Early Access'
+            <>
+              Request Early Access
+              <ExpandingArrow className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </>
           )}
-          <ExpandingArrow className="w-4 h-4" />
         </Button>
       </div>
     </form>

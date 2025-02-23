@@ -8,8 +8,9 @@ export function WaitlistButton({ onClick }: WaitlistButtonProps) {
     return (
         <Button
             onClick={onClick}
-            variant="outline"
-            className="group bg-black hover:bg-gray-900 border-none text-white text-xs font-medium hover:text-gray-300 p-2 text-neutral-200 w-full rounded-xl transition-all duration-300 ease-in-out focus:outline-none"
+            className="group w-full bg-black hover:bg-gray-900 text-white font-medium py-3 px-4 rounded-lg 
+            transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black
+            disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
             Join Waitlist
             <ExpandingArrow className="w-4 h-4" />
