@@ -10,22 +10,35 @@ const quotes = [
   {
     text: "Let's restart the Facebook ad campaign. Cap it at $500",
     channel: "slack",
-    response: "✓ Campaign restarted. Budget set to $500. First results expected in 24h."
+    response: "✓ Campaign is ready to start. First results expected in 24h.",
+    confirm: "Please confirm spending $500 on Facebook Ads campaign",
+    confirmation: "Confirmed"
+  },
+  {
+    text: "Let's anticipate my monthly contribution to mom's account",
+    channel: "phone",
+    response: "$500 transferred to Sarah Johnson. Recurring payment scheduled.",
+    responseBadge: "Known recipient ✓"
   },
   {
     text: "Buy and send some flowers to my wife",
     channel: "whatsapp",
-    response: "✓ Order placed with local florist. Roses will be delivered by 2pm today."
+    response: "I found a local florist with premium roses for $75",
+    confirm: "Please confirm purchase: Premium Rose Bouquet - $75",
+    confirmation: "Sure, let's get it done"
   },
   {
     text: "Let's secure those tickets for the concert",
     channel: "telegram",
-    response: "✓ 2 VIP tickets purchased. Total: $180. Check your email for confirmation."
+    response: "Found 2 VIP tickets at $90 each. Total: $180",
+    confirm: "Authorize payment of $180 for 2 VIP concert tickets?",
+    confirmation: "Approved"
   },
   {
     text: "Move $100 into my savings account",
     channel: "phone",
-    response: "✓ Transfer complete. New savings balance: $2,450"
+    response: "Savings account updated. New balance: $4,700",
+    responseBadge: "Known recipient ✓",
   },
   {
     text: "I need to pay John Doe $100 for the website design",
@@ -56,11 +69,6 @@ const quotes = [
     text: "Pay the quarterly AWS cloud hosting bill",
     channel: "slack",
     response: "✓ Invoice paid. $3,450 transferred to AWS. New billing cycle starts tomorrow."
-  },
-  {
-    text: "Send my monthly contribution to mom's account",
-    channel: "phone",
-    response: "✓ $500 transferred to Sarah Johnson. Recurring payment scheduled."
   }
 ];
 
@@ -172,6 +180,8 @@ export default function Home() {
   const [showResponse, setShowResponse] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasSubmittedWaitlist, setHasSubmittedWaitlist] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [userConfirmation, setUserConfirmation] = useState(false);
 
   // Function to handle bottom CTA click
   const handleBottomCTAClick = () => {
@@ -182,8 +192,10 @@ export default function Home() {
 
   // Effect for quote rotation and response animation
   useEffect(() => {
-    // Reset response state when quote changes
+    // Reset all states when quote changes
     setShowResponse(false);
+    setShowConfirmation(false);
+    setUserConfirmation(false);
     setIsProcessing(true);
 
     // Show processing state for 2 seconds
@@ -196,19 +208,48 @@ export default function Home() {
       setShowResponse(true);
     }, 2500); // Show response 0.5 second after processing ends
 
-    // Rotate to next quote after response is shown
-    const quoteTimer = setTimeout(() => {
-      setQuoteIndex((current) => {
-        const nextIndex = current + 1;
-        return nextIndex >= quotes.length ? 0 : nextIndex;
-      });
-    }, 8000); // Give more time to read the full interaction
+    // If there's a confirmation step, show additional messages
+    if (quotes[quoteIndex]?.confirm) {
+      // Show confirmation request after initial response
+      const confirmTimer = setTimeout(() => {
+        setShowConfirmation(true);
+      }, 3000); // Show confirmation request 3.5 seconds after response
 
-    return () => {
-      clearTimeout(responseTimer);
-      clearTimeout(quoteTimer);
-      clearTimeout(processingTimer);
-    };
+      // Show user confirmation after request
+      const confirmationTimer = setTimeout(() => {
+        setUserConfirmation(true);
+      }, 5000); // Show user confirmation 2 seconds after request
+
+      // Rotate to next quote after all messages are shown
+      const quoteTimer = setTimeout(() => {
+        setQuoteIndex((current) => {
+          const nextIndex = current + 1;
+          return nextIndex >= quotes.length ? 0 : nextIndex;
+        });
+      }, 10000); // Total duration before next quote
+
+      return () => {
+        clearTimeout(processingTimer);
+        clearTimeout(responseTimer);
+        clearTimeout(confirmTimer);
+        clearTimeout(confirmationTimer);
+        clearTimeout(quoteTimer);
+      };
+    } else {
+      // If no confirmation required, rotate faster
+      const quoteTimer = setTimeout(() => {
+        setQuoteIndex((current) => {
+          const nextIndex = current + 1;
+          return nextIndex >= quotes.length ? 0 : nextIndex;
+        });
+      }, 8000); // Shorter duration when no confirmation needed
+
+      return () => {
+        clearTimeout(processingTimer);
+        clearTimeout(responseTimer);
+        clearTimeout(quoteTimer);
+      };
+    }
   }, [quoteIndex]);
 
   return (
@@ -289,7 +330,7 @@ export default function Home() {
               transform: `translateX(${showWaitlist ? '-100%' : '0'})`,
               opacity: showWaitlist ? 0 : 1
             }}>
-            <div className="lg:mt-48 space-y-4 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-8">
+            <div className="lg:mt-36 space-y-4 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-8">
               <div className="space-y-1">
                 <h3 className="text-sm font-medium text-gray-500">Unlimited Use Cases</h3>
                 <p className="text-xs text-gray-400">See how people are using AI Agents for payments</p>
@@ -349,7 +390,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* AI Response with animation */}
+                    {/* AI Initial Response */}
                     <div className={cn(
                       "flex items-start gap-3 transition-all duration-500",
                       quoteIndex === idx ? (
@@ -375,12 +416,61 @@ export default function Home() {
                           </div>
                         ) : (
                           <div className="inline-block max-w-[90%] bg-emerald-50 rounded-2xl rounded-tl-none px-4 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-emerald-100/50">
-                            <p className="text-sm text-emerald-800">{quote.response}</p>
+                            <div className="flex flex-col gap-1">
+                              {quote.responseBadge && (
+                                <span className="text-xs font-medium text-emerald-600 bg-emerald-100/50 w-fit px-2 py-0.5 rounded-full">
+                                  {quote.responseBadge}
+                                </span>
+                              )}
+                              <p className="text-sm text-emerald-800">{quote.response}</p>
+                            </div>
                           </div>
                         )}
                         <div className="mt-1 text-xs text-gray-400">Just now</div>
                       </div>
                     </div>
+
+                    {/* AI Confirmation Request */}
+                    {quote.confirm && (
+                      <div className={cn(
+                        "flex items-start gap-3 transition-all duration-500",
+                        quoteIndex === idx && showConfirmation ? (
+                          "opacity-100 translate-y-0"
+                        ) : "opacity-0 translate-y-4"
+                      )}>
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-medium">
+                          AI
+                        </div>
+                        <div className="flex-1">
+                          <div className="inline-block max-w-[90%] bg-emerald-50 rounded-2xl rounded-tl-none px-4 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-emerald-100/50">
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium text-emerald-600 bg-emerald-100/50 w-fit px-2 py-0.5 rounded-full">
+                                Confirmation required
+                              </span>
+                              <p className="text-sm text-emerald-800">{quote.confirm}</p>
+                            </div>
+                          </div>
+                          <div className="mt-1 text-xs text-gray-400">Just now</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* User Confirmation */}
+                    {quote.confirmation && (
+                      <div className={cn(
+                        "flex items-start gap-3 justify-end transition-all duration-500",
+                        quoteIndex === idx && userConfirmation ? (
+                          "opacity-100 translate-y-0"
+                        ) : "opacity-0 translate-y-4"
+                      )}>
+                        <div className="flex-1 flex flex-col items-end">
+                          <div className="inline-block max-w-[90%] bg-blue-500 rounded-2xl rounded-tr-none px-4 py-2 shadow-sm">
+                            <p className="text-sm text-white">{quote.confirmation}</p>
+                          </div>
+                          <div className="mt-1 text-xs text-gray-400">Just now</div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
