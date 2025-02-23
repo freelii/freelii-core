@@ -9,6 +9,15 @@ export const metadata: Metadata = {
   title: "Freelii",
   description: "Payments layer for AI Agents",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
+  openGraph: {
+    title: "Freelii",
+    description: "Payments layer for AI Agents",
+    url: "https://freelii.com",
+    siteName: "Freelii",
+    images: [
+      { url: "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7I9ADL0GDfvGeOAuH4NjyX5WQ6RwYh3nMrPa1" },
+    ],
+  },
 };
 
 export default function RootLayout({
