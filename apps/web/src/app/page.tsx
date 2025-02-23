@@ -204,7 +204,7 @@ export default function Home() {
 
             <div className="space-y-4">
               <p className="text-sm text-gray-500 flex items-center gap-2">
-                Access the AI payments layer
+                Access the payments layer for AI Agents
                 <span className={cn(
                   "px-2 py-0.5 text-xs font-medium rounded-full",
                   "bg-gradient-to-r from-emerald-50 to-emerald-100",
@@ -218,6 +218,21 @@ export default function Home() {
                     <path d="M16.28 13.61C15.15 14.74 13.53 15.09 12.1 14.64L9.51001 17.22C9.33001 17.41 8.96001 17.53 8.69001 17.49L7.49001 17.33C7.09001 17.28 6.73001 16.9 6.67001 16.51L6.51001 15.31C6.47001 15.05 6.60001 14.68 6.78001 14.49L9.36001 11.91C8.92001 10.48 9.26001 8.86001 10.39 7.73001C12.01 6.11001 14.65 6.11001 16.28 7.73001C17.9 9.34001 17.9 11.98 16.28 13.61Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Secure
+                </span>
+                <span className={cn(
+                  "px-2 py-0.5 text-xs font-medium rounded-full",
+                  "bg-gradient-to-r from-emerald-50 to-emerald-100",
+                  "text-emerald-700",
+                  "border border-emerald-200/30",
+                  "shadow-sm shadow-emerald-100",
+                  "flex items-center gap-1"
+                )}>
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M8.5 12H14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M12.5 15L15.5 12L12.5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  API first
                 </span>
               </p>
             </div>
