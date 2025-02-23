@@ -69,14 +69,28 @@ const sendPaymentSteps = [
 
 const receiveHoldSteps = [
   {
-    title: "Generate Payment Link",
-    description: "AI creates a secure payment link or invoice for incoming funds.",
-    badge: "",
+    title: "Direct Wallet Payments",
+    description: "AI agents receive payments directly to their secure wallets, enabling instant no-fee micropayments as small as $0.01 cents.",
+    badge: "Micro",
     quotes: [],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-        <path d="M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M13 2V9H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 17.5C14.2091 17.5 16 15.7091 16 13.5C16 11.2909 14.2091 9.5 12 9.5C9.79086 9.5 8 11.2909 8 13.5C8 15.7091 9.79086 17.5 12 17.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 7.5V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 17.5V19.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    )
+  },
+  {
+    title: "Autonomous Agent Earnings",
+    description: "Enable your AI agents to autonomously collect payments for their work.",
+    badge: "A2A",
+    quotes: [],
+    icon: (
+      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M8.5 15.5L12 9L15.5 15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     )
   },
@@ -105,7 +119,6 @@ const receiveHoldSteps = [
       </svg>
     )
   },
-
 ];
 
 export default function Home() {
@@ -270,7 +283,7 @@ export default function Home() {
                         )}
                       </h3>
                       <p className="text-sm text-gray-600">{step.description}</p>
-                      {step.quotes && (
+                      {step.quotes.length > 0 && (
                         <p className={cn(
                           "text-right text-sm text-gray-600 mt-3",
                           "transition-all duration-700 ease-in-out",
