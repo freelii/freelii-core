@@ -43,7 +43,7 @@ export function constructMetadata({
       fullTitle ||
       (title
         ? `${title} | Freelii`
-        : "Freelii - Smart Business Banking"),
+        : "Payments layer for AI Agents"),
     description,
     openGraph: {
       title,
