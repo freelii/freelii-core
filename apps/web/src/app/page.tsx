@@ -8,6 +8,19 @@ import { WaitlistForm } from "./_components/waitlist-form";
 
 const quotes = [
   {
+    text: "Launch a $2000 marketing campaign for our new product. Focus on best performing channels and optimize daily.",
+    channel: "slack",
+    response: "Campaign structure ready: 40% Meta, 35% Google Ads, 25% LinkedIn. Will adjust based on performance.",
+    responseBadge: "Smart Budget ↻"
+  },
+  {
+    text: "Buy and send some flowers to my wife",
+    channel: "whatsapp",
+    response: "I found a local florist with premium roses for $75",
+    confirm: "Please confirm purchase: Premium Rose Bouquet - $75",
+    confirmation: "Sure, let's get it done"
+  },
+  {
     text: "Let's restart the Facebook ad campaign. Cap it at $500",
     channel: "slack",
     response: "✓ Campaign is ready to start. First results expected in 24h.",
@@ -19,13 +32,6 @@ const quotes = [
     channel: "phone",
     response: "$500 transferred to Sarah Johnson. Recurring payment scheduled.",
     responseBadge: "Known recipient ✓"
-  },
-  {
-    text: "Buy and send some flowers to my wife",
-    channel: "whatsapp",
-    response: "I found a local florist with premium roses for $75",
-    confirm: "Please confirm purchase: Premium Rose Bouquet - $75",
-    confirmation: "Sure, let's get it done"
   },
   {
     text: "Let's secure those tickets for the concert",
