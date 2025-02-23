@@ -55,10 +55,10 @@ export default function LoginPage() {
                     <div className="flex items-center flex-1">
                         <div className="max-w-md">
                             <h1 className="text-4xl font-bold mb-2 flex items-center">
-                                Smarter Banking
+                                AI Agents
                                 <Logo className="w-10 h-10 ml-2" />
                             </h1>
-                            <h1 className="text-4xl font-bold mb-2">For Modern Businesses</h1>
+                            <h1 className="text-4xl font-bold mb-2">Payments Layer</h1>
                             {/* <div className="flex items-center mt-4 space-x-4">
                                 <span className='text-xs text-muted-foreground flex items-center'>
                                     <FlagIcon className="w-4 h-4 mr-2" currencyCode='USDC' />
