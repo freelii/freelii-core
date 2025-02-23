@@ -276,9 +276,8 @@ export default function Home() {
 
           <div className="space-y-6">
             {!hasSubmittedWaitlist && !showWaitlist && <WaitlistButton onClick={() => setShowWaitlist(true)} />}
-
           </div>
-
+          {hasSubmittedWaitlist && <p className="text-sm text-gray-500">Thank you for joining the waitlist! We'll be in touch soon.</p>}
 
 
         </div>
@@ -394,7 +393,10 @@ export default function Home() {
               opacity: showWaitlist ? 1 : 0
             }}>
             <div className="space-y-4 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm rounded-xl p-4 mt-20 pb-8">
-              <WaitlistForm onSuccess={() => setHasSubmittedWaitlist(true)} onBack={() => setShowWaitlist(false)} />
+              <WaitlistForm onSuccess={() => {
+                setHasSubmittedWaitlist(true)
+                setShowWaitlist(false)
+              }} onBack={() => setShowWaitlist(false)} />
             </div>
           </div>
         </div>
