@@ -6,18 +6,49 @@ import { useEffect, useState } from "react";
 import { WaitlistButton } from "./_components/waitlist-button";
 import { WaitlistForm } from "./_components/waitlist-form";
 
+const quotes = [
+  {
+    text: "Let's restart the Facebook ad campaign. Cap it at $500",
+    channel: "slack",
+    response: "✓ Campaign restarted. Budget set to $500. First results expected in 24h."
+  },
+  {
+    text: "Buy and send some flowers to my wife",
+    channel: "whatsapp",
+    response: "✓ Order placed with local florist. Roses will be delivered by 2pm today."
+  },
+  {
+    text: "Let's secure those tickets for the concert",
+    channel: "telegram",
+    response: "✓ 2 VIP tickets purchased. Total: $180. Check your email for confirmation."
+  },
+  {
+    text: "Move $100 into my savings account",
+    channel: "phone",
+    response: "✓ Transfer complete. New savings balance: $2,450"
+  },
+  {
+    text: "I need to pay John Doe $100 for the website design",
+    channel: "slack",
+    response: "✓ Payment sent to john@doe.com. Transaction ID: #8271"
+  },
+  {
+    text: "Order a Pizza for the team",
+    channel: "whatsapp",
+    response: "✓ 3 large pizzas ordered from Domino's. Delivery in 30 mins."
+  },
+  {
+    text: "We're out of coffee, please order some more",
+    channel: "telegram",
+    response: "✓ Coffee supplies ordered. Arriving tomorrow morning."
+  },
+];
+
 const sendPaymentSteps = [
   {
     title: "AI Agent Initiates Payment",
     description: "Your AI agent triggers secure payments to verified recipients and other agents.",
     badge: "",
-    quotes: [
-      "Let's restart the Facebook ad campaign. Cap it at $500",
-      "Buy and send some flowers to my wife",
-      "Let's secure those tickets for the concert",
-      "Move $100 into my savings account",
-      "I need to pay John Doe $100 for the website design",
-    ],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M21 7V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V7C3 4 4.5 2 8 2H16C19.5 2 21 4 21 7Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -31,7 +62,6 @@ const sendPaymentSteps = [
     title: "Customizable Controls",
     description: "Set flexible approval rules based on amount, recipient, frequency, or any custom logic you define.",
     badge: "",
-    quotes: [],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -45,7 +75,6 @@ const sendPaymentSteps = [
     title: "Secure Transfer",
     description: "Instant execution with real-time confirmation and transaction verification.",
     badge: "",
-    quotes: [],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -55,9 +84,8 @@ const sendPaymentSteps = [
   },
   {
     title: "Fee-Free Micropayments",
-    description: "Execute small transactions without transaction fees, perfect for Agent-to-Agent payments.",
-    badge: "A2A",
-    quotes: [],
+    description: "Execute small transactions without transaction fees, perfect for A2A payments.",
+    badge: "Agent-to-Agent",
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -72,7 +100,6 @@ const receiveHoldSteps = [
     title: "Direct Wallet Payments",
     description: "AI agents receive payments directly to their secure wallets, enabling instant no-fee micropayments as small as $0.01 cents.",
     badge: "Micro",
-    quotes: [],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -85,8 +112,7 @@ const receiveHoldSteps = [
   {
     title: "Autonomous Agent Earnings",
     description: "Enable your AI agents to autonomously collect payments for their work.",
-    badge: "A2A",
-    quotes: [],
+    badge: "Agent-to-Agent",
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -98,7 +124,6 @@ const receiveHoldSteps = [
     title: "Secure Wallet",
     description: "Funds are held in a secure wallet with real-time balance updates.",
     badge: "",
-    quotes: [],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M9 22H15C20 22 22 20 22 15V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -110,7 +135,6 @@ const receiveHoldSteps = [
     title: "Automated Actions",
     description: "Get instant webhook notifications when funds arrive or transactions occur.",
     badge: "",
-    quotes: [],
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
         <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -125,20 +149,31 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [showWaitlist, setShowWaitlist] = useState(false);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [showResponse, setShowResponse] = useState(false);
   const [hasSubmittedWaitlist, setHasSubmittedWaitlist] = useState(false);
 
-  // Add useEffect for quote rotation
+  // Effect for quote rotation and response animation
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Reset response state when quote changes
+    setShowResponse(false);
+
+    // Show response after a delay
+    const responseTimer = setTimeout(() => {
+      setShowResponse(true);
+    }, 1000); // 1 second delay for response
+
+    const quoteTimer = setTimeout(() => {
       setQuoteIndex((current) => {
         const nextIndex = current + 1;
-        const maxIndex = sendPaymentSteps[0]?.quotes?.length ?? 0;
-        return nextIndex >= maxIndex ? 0 : nextIndex;
+        return nextIndex >= quotes.length ? 0 : nextIndex;
       });
     }, 3000); // Change quote every 3 seconds
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearTimeout(responseTimer);
+      clearTimeout(quoteTimer);
+    };
+  }, [quoteIndex]);
 
   return (
     <main className="min-h-screen flex bg-white text-black relative overflow-hidden">
@@ -169,12 +204,12 @@ export default function Home() {
         {/* Left column */}
         <div className="space-y-8">
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold mb-2 flex items-center">
+            <h1 className="text-5xl font-bold mb-2 flex items-center">
               <span className="block xl:inline bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
                 AI Agents Can Receive,
               </span>
             </h1>
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-5xl font-bold">
               <span className="block xl:inline bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent flex items-center">
                 Hold & Spend Money
                 <svg className="w-8 h-8 ml-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -199,9 +234,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="space-y-6">
-            {!showWaitlist && !hasSubmittedWaitlist && <WaitlistButton onClick={() => setShowWaitlist(true)} />}
+          {/* Add new quotes section */}
 
+
+          <div className="space-y-6">
             <div className="space-y-4">
               <p className="text-sm text-gray-500 flex items-center gap-2">
                 Access the payments layer for AI Agents
@@ -236,7 +272,101 @@ export default function Home() {
                 </span>
               </p>
             </div>
+            {!showWaitlist && !hasSubmittedWaitlist && <WaitlistButton onClick={() => setShowWaitlist(true)} />}
+
           </div>
+
+          <div className="mt-8 space-y-4 mb-24">
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-gray-500">Unlimited Use Cases</h3>
+              <p className="text-xs text-gray-400">See how people are using AI Agents for payments</p>
+            </div>
+            <div className="relative h-[60px]">
+              {quotes.map((quote, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "absolute w-full transition-all duration-500 ease-in-out space-y-2",
+                    quoteIndex === idx
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-8"
+                  )}
+                >
+                  {/* User message */}
+                  <div className="flex items-start gap-3 justify-end">
+                    <div className="flex-1 flex flex-col items-end">
+                      <div className="inline-block max-w-[90%] bg-blue-500 rounded-2xl rounded-tr-none px-4 py-2 shadow-sm">
+                        <p className="text-sm text-white">{quote.text}</p>
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <div className="flex items-center">
+                          {quote.channel === "whatsapp" && (
+                            <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center p-1">
+                              <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM16.64 8.8C16.77 8.93 16.86 9.11 16.86 9.31C16.86 9.5 16.77 9.69 16.64 9.81L10.75 15.7C10.63 15.83 10.44 15.91 10.25 15.91C10.06 15.91 9.87 15.83 9.75 15.7L7.36 13.31C7.23 13.19 7.14 13 7.14 12.81C7.14 12.61 7.23 12.43 7.36 12.31C7.64 12.03 8.11 12.03 8.39 12.31L10.25 14.17L15.61 8.81C15.89 8.53 16.36 8.53 16.64 8.8Z" />
+                              </svg>
+                            </div>
+                          )}
+                          {quote.channel === "telegram" && (
+                            <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center p-1">
+                              <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2L2 7L12 12L22 7L12 2Z" />
+                                <path d="M2 17L12 22L22 17" />
+                                <path d="M2 12L12 17L22 12" />
+                              </svg>
+                            </div>
+                          )}
+                          {quote.channel === "slack" && (
+                            <div className="w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center p-1">
+                              <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21.99 4C21.99 2.9 21.1 2 20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H18L22 22L21.99 4ZM18 14H6V12H18V14ZM18 11H6V9H18V11ZM18 8H6V6H18V8Z" />
+                              </svg>
+                            </div>
+                          )}
+                          {quote.channel === "phone" && (
+                            <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center p-1">
+                              <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.01 15.38C18.78 15.38 17.59 15.18 16.48 14.82C16.13 14.7 15.74 14.79 15.47 15.06L13.9 17.03C11.07 15.68 8.42 13.13 7.01 10.2L8.96 8.54C9.23 8.26 9.31 7.87 9.2 7.52C8.83 6.41 8.64 5.22 8.64 3.99C8.64 3.45 8.19 3 7.65 3H4.19C3.65 3 3 3.24 3 3.99C3 13.28 10.73 21 20.01 21C20.72 21 21 20.37 21 19.82V16.37C21 15.83 20.55 15.38 20.01 15.38Z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-gray-400">Just now</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Response with animation */}
+                  <div className={cn(
+                    "flex items-start gap-3 transition-all duration-500",
+                    showResponse
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-4"
+                  )}>
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-medium">
+                      {!showResponse ? (
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      ) : "AI"}
+                    </div>
+                    <div className="flex-1">
+                      <div className="inline-block max-w-[90%] bg-emerald-50 rounded-2xl rounded-tl-none px-4 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-emerald-100/50">
+                        <p className="text-sm text-emerald-800">
+                          {!showResponse ? (
+                            <span className="animate-pulse">Processing request...</span>
+                          ) : quote.response}
+                        </p>
+                      </div>
+                      <div className="mt-1 text-xs text-gray-400">Just now</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
 
         {/* Right column - Workflow visualization */}
@@ -298,25 +428,6 @@ export default function Home() {
                         )}
                       </h3>
                       <p className="text-sm text-gray-600">{step.description}</p>
-                      {step.quotes.length > 0 && (
-                        <p className={cn(
-                          "text-right text-sm text-gray-600 mt-3",
-                          "transition-all duration-700 ease-in-out",
-                          "animate-in fade-in slide-in-from-bottom-2",
-                          "italic font-light",
-                          "flex items-center justify-end gap-2",
-                          "items-end"
-                        )}>
-                          <span className="relative">
-                            &quot;{step.quotes[quoteIndex]}&quot;
-                          </span>
-                          <span className="flex gap-[3px]">
-                            <span className="w-[3px] h-[3px] bg-gray-400 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0s' }} />
-                            <span className="w-[3px] h-[3px] bg-gray-400 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.2s' }} />
-                            <span className="w-[3px] h-[3px] bg-gray-400 rounded-full animate-[bounce_1s_infinite]" style={{ animationDelay: '0.4s' }} />
-                          </span>
-                        </p>
-                      )}
                     </div>
                   </div>
                 ))}
@@ -352,7 +463,7 @@ export default function Home() {
         </div>
       </div>
 
-      <span className="absolute bottom-8 left-8 text-xs text-muted-foreground">
+      <span className="absolute bottom-8 right-8 text-xs text-right text-muted-foreground">
         © 2025 Freelii Tech, Inc. All rights reserved.{' • '}
         <Link href="/terms" className="text-gray-400 hover:text-blue-400">Terms</Link>{' • '}
         <Link href="/privacy" className="text-gray-400 hover:text-blue-400">Privacy</Link>
