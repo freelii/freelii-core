@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     url: "https://freelii.com",
     siteName: "Freelii",
     images: [
-      { url: "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7I9ADL0GDfvGeOAuH4NjyX5WQ6RwYh3nMrPa1" },
+      { url: "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7ZZvjsxNd54Ln8TbUKVXDrv3qNhtEf9PoYl0a" },
     ],
   },
 };
