@@ -16,7 +16,7 @@ export const userRouter = createTRPCRouter({
         return user;
     }),
     addToWaitlist: publicProcedure
-        .input(z.object({ contact: z.string(), name: z.string() }))
+        .input(z.object({ contact: z.string(), name: z.string(), useCase: z.string() }))
         .mutation(async ({ ctx, input }) => {
             let isEmail = false;
             if (input.contact.includes("@")) {
@@ -26,6 +26,7 @@ export const userRouter = createTRPCRouter({
                 data: {
                     contact: input.contact,
                     name: input.name,
+                    use_case: input.useCase,
                     is_email: isEmail,
                 },
             });

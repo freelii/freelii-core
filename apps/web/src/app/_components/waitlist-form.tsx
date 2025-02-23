@@ -1,13 +1,13 @@
 'use client'
 
 import { api } from '@/trpc/react'
-import { Button, Input } from '@freelii/ui'
+import { Button, ExpandingArrow, Input } from '@freelii/ui'
 import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface WaitlistFormProps {
-  onSuccess: (count: number) => void;
+  onSuccess: () => void;
 }
 
 export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
@@ -17,7 +17,7 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
   const { mutateAsync: addToWaitlist } = api.users.addToWaitlist.useMutation({
     onSuccess: () => {
       toast.success("You're on the waitlist!");
-
+      onSuccess();
     },
     onError: () => {
       toast.error("Something went wrong. Please try again.");
@@ -31,11 +31,13 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
     const contact = formData.get('contact') as string;
-    console.log(name, contact);
+    const useCase = formData.get('useCase') as string;
+    console.log(name, contact, useCase);
     try {
       await addToWaitlist({
         name,
-        contact
+        contact,
+        useCase
       });
       // Success is handled by the mutation's onSuccess callback
       (e.target as HTMLFormElement).reset(); // Reset form after successful submission
@@ -49,18 +51,18 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4 mb-8">
-      <div className="flex flex-col gap-2">
-        <div className="flex overflow-hidden rounded-xl bg-white/5 p-1 ring-1 ring-white/20 focus-within:ring-2 focus-within:ring-blue-500">
+      <div className="flex flex-col gap-3">
+        <div className="group relative">
           <Input
             id="name"
             name="name"
             type="text"
             placeholder="Enter your name"
             required
-            className="w-full border-0 bg-transparent text-white placeholder:text-zinc-800 focus:ring-0 focus:border-transparent focus-visible:border-transparent focus:outline-none active:ring-0 active:outline-none focus-visible:ring-0 focus-visible:outline-none active:border-transparent focus-visible:ring-offset-0"
+            className="w-full h-12 px-4 bg-white/[0.07] border-0 rounded-lg text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.09] transition-all duration-200 ease-in-out"
           />
         </div>
-        <div className="flex overflow-hidden rounded-xl bg-white/5 p-1 ring-1 ring-white/20 focus-within:ring-2 focus-within:ring-blue-500">
+        <div className="group relative">
           <Input
             id="email"
             name="contact"
@@ -70,20 +72,30 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             aria-describedby="email-error"
-            className="w-full border-0 bg-transparent text-white placeholder:text-zinc-800 focus:ring-0 focus:border-transparent focus-visible:border-transparent focus:outline-none active:ring-0 active:outline-none focus-visible:ring-0 focus-visible:outline-none active:border-transparent focus-visible:ring-offset-0"
+            className="w-full h-12 px-4 bg-white/[0.07] border-0 rounded-lg text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.09] transition-all duration-200 ease-in-out"
+          />
+        </div>
+        <div className="group relative">
+          <textarea
+            id="useCase"
+            name="useCase"
+            placeholder="What are you planning to build? (optional)"
+            rows={3}
+            className="w-full px-4 py-3 bg-white/[0.07] border-0 rounded-lg text-black placeholder:text-zinc-400 focus:ring-2 focus:ring-blue-500/50 focus:bg-white/[0.09] transition-all duration-200 ease-in-out resize-none"
           />
         </div>
         <Button
           type="submit"
           disabled={isLoading}
           variant="outline"
-          className="bg-black hover:bg-gray-900 border-none text-white text-xs font-medium hover:text-gray-300 p-2 text-neutral-200 w-full rounded-xl transition-all duration-300 ease-in-out focus:outline-none"
+          className="group bg-black hover:bg-gray-900 border-none text-black text-xs font-medium hover:text-gray-300 p-2 text-neutral-200 w-full rounded-xl transition-all duration-300 ease-in-out focus:outline-none"
         >
           {isLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            'Join Waitlist'
+            'Request Early Access'
           )}
+          <ExpandingArrow className="w-4 h-4" />
         </Button>
       </div>
     </form>

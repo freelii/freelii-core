@@ -167,60 +167,7 @@ export function useWallet() {
         }
     }
 
-    const getWalletSigners = async (contractId: string, keyId: string) => {
-        console.log('Getting signers for:', { contractId, keyId });
-        if (!contractId || !keyId) return;
 
-        try {
-            // Add logging for the request
-            console.log('Making request to server.getSigners');
-
-            // Wrap the getSigners call in a try-catch to see the raw response
-            let rawResponse;
-            try {
-                rawResponse = await server.getSigners(contractId);
-                console.log('Raw response:', rawResponse);
-            } catch (fetchError) {
-                console.error('Fetch error:', {
-                    error: fetchError,
-                    status: (fetchError as { response?: { status: number } }).response?.status,
-                    statusText: (fetchError as { response?: { statusText: string } }).response?.statusText,
-                    raw: await (fetchError as { response?: { text: () => Promise<string> } }).response?.text?.(),
-                });
-                throw fetchError;
-            }
-
-            // If we get here, parse the response
-            console.log('Raw response:', rawResponse, typeof rawResponse);
-            const _signers = Array.isArray(rawResponse) ? rawResponse : [];
-            console.log('Parsed signers:', _signers);
-
-            const sudoSigner = (
-                _signers.find(({ key }) => key === keyId)
-            )?.key;
-
-            if (sudoSigner) {
-                console.log('Found sudo signer:', sudoSigner);
-            } else {
-                console.warn('No sudo signer found in admin keys');
-            }
-        } catch (error) {
-            console.error('getWalletSigners error:', {
-                error,
-                contractId,
-                keyId,
-                errorName: (error as Error).name,
-                errorMessage: (error as Error).message,
-                // Try to get more details from the response
-                response: (error as { response?: { status: number } }).response,
-                responseStatus: (error as { response?: { status: number } }).response?.status,
-                responseHeaders: (error as { response?: { headers: Record<string, string> } }).response?.headers,
-                // Try to get the raw response text
-                responseText: await (error as { response?: { text: () => Promise<string> } }).response?.text?.()
-            });
-            throw error;
-        }
-    }
 
     return {
         create,

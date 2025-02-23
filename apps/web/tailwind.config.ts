@@ -89,6 +89,10 @@ const config: Pick<Config, "presets"> = {
             'slide-in': {
               '0%': { transform: 'translateX(100%)', opacity: '0' },
               '100%': { transform: 'translateX(0)', opacity: '1' },
+            },
+            expand: {
+              '0%': { transform: 'scaleX(0)' },
+              '100%': { transform: 'scaleX(1)' }
             }
           },
         },

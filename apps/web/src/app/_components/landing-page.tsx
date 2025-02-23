@@ -30,7 +30,7 @@ export default function LandingPage() {
     const contact = formData.get('contact') as string;
 
     try {
-      await addToWaitlist({ name, contact });
+      await addToWaitlist({ name, contact, useCase: 'send' });
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       // Error handled by mutation

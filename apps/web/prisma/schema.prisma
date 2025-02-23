@@ -271,6 +271,7 @@ model Waitlist {
     id         Int      @id @default(autoincrement())
     contact    String
     name       String
+    use_case   String?
     is_email   Boolean  @default(false)
     created_at DateTime @default(now())
     updated_at DateTime @updatedAt

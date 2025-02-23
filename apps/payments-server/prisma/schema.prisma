@@ -1,0 +1,81 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         String      @id @default(uuid())
+    created_at DateTime    @default(now())
+    api_key    String      @unique
+    wallets    Wallet[]
+    WalletSet  WalletSet[]
+
+    @@map("user")
+}
+
+model Wallet {
+    id                   String        @id @default(uuid())
+    created_at           DateTime      @default(now())
+    external_id          String? // User's external agent ID
+    alias                String? // Nickname for wallet
+    user_id              String
+    user                 User          @relation(fields: [user_id], references: [id])
+    solana_address       String?       @unique
+    stripe_card_id       String?       @unique
+    state                WalletStatus  @default(UNLINKED)
+    sent_txs             Transaction[] @relation("FromWallet")
+    received_txs         Transaction[] @relation("ToWallet")
+    wallet_set           WalletSet?    @relation(fields: [wallet_set_id], references: [id])
+    wallet_set_id        String?
+    circle_wallet_set_id String?
+    circle_wallet_id     String?
+
+    @@unique([user_id, external_id])
+    @@unique([user_id, alias])
+    @@index([user_id])
+    @@index([wallet_set_id])
+    @@index([circle_wallet_set_id])
+    @@index([circle_wallet_id])
+    @@index([solana_address])
+    @@index([stripe_card_id])
+    @@map("wallets")
+}
+
+model WalletSet {
+    id         String   @id @default(uuid())
+    created_at DateTime @default(now())
+    circle_id  String   @unique // Circle's WalletSet ID
+    user_id    String
+    user       User     @relation(fields: [user_id], references: [id])
+    wallets    Wallet[]
+
+    @@index([user_id])
+    @@map("wallet_sets")
+}
+
+model Transaction {
+    id             String   @id @default(uuid())
+    created_at     DateTime @default(now())
+    from_wallet_id String
+    from_wallet    Wallet   @relation("FromWallet", fields: [from_wallet_id], references: [id])
+    to_wallet_id   String?
+    to_wallet      Wallet?  @relation("ToWallet", fields: [to_wallet_id], references: [id])
+    to_external    String?
+    amount         Float
+    type           String
+    status         String   @default("completed")
+
+    @@index([from_wallet_id])
+    @@index([to_wallet_id])
+    @@index([to_external])
+    @@map("transactions")
+}
+
+enum WalletStatus {
+    UNLINKED
+    LIVE
+}

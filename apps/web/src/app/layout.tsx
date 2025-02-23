@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: "Freelii",
-  description: "Smart Business Bank Account",
+  description: "Payments layer for AI Agents",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
