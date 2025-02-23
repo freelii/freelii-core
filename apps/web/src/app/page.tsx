@@ -40,13 +40,13 @@ const quotes = [
     confirm: "Proceed with booking 2 tickets for $180?",
     confirmation: "Something feels off, let's cancel it",
     responseBadge: "Time is running out ⚠️",
-  },
-  {
-    text: "Let's secure those tickets for the concert",
+  }, {
+    text: "Is there any ticket avilable for Linkin Park's concert in Mumbai?",
     channel: "telegram",
-    response: "Found 2 VIP tickets at $90 each. Total: $180",
-    confirm: "Authorize payment of $180 for 2 VIP concert tickets?",
-    confirmation: "Approved"
+    response: "Found 2 tickets for Linkin Park's concert in Mumbai. Total: $180",
+    confirm: "Proceed with booking 2 tickets for $180?",
+    confirmation: "Something feels off, let's cancel it",
+    responseBadge: "Time is running out ⚠️",
   },
   {
     text: "Move $100 into my savings account",
