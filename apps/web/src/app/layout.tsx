@@ -12,10 +12,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Freelii",
     description: "Payments layer for AI Agents",
-    url: "https://freelii.com",
+    url: "https://freelii.app",
     siteName: "Freelii",
     images: [
-      { url: "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7ZZvjsxNd54Ln8TbUKVXDrv3qNhtEf9PoYl0a" },
+      { url: "https://b4slusdeu7.ufs.sh/f/WtrbKSQbxOe7SGy2N5MRNZKja2pwYey3b5cUGO4J8HxgstCB" },
     ],
   },
 };
