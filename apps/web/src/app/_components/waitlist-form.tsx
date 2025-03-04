@@ -3,16 +3,15 @@
 import { api } from '@/trpc/react'
 import { Button, ExpandingArrow, Input } from '@freelii/ui'
 import { cn } from '@freelii/utils/functions'
-import { Loader2, X } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
 interface WaitlistFormProps {
   onSuccess: () => void;
-  onBack: () => void;
 }
 
-export function WaitlistForm({ onSuccess, onBack }: WaitlistFormProps) {
+export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,23 +51,13 @@ export function WaitlistForm({ onSuccess, onBack }: WaitlistFormProps) {
 
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-6">
+    <form onSubmit={handleSubmit} className="w-full space-y-6 mt-4">
       <div className="mb-8 group">
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            onBack();
-          }}
-          variant="ghost"
-          className="absolute top-2 right-2 h-8 w-8 group-hover:bg-gray-100 rounded-md transition-all duration-200 ease-in-out"
-        >
-          <X className="h-4 w-4" />
-        </Button>
         <h3 className="text-2xl font-semibold bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
           Join the waitlist
         </h3>
         <p className="text-sm text-gray-600 mt-2">
-          Be among the first to give your AI agents the power to handle payments.
+          Be among the first businesses to experience smarter banking built on USDC.
         </p>
       </div>
       <div className="flex flex-col gap-4">
@@ -103,7 +92,7 @@ export function WaitlistForm({ onSuccess, onBack }: WaitlistFormProps) {
           <textarea
             id="useCase"
             name="useCase"
-            placeholder="Let us know what you're building"
+            placeholder="Let us know how you're using USDC"
             rows={3}
             className="w-full px-4 py-3 bg-white/50 border border-gray-200/50 rounded-lg text-gray-800 placeholder:text-gray-400 
             focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 focus:bg-white/80 
@@ -121,7 +110,7 @@ export function WaitlistForm({ onSuccess, onBack }: WaitlistFormProps) {
             )}>
               <ExpandingArrow className='w-3 h-3' />
             </span>
-            <span className="text-xs group-hover:text-emerald-700 transition-all duration-200 ease-in-out">We&apos;ll send $10 in credits to the most interesting use case each week!</span>
+            <span className="text-xs group-hover:text-emerald-700 transition-all duration-200 ease-in-out">We&apos;ll send $10 in credits to the most interesting use cases!</span>
           </div>
         </div>
         <Button
