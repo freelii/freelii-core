@@ -152,7 +152,7 @@ export function WalletOnboarding() {
 
                             <div className="flex items-start gap-3 p-4 bg-white/90 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.05)] hover:shadow-[0_0_25px_rgba(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-1">
                                 <div className="p-2 bg-primary/10 rounded-lg">
-                                    <FlagIcon currencyCode="USDC" />
+                                    <FlagIcon currencyCode="USDC-Hardcoded" />
                                 </div>
                                 <div>
                                     <h3 className="font-medium">Digital Currency Ready</h3>

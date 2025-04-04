@@ -71,39 +71,45 @@ export class AnchorService {
             prioritizeExchangeRate?: boolean;
         } = {}
     ): Promise<{ anchor: Anchor; rate: AnchorRate }> {
-        const availableAnchors = await this.getAvailableAnchors(
-            amount,
-            sourceCurrency,
-            destinationCurrency,
-            paymentRail
-        );
-
-        if (availableAnchors.length === 0) {
-            throw new Error(`No anchors found for ${sourceCurrency} to ${destinationCurrency} on ${paymentRail}`);
-        }
-
-        // Score each anchor based on preferences
-        const scoredAnchors = availableAnchors.map(({ anchor, rate }): { anchor: Anchor, rate: AnchorRate, score: number } => {
-            let score = 0;
-
-            if (preferences.prioritizeExchangeRate) {
-                // Higher exchange rate is better
-                score += rate.exchangeRate * 100;
+        return {
+            anchor: this.getAnchor('CoinsPH'),
+            rate: {
+                exchangeRate: 57.5
             }
-
-            return { anchor, rate, score };
-        });
-
-        // Sort by score and return the best option
-        scoredAnchors.sort((a, b) => b.score - a.score);
-
-
-        if (!scoredAnchors[0]) {
-            throw new Error(`No anchor found for ${sourceCurrency} to ${destinationCurrency} on ${paymentRail}`);
         }
+        // const availableAnchors = await this.getAvailableAnchors(
+        //     amount,
+        //     sourceCurrency,
+        //     destinationCurrency,
+        //     paymentRail
+        // );
 
-        const { anchor, rate } = scoredAnchors[0];
+        // if (availableAnchors.length === 0) {
+        //     throw new Error(`No anchors found for ${sourceCurrency} to ${destinationCurrency} on ${paymentRail}`);
+        // }
 
-        return { anchor, rate };
+        // // Score each anchor based on preferences
+        // const scoredAnchors = availableAnchors.map(({ anchor, rate }): { anchor: Anchor, rate: AnchorRate, score: number } => {
+        //     let score = 0;
+
+        //     if (preferences.prioritizeExchangeRate) {
+        //         // Higher exchange rate is better
+        //         score += rate.exchangeRate * 100;
+        //     }
+
+        //     return { anchor, rate, score };
+        // });
+
+        // // Sort by score and return the best option
+        // scoredAnchors.sort((a, b) => b.score - a.score);
+
+
+        // if (!scoredAnchors[0]) {
+        //     throw new Error(`No anchor found for ${sourceCurrency} to ${destinationCurrency} on ${paymentRail}`);
+        // }
+
+        // const { anchor, rate } = scoredAnchors[0];
+
+        // return { anchor, rate };
     }
 }

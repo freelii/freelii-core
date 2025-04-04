@@ -1,5 +1,3 @@
-import { TESTNET } from "@freelii/utils/constants";
-import { MAINNET } from "@freelii/utils/constants/stellar-sac";
 import { BaseService } from "../base-service";
 import { StellarService } from "../stellar/stellar-service";
 
@@ -37,14 +35,14 @@ export class WalletService extends BaseService {
                     create: [
                         {
                             address: 'XLM',
-                            currency: 'XLM',
+                            currency: 'USDC',
                             amount: 0,
                         },
-                        {
-                            address: input.network === "mainnet" ? MAINNET.USDC : TESTNET.USDC,
-                            currency: "USDC",
-                            amount: 0,
-                        }
+                        // {
+                        //     address: input.network === "mainnet" ? MAINNET.USDC : TESTNET.USDC,
+                        //     currency: "USDC",
+                        //     amount: 0,
+                        // }
                     ],
                 },
             },
@@ -54,9 +52,9 @@ export class WalletService extends BaseService {
         });
 
         // Then update the wallet to set the USDC balance as the main balance
-        const mainBalance = wallet.balances.find(b => b.currency === this.mainCurrency);
+        const mainBalance = wallet.balances.find(b => b.currency === this.mainCurrency) ?? wallet.balances[0];
         if (!mainBalance) {
-            throw new Error('USDC balance not created');
+            throw new Error('Main balance not created');
         }
 
         const updatedWallet = await this.db.wallet.update({

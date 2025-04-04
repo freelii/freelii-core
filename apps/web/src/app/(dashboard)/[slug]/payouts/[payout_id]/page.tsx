@@ -527,7 +527,7 @@ export default function PayoutDetailsPage() {
                                                         {isInstant ? (
                                                             "Instant delivery"
                                                         ) : (
-                                                            isEwallet ? "1-2 hours" : `Within 24 hours`
+                                                            isEwallet ? "Instant" : `Within 24 hours`
                                                         )}
                                                     </p>
                                                 </div>
