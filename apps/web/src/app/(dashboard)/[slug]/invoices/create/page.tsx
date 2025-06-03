@@ -1,13 +1,15 @@
 "use client"
 
 import { useWalletStore } from "@/hooks/stores/wallet-store"
+import { generateInvoiceFilename, generateInvoicePDF } from "@/lib/pdf-utils"
 import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
 import { MaxWidthWrapper, useRouterStuff } from "@freelii/ui"
 import { cn, fromStroops } from "@freelii/utils/functions"
 import { fromFormattedToNumber } from "@freelii/utils/functions/format-currency"
 import { noop } from "@tanstack/react-table"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import toast from "react-hot-toast"
 import { InvoiceForm } from "./invoice-form"
 import { InvoicePreview } from "./invoice-preview"
 import { type InvoiceFormData } from "./types"
@@ -32,6 +34,7 @@ export default function CreateInvoicePage() {
     const { searchParams } = useRouterStuff()
     const { selectedWalletId } = useWalletStore()
     const [formData, setFormData] = useState<InvoiceFormData>(initialFormData)
+    const invoicePreviewRef = useRef<HTMLDivElement>(null)
 
     const txId = searchParams?.get("tx_id")
 
@@ -46,6 +49,28 @@ export default function CreateInvoicePage() {
 
     const handleFormChange = (data: Partial<InvoiceFormData>) => {
         setFormData(prev => ({ ...prev, ...data }))
+    }
+
+    const handleGeneratePDF = async () => {
+        if (!invoicePreviewRef.current) {
+            toast.error('Invoice preview not available')
+            return
+        }
+
+        const toastId = toast.loading('Generating PDF...')
+
+        try {
+            const filename = generateInvoiceFilename(formData.invoiceNumber || 'invoice')
+            await generateInvoicePDF(invoicePreviewRef.current, {
+                filename,
+                quality: 0.95,
+                scale: 3
+            })
+            toast.success('PDF downloaded successfully!', { id: toastId })
+        } catch (error) {
+            console.error('Failed to generate PDF:', error)
+            toast.error('Failed to generate PDF. Please try again.', { id: toastId })
+        }
     }
 
     useEffect(() => {
@@ -100,13 +125,18 @@ export default function CreateInvoicePage() {
                             updateLineItem={noop}
                             removeLineItem={noop}
                             setIsNewClient={noop}
+                            onGeneratePDF={handleGeneratePDF}
                         />
                     </div>
 
 
                     {/* Right side - Preview */}
                     <div className="shadow-sm py-4">
-                        <InvoicePreview data={formData} client={client} />
+                        <InvoicePreview
+                            ref={invoicePreviewRef}
+                            data={formData}
+                            client={client}
+                        />
                     </div>
                 </div>
             </MaxWidthWrapper>

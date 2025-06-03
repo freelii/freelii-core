@@ -1,13 +1,13 @@
 import {
-    Client,
+    type Client,
     TransactionMovementType,
-    Transactions,
+    type Transactions,
     TransactionStatus,
     TransactionType,
-    User
+    type User
 } from "@prisma/client";
 import dayjs from "dayjs";
-import { ITransactionDetails } from "./transaction-details";
+import { type ITransactionDetails } from "./transaction-details";
 
 
 export const formatTransaction = (transaction: Transactions & { recipient?: Client | null, sender?: User | null }): ITransactionDetails => {

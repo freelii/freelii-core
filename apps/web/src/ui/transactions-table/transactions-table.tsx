@@ -1,10 +1,10 @@
 import { cn, fromStroops } from '@freelii/utils'
-import { Client, Transactions, User } from '@prisma/client'
+import { type Client, type Transactions, type User } from '@prisma/client'
 import dayjs from 'dayjs'
 import { ArrowDownRight, ArrowUpRight, InboxIcon } from 'lucide-react'
 import Link from 'next/link'
 import { StatusBadge } from '../shared/badges/status-badge'
-import { ITransactionDetails } from './transaction-details'
+import { type ITransactionDetails } from './transaction-details'
 import { formatTransaction } from './transaction-formatter'
 
 interface TransactionsTableProps {

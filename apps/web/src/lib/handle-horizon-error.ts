@@ -1,6 +1,6 @@
 import { Horizon } from "@stellar/stellar-sdk";
 import { TRPCError } from "@trpc/server";
-import { AxiosError } from "axios";
+import { type AxiosError } from "axios";
 
 export function handleHorizonServerError(error: unknown) {
     console.log("horizon error", error);

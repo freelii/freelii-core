@@ -1,10 +1,10 @@
-import { Prisma, RecipientType } from "@prisma/client";
-import { z } from "zod";
+import { type Prisma, RecipientType } from "@prisma/client";
+import { type z } from "zod";
 import { BaseService } from "../base-service";
 import { PaymentAccountService } from "../payment-account/payment-account-service";
-import { ClientCreateSchema } from "./schemas/client-create.schema";
-import { ClientGetSchema } from "./schemas/client-get.schema";
-import { ClientSearchSchema } from "./schemas/client-search.schema";
+import { type ClientCreateSchema } from "./schemas/client-create.schema";
+import { type ClientGetSchema } from "./schemas/client-get.schema";
+import { type ClientSearchSchema } from "./schemas/client-search.schema";
 
 
 export class ClientService extends BaseService {

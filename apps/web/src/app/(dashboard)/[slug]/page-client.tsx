@@ -2,7 +2,7 @@
 
 import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { api } from "@/trpc/react"
-import { ITransactionDetails } from "@/ui/transactions-table/transaction-details"
+import { type ITransactionDetails } from "@/ui/transactions-table/transaction-details"
 import { useWallet } from "@/wallet/useWallet"
 import { Button, LoadingSpinner } from "@freelii/ui"
 import { fromStroops } from "@freelii/utils/functions"

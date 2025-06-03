@@ -3,15 +3,15 @@ import { api } from "@/trpc/react";
 import { Badge, Button, Checkbox, HoverCard, HoverCardContent, HoverCardTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@freelii/ui";
 import { cn } from "@freelii/utils/functions";
 import {
-    Address, BlockchainAccount,
-    Client,
-    EwalletAccount,
-    FiatAccount,
-    PaymentDestination,
+    type Address, type BlockchainAccount,
+    type Client,
+    type EwalletAccount,
+    type FiatAccount,
+    type PaymentDestination,
     RecipientType,
     VerificationStatus
 } from "@prisma/client";
-import { ColumnDef, ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
+import { type ColumnDef, type ColumnFiltersState, type SortingState, type VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { Archive, Building2, CheckCircle2, Clock, CreditCard, Send, Shield, UserPlus } from "lucide-react";
 import Link from "next/link";

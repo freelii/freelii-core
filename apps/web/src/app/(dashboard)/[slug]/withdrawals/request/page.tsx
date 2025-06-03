@@ -6,7 +6,7 @@ import { useWallet } from "@/wallet/useWallet";
 import { Badge, Button, Input, LoadingDots, MaxWidthWrapper, useRouterStuff } from "@freelii/ui";
 import { CURRENCIES } from "@freelii/utils/constants";
 import { cn, fromStroops, hasEnoughBalance, shortAddress, toStroops } from "@freelii/utils/functions";
-import { BlockchainAccount, EwalletAccount, FiatAccount } from "@prisma/client";
+import { type BlockchainAccount, type EwalletAccount, type FiatAccount } from "@prisma/client";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { AnimatePresence, motion } from "framer-motion";

@@ -20,7 +20,7 @@ import {
     Textarea
 } from "@freelii/ui"
 import { cn, CURRENCIES } from "@freelii/utils"
-import { Address, Client } from "@prisma/client"
+import { type Address, type Client } from "@prisma/client"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { ArrowLeft, ArrowRight, Clock, Plus } from "lucide-react"
@@ -46,9 +46,10 @@ interface InvoiceFormProps {
     handleAddClient?: () => Promise<void>
     handleCreateInvoice?: () => Promise<void>
     isCreating?: boolean
+    onGeneratePDF?: () => Promise<void>
 }
 
-export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormProps) {
+export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF }: InvoiceFormProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [showCustomDueDate, setShowCustomDueDate] = useState(false);
@@ -170,7 +171,7 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
                 setShowCustomDueDate
             }
         },
-        { id: 4, name: "Review", component: ReviewStep, props: { formData, onChange } },
+        { id: 4, name: "Review", component: ReviewStep, props: { formData, invoiceTo: clients.find((client) => client.id === formData.clientId), handleCreateInvoice, isCreating, onGeneratePDF } },
     ]
 
     const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
@@ -200,7 +201,8 @@ export function InvoiceForm({ formData, clients = [], onChange }: InvoiceFormPro
                     newClientData,
                     handleAddClient,
                     handleCreateInvoice,
-                    isCreating
+                    isCreating,
+                    onGeneratePDF
                 })}
             </div>
 
@@ -649,7 +651,7 @@ function PaymentDetailsStep({
     )
 }
 
-function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCreating }: InvoiceFormProps) {
+function ReviewStep({ formData, invoiceTo, handleCreateInvoice, isCreating, onGeneratePDF }: Omit<InvoiceFormProps, 'onChange'>) {
 
     const getSchedulePreview = () => {
         if (!formData.repeatSchedule) return null;
@@ -765,9 +767,10 @@ function ReviewStep({ formData, onChange, invoiceTo, handleCreateInvoice, isCrea
             <div className="flex justify-end gap-4 pt-4">
                 <Button
                     variant="outline"
-                    onClick={() => {/* Handle create only */ }}
+                    onClick={onGeneratePDF}
+                    disabled={!onGeneratePDF}
                 >
-                    Create
+                    Create PDF
                 </Button>
                 <Button
                     disabled={isCreating}

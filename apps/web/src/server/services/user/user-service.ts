@@ -1,4 +1,4 @@
-import { BlockchainAccount, EwalletAccount, EwalletProvider, FiatAccount, FiatAccountType, TransferMethod, User } from "@prisma/client";
+import { type BlockchainAccount, type EwalletAccount, EwalletProvider, type FiatAccount, FiatAccountType, TransferMethod, type User } from "@prisma/client";
 import { BaseService } from "../base-service";
 import { type LinkWithdrawalAccountInput } from "./schemas/link-withdrawal-account.schema";
 

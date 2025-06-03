@@ -12,8 +12,8 @@ import {
 import { ArrowRight } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import {
-    Dispatch,
-    SetStateAction,
+    type Dispatch,
+    type SetStateAction,
     createContext,
     useCallback,
     useContext,
@@ -22,9 +22,9 @@ import {
     useState,
 } from "react";
 import {
-    Control,
-    UseFormSetValue,
-    UseFormWatch,
+    type Control,
+    type UseFormSetValue,
+    type UseFormWatch,
     useForm,
 } from "react-hook-form";
 import toast from "react-hot-toast";

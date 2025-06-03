@@ -4,9 +4,9 @@ import { noop } from "@freelii/utils/functions";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
   createContext
 } from "react";
 import { useImportCsvModal } from "./import-csv-modal";

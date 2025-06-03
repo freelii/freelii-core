@@ -3,7 +3,7 @@
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler"
 import { api } from "@/trpc/react"
 import { WalletDropdown } from "@/ui/layout/sidebar/wallet-dropdown"
-import { Recipient, RecipientsTable } from "@/ui/recipients-table/recipients-table"
+import { type Recipient, RecipientsTable } from "@/ui/recipients-table/recipients-table"
 import { useWallet } from "@/wallet/useWallet"
 import {
   BlurImage,

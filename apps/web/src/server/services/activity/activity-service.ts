@@ -1,4 +1,4 @@
-import { Invoice, PaymentOrchestrationState, Wallet } from "@prisma/client";
+import { type Invoice, type PaymentOrchestrationState, type Wallet } from "@prisma/client";
 import dayjs from "dayjs";
 import { BaseService } from "../base-service";
 

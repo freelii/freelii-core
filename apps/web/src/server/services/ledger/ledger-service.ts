@@ -1,5 +1,5 @@
-import { TransactionMovementType, Transactions, TransactionStatus, TransactionType } from "@prisma/client";
-import { BaseService, BaseServiceOptions } from "../base-service";
+import { TransactionMovementType, type Transactions, TransactionStatus, TransactionType } from "@prisma/client";
+import { BaseService, type BaseServiceOptions } from "../base-service";
 
 interface LedgerServiceOptions extends BaseServiceOptions {
     walletId: string;

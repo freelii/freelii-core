@@ -4,12 +4,12 @@ import {
     type GetQuoteParams
 } from '@freelii/anchors';
 import {
-    BlockchainAccount,
-    Client,
-    EwalletAccount,
-    FiatAccount,
-    PaymentDestination,
-    PaymentOrchestrationState,
+    type BlockchainAccount,
+    type Client,
+    type EwalletAccount,
+    type FiatAccount,
+    type PaymentDestination,
+    type PaymentOrchestrationState,
     PaymentOrchestrationStatus,
     TransactionStatus,
     type PrismaClient

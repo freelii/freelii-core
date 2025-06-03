@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { type z } from "zod";
 import { BaseService } from "../base-service";
-import { InvoiceCreateSchema } from "./schemas/invoice-create.schema";
+import { type InvoiceCreateSchema } from "./schemas/invoice-create.schema";
 
 export class InvoiceService extends BaseService {
 

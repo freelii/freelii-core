@@ -1,5 +1,5 @@
-import { PaymentRail } from "@freelii/anchors";
-import { EwalletProvider, PaymentOrchestrationState, TransactionStatus } from "@prisma/client";
+import { type PaymentRail } from "@freelii/anchors";
+import { type EwalletProvider, type PaymentOrchestrationState, type TransactionStatus } from "@prisma/client";
 
 export interface LiquidationAddress {
     id: string;

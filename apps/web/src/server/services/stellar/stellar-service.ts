@@ -1,6 +1,6 @@
 import { getAsset } from "@/lib/get-asset";
 import { MAINNET, TESTNET } from "@freelii/utils/constants/stellar-sac";
-import { Wallet, WalletBalance } from "@prisma/client";
+import { type Wallet, type WalletBalance } from "@prisma/client";
 import { Asset, Horizon, rpc, StrKey } from "@stellar/stellar-sdk";
 
 interface StellarServiceOptions {

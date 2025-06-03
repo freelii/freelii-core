@@ -1,6 +1,6 @@
 import { Badge } from "@freelii/ui";
 import { shortAddress } from "@freelii/utils/functions";
-import { BlockchainAccount, EwalletAccount, FiatAccount, PaymentDestination } from "@prisma/client";
+import { type BlockchainAccount, type EwalletAccount, type FiatAccount, type PaymentDestination } from "@prisma/client";
 
 
 

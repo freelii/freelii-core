@@ -1,6 +1,6 @@
 "use client"
 
-import { FiatAccount, Withdrawal } from "@/fixtures/useFixtures"
+import { type FiatAccount, type Withdrawal } from "@/fixtures/useFixtures"
 import { api } from "@/trpc/react"
 import { XLMIcon } from "@/ui/icons/xlm-icon"
 import { FlagIcon } from "@/ui/shared/flag-icon"
