@@ -15,4 +15,5 @@ export const InvoiceCreateSchema = z.object({
     notes: z.string().optional(),
     currency: z.enum(["USD", "PHP"]),
     lineItems: z.array(LineItemSchema),
+    transactionId: z.string().optional(),
 });

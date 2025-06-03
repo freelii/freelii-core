@@ -81,8 +81,16 @@ export default function TransactionsTable({
                             <div className="text-right">
                                 <div className=" font-medium flex items-center gap-1 justify-end">
                                     <Link href={`/dashboard/invoices/${transaction.invoice_id ?? 'create?tx_id=' + transaction.id}`}>
-                                        <span className="inline-flex items-center mr-2 rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                            {transaction.invoice_id ? "View Invoice" : "Invoice"}
+                                        <span className={cn(
+                                            "inline-flex items-center mr-2 rounded-md px-1.5 py-0.5 text-xs font-medium border cursor-pointer transition-colors",
+                                            transaction.invoice_id
+                                                ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300"
+                                                : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                                        )}>
+                                            {transaction.invoice_id
+                                                ? (transaction.type === 'sent' ? "View Receipt" : "View Invoice")
+                                                : (transaction.type === 'sent' ? "Receipt" : "Invoice")
+                                            }
                                         </span>
                                     </Link>
                                     {fromStroops(transaction.amount, 2)}

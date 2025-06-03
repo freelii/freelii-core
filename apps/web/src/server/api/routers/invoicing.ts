@@ -10,6 +10,12 @@ export const invoicingRouter = createTRPCRouter({
             const invoiceService = new InvoiceService({ db: ctx.db, session: ctx.session });
             return invoiceService.search(input.query);
         }),
+    findByTransactionId: protectedProcedure
+        .input(z.object({ transactionId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const invoiceService = new InvoiceService({ db: ctx.db, session: ctx.session });
+            return invoiceService.findByTransactionId(input.transactionId);
+        }),
     create: protectedProcedure
         .input(InvoiceCreateSchema)
         .mutation(async ({ ctx, input }) => {

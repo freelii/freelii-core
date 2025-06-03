@@ -204,6 +204,9 @@ model Transactions {
     recipient_id Int
     recipient    Client @relation(fields: [recipient_id], references: [id])
 
+    // Relationship to invoices (for invoices generated from this transaction)
+    invoices Invoice[]
+
     @@index([sender_id])
     @@index([recipient_id])
     @@index([wallet_id])
@@ -214,7 +217,7 @@ model Transactions {
 // Invoice model
 model Invoice {
     id             String   @id @default(uuid())
-    invoice_number String   @unique
+    invoice_number String
     po_number      String? // Purchase Order number
     currency       String // e.g., "PHP", "USD", "USDC"
     subtotal       Int // Sum of line items before tax
@@ -227,6 +230,10 @@ model Invoice {
     notes          String?
     created_at     DateTime @default(now())
     updated_at     DateTime @updatedAt
+
+    // Optional link to a transaction (for invoices generated from payments)
+    transaction_id String?
+    transaction    Transactions? @relation(fields: [transaction_id], references: [id])
 
     // Fields for invoice generation
     generator_id Int?
@@ -246,6 +253,7 @@ model Invoice {
     @@index([generator_id])
     @@index([client_id])
     @@index([receiver_id])
+    @@index([transaction_id])
     @@map("invoices")
 }
 

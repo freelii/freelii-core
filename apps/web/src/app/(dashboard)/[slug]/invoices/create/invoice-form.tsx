@@ -47,9 +47,10 @@ interface InvoiceFormProps {
     handleCreateInvoice?: () => Promise<void>
     isCreating?: boolean
     onGeneratePDF?: () => Promise<void>
+    isReceipt?: boolean
 }
 
-export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF }: InvoiceFormProps) {
+export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF, isReceipt = false }: InvoiceFormProps) {
     const [isCreating, setIsCreating] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [showCustomDueDate, setShowCustomDueDate] = useState(false);
@@ -70,7 +71,12 @@ export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF }:
         onSuccess: () => {
             toast.success("Invoice created successfully")
             void ctx.invoicing.search.refetch();
+            setIsCreating(false);
         },
+        onError: (error) => {
+            toast.error((error as unknown as Error)?.message ?? "Failed to create invoice")
+            setIsCreating(false);
+        }
     });
     const { mutateAsync: addClient } = api.clients.create.useMutation({
         onSuccess: (newClient) => {
@@ -87,9 +93,9 @@ export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF }:
 
     const handleCreateInvoice = async () => {
         setIsCreating(true);
-        console.log(formData.lineItems, formData)
         await createInvoice({
             clientId: formData.clientId?.toString() ?? "",
+            transactionId: formData.transactionId,
             invoiceNumber: formData.invoiceNumber,
             poNumber: formData.poNumber,
             currency: formData.currency as "USD" | "PHP",
@@ -171,7 +177,7 @@ export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF }:
                 setShowCustomDueDate
             }
         },
-        { id: 4, name: "Review", component: ReviewStep, props: { formData, invoiceTo: clients.find((client) => client.id === formData.clientId), handleCreateInvoice, isCreating, onGeneratePDF } },
+        { id: 4, name: "Review", component: ReviewStep, props: { formData, invoiceTo: clients.find((client) => client.id === formData.clientId), handleCreateInvoice, isCreating, onGeneratePDF, isReceipt } },
     ]
 
     const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
@@ -202,7 +208,8 @@ export function InvoiceForm({ formData, clients = [], onChange, onGeneratePDF }:
                     handleAddClient,
                     handleCreateInvoice,
                     isCreating,
-                    onGeneratePDF
+                    onGeneratePDF,
+                    isReceipt
                 })}
             </div>
 
@@ -651,7 +658,7 @@ function PaymentDetailsStep({
     )
 }
 
-function ReviewStep({ formData, invoiceTo, handleCreateInvoice, isCreating, onGeneratePDF }: Omit<InvoiceFormProps, 'onChange'>) {
+function ReviewStep({ formData, invoiceTo, handleCreateInvoice, isCreating, onGeneratePDF, isReceipt }: Omit<InvoiceFormProps, 'onChange'>) {
 
     const getSchedulePreview = () => {
         if (!formData.repeatSchedule) return null;
@@ -681,9 +688,9 @@ function ReviewStep({ formData, invoiceTo, handleCreateInvoice, isCreating, onGe
 
     return (
         <div className="space-y-6">
-            {/* Invoice Summary */}
+            {/* Invoice/Receipt Summary */}
             <div className="rounded-lg border p-6 space-y-4">
-                <h3 className="font-semibold text-lg">Invoice Summary</h3>
+                <h3 className="font-semibold text-lg">{isReceipt ? "Receipt Summary" : "Invoice Summary"}</h3>
 
                 {invoiceTo && (
                     <div className="flex items-center gap-2 border-none p-2 rounded-lg bg-gray-100 justify-between">
@@ -779,7 +786,7 @@ function ReviewStep({ formData, invoiceTo, handleCreateInvoice, isCreating, onGe
                 >
                     {isCreating ?
                         <LoadingDots className="h-4 w-4" color="white" />
-                        : "Create and Send"}
+                        : (isReceipt ? "Create Receipt" : "Create and Send")}
                     <ExpandingArrow className="ml-1 h-4 w-4" />
                 </Button>
             </div>

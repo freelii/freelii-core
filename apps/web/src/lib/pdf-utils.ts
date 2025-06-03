@@ -107,5 +107,9 @@ export async function generateInvoicePDF(
 export function generateInvoiceFilename(invoiceNumber: string): string {
     const sanitizedNumber = invoiceNumber.replace(/[^a-zA-Z0-9-_]/g, '_')
     const timestamp = new Date().toISOString().split('T')[0]
-    return `invoice_${sanitizedNumber}_${timestamp}.pdf`
+
+    // Determine document type based on prefix
+    const documentType = invoiceNumber.startsWith('RCP-') ? 'receipt' : 'invoice'
+
+    return `${documentType}_${sanitizedNumber}_${timestamp}.pdf`
 } 

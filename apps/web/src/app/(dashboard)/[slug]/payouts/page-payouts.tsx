@@ -27,7 +27,7 @@ import {
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { CheckCircle2, ChevronRight } from "lucide-react"
+import { CheckCircle2, ChevronRight, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import React, { useEffect } from "react"
 import toast from "react-hot-toast"
@@ -79,6 +79,37 @@ export type Payout = {
   notes?: string
   status: string
   isInstant: boolean
+  invoices?: Array<{ id: string; invoice_number: string }>
+}
+
+// Component to handle receipt actions for each transaction
+function ReceiptActionCell({ transaction }: { transaction: Payout }) {
+  const invoice = transaction.invoices?.[0]
+
+  if (invoice) {
+    return (
+      <Link
+        href={`/dashboard/invoices?search=${invoice.invoice_number}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-200 hover:bg-blue-100 cursor-pointer transition-colors hover:border-blue-300">
+          <ExternalLink className="h-3 w-3" />
+          View Receipt
+        </span>
+      </Link>
+    )
+  }
+
+  return (
+    <Link
+      href={`/dashboard/invoices/create?tx_id=${transaction.id}`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300">
+        Generate Receipt
+      </span>
+    </Link>
+  )
 }
 
 export const columns: ColumnDef<Payout>[] = [
@@ -198,19 +229,10 @@ export const columns: ColumnDef<Payout>[] = [
   {
     accessorKey: "actions",
     enableHiding: true,
-    header: () => null,
+    header: "Receipt",
     size: 120,
     cell: ({ row }) => {
-      return (
-        <Link
-          href={`/dashboard/invoices/create?tx_id=${row.original.id}`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span className="inline-flex items-center rounded-md bg-gray-50 px-1.5 py-0.5 text-xs font-medium text-gray-600 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors hover:border-gray-300 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out">
-            Generate Invoice
-          </span>
-        </Link>
-      )
+      return <ReceiptActionCell transaction={row.original} />
     },
   },
 ]
@@ -273,7 +295,11 @@ export default function PayoutsTable() {
           } : null] as Recipient[],
           progress: "One-time payment",
           status: tx.status,
-          isInstant: !!tx.blockchain_tx_hash
+          isInstant: !!tx.blockchain_tx_hash,
+          invoices: tx.invoices?.map(invoice => ({
+            id: invoice.id,
+            invoice_number: invoice.invoice_number
+          }))
         }
       }))
     }
@@ -363,6 +389,13 @@ export default function PayoutsTable() {
           >
             <Link href={`payouts/new`}>
               New Payment
+            </Link>
+          </Button>
+          <Button
+            onClick={noop}
+          >
+            <Link href={`/dashboard/bulk-disbursements/new`}>
+              Bulk Disbursements
             </Link>
           </Button>
         </div>

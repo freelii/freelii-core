@@ -11,10 +11,11 @@ import { type InvoiceFormData } from "./types"
 interface InvoicePreviewProps {
     data: InvoiceFormData
     client?: Partial<Client> & { address?: Partial<Address> | null } | null
+    isReceipt?: boolean
 }
 
 export const InvoicePreview = forwardRef<HTMLDivElement, InvoicePreviewProps>(
-    ({ data, client }, ref) => {
+    ({ data, client, isReceipt = false }, ref) => {
         const [zoom, setZoom] = useState(65)
 
         const handleZoomIn = () => {
@@ -83,9 +84,9 @@ export const InvoicePreview = forwardRef<HTMLDivElement, InvoicePreviewProps>(
                                 {/* Header */}
                                 <div className="flex justify-between">
                                     <div>
-                                        <h2 className="text-3xl font-bold text-gray-800">INVOICE</h2>
+                                        <h2 className="text-3xl font-bold text-gray-800">{isReceipt ? "RECEIPT" : "INVOICE"}</h2>
                                         <div className="mt-4 text-sm text-gray-600 space-y-1">
-                                            <p>Invoice #: {data.invoiceNumber}</p>
+                                            <p>{isReceipt ? "Receipt" : "Invoice"} #: {data.invoiceNumber}</p>
                                             {data.poNumber && <p>PO #: {data.poNumber}</p>}
                                             <p>Date: {dayjs(data.issueDate).format("MMMM D, YYYY")}</p>
                                             <p>Due Date: {dayjs(data.dueDate).format("MMMM D, YYYY")}</p>

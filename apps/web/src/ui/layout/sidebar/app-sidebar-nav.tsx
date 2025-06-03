@@ -55,11 +55,11 @@ const NAV_AREAS: SidebarNavAreas<{
             icon: MoneyBills2,
             href: `/${slug}/payouts${queryString}`,
           },
-          // {
-          //   name: "Invoices",
-          //   icon: InvoiceDollar,
-          //   href: `/${slug}/invoices${queryString}`,
-          // },
+          {
+            name: "Invoices",
+            icon: InvoiceDollar,
+            href: `/${slug}/invoices${queryString}`,
+          },
           {
             name: "Recipients",
             icon: Users6,

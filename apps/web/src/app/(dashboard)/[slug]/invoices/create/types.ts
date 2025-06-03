@@ -7,6 +7,7 @@ export interface LineItem {
 
 export interface InvoiceFormData {
     clientId?: number
+    transactionId?: string
     invoiceNumber: string
     poNumber?: string
     currency: string

@@ -7,6 +7,7 @@ import { PageContent } from "@/ui/layout/page-content"
 import { MaxWidthWrapper, useRouterStuff } from "@freelii/ui"
 import { cn, fromStroops } from "@freelii/utils/functions"
 import { fromFormattedToNumber } from "@freelii/utils/functions/format-currency"
+import { TransactionMovementType } from "@prisma/client"
 import { noop } from "@tanstack/react-table"
 import { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
@@ -53,14 +54,15 @@ export default function CreateInvoicePage() {
 
     const handleGeneratePDF = async () => {
         if (!invoicePreviewRef.current) {
-            toast.error('Invoice preview not available')
+            toast.error(`${isReceipt ? 'Receipt' : 'Invoice'} preview not available`)
             return
         }
 
         const toastId = toast.loading('Generating PDF...')
 
         try {
-            const filename = generateInvoiceFilename(formData.invoiceNumber || 'invoice')
+            const documentType = isReceipt ? 'receipt' : 'invoice'
+            const filename = generateInvoiceFilename(formData.invoiceNumber || documentType)
             await generateInvoicePDF(invoicePreviewRef.current, {
                 filename,
                 quality: 0.95,
@@ -84,8 +86,9 @@ export default function CreateInvoicePage() {
             })
             setFormData(prev => ({
                 ...prev,
+                transactionId: transaction.id,
                 clientId: transaction.recipient_id,
-                invoiceNumber: "INV-" + (transaction.blockchain_tx_hash.slice(0, 5) ?? "").toUpperCase(),
+                invoiceNumber: "RCP-" + (transaction.blockchain_tx_hash.slice(0, 5) ?? "").toUpperCase(),
                 currency: transaction.currency,
                 issueDate: transaction.created_at,
                 dueDate: transaction.created_at,
@@ -101,9 +104,13 @@ export default function CreateInvoicePage() {
 
     const client = clients?.find(c => Number(c.id) === Number(formData.clientId))
 
+    // Determine if this is a receipt (for outgoing transaction) or invoice
+    const isReceipt = transaction?.movement_type === TransactionMovementType.OUT
+    const documentTitle = isReceipt ? "New Receipt" : "New Invoice"
+
     return (
         <PageContent
-            title="New Invoice"
+            title={documentTitle}
             className="bg-gray-200 pb-10"
         >
             <MaxWidthWrapper>
@@ -126,6 +133,7 @@ export default function CreateInvoicePage() {
                             removeLineItem={noop}
                             setIsNewClient={noop}
                             onGeneratePDF={handleGeneratePDF}
+                            isReceipt={isReceipt}
                         />
                     </div>
 
@@ -136,6 +144,7 @@ export default function CreateInvoicePage() {
                             ref={invoicePreviewRef}
                             data={formData}
                             client={client}
+                            isReceipt={isReceipt}
                         />
                     </div>
                 </div>

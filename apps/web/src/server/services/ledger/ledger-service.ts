@@ -68,7 +68,8 @@ export class LedgerService extends BaseService {
             },
             include: {
                 recipient: true,
-                sender: true
+                sender: true,
+                invoices: true
             },
             take: limit,
             skip: offset

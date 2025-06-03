@@ -4,7 +4,7 @@ import { api } from "@/trpc/react"
 import { PageContent } from "@/ui/layout/page-content"
 import { Button, Input, MaxWidthWrapper } from "@freelii/ui"
 import { Plus } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { InvoicesTable } from "./invoices-table"
 
@@ -21,7 +21,9 @@ function useDebounce<T>(value: T, delay = 300): T {
 
 export default function InvoicesPage() {
     const router = useRouter()
-    const [query, setQuery] = useState("")
+    const searchParams = useSearchParams()
+    const initialSearch = searchParams?.get('search') ?? ""
+    const [query, setQuery] = useState(initialSearch)
     const debouncedQuery = useDebounce(query)
     const { data: invoices, isLoading } = api.invoicing.search.useQuery({ query: debouncedQuery })
 
