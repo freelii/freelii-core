@@ -78,7 +78,7 @@ export default function CreateInvoicePage() {
 
     return (
         <PageContent
-            title="Create Invoice"
+            title="New Invoice"
             className="bg-gray-200 pb-10"
         >
             <MaxWidthWrapper>

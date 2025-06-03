@@ -254,7 +254,7 @@ export const columns: ColumnDef<Recipient>[] = [
                     className={cn(
                         "flex items-center gap-1",
                         type === RecipientType.BUSINESS
-                            ? "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                            ? "bg-black-50 text-black-700 border-black-200 hover:bg-black-100"
                             : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
                     )}
                 >
@@ -317,75 +317,113 @@ interface FloatingActionsBarProps {
 }
 
 const FloatingActionsBar = ({ selectedCount, onClose, onArchive }: FloatingActionsBarProps) => {
+    const [showMoreActions, setShowMoreActions] = useState(false);
+
     return (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 flex items-center gap-6 z-50">
-            <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-medium">
-                    {selectedCount}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+            <div className="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+                {/* Main Actions Bar */}
+                <div className="flex items-center px-4 py-3">
+                    {/* Selection Count */}
+                    <div className="flex items-center gap-3 mr-6">
+                        <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-full text-black flex items-center justify-center text-sm font-semibold">
+                                {selectedCount}
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">
+                                {selectedCount === 1 ? 'recipient' : 'recipients'} selected
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Primary Actions */}
+                    <div className="flex items-center gap-2">
+                        <Button
+                            className="bg-black hover:bg-neutral-900 text-white px-4 py-2 h-9"
+                            onClick={async () => {
+                                const id = toast.loading('Sending verification amount...');
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                toast.dismiss(id)
+                                toast.success('Verification amount sent!', { id })
+                                onClose();
+                            }}
+                        >
+                            <Send className="h-4 w-4 mr-2" />
+                            Send Verification
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            className="px-4 py-2 h-9 border-gray-300 hover:bg-gray-50"
+                            onClick={() => setShowMoreActions(!showMoreActions)}
+                        >
+                            More Actions
+                            <svg
+                                className={cn("ml-2 h-4 w-4 transition-transform", showMoreActions && "rotate-180")}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </Button>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-6 w-px bg-gray-200 mx-4" />
+
+                    {/* Cancel */}
+                    <Button
+                        variant="ghost"
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700 px-3 py-2 h-9"
+                    >
+                        Cancel
+                    </Button>
                 </div>
-                <span className="text-sm text-gray-600">recipients selected</span>
+
+                {/* Expanded Actions */}
+                {showMoreActions && (
+                    <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Button
+                                variant="outline"
+                                className="bg-white border-gray-200 hover:bg-gray-50 px-3 py-2 h-8"
+                                onClick={onArchive}
+                            >
+                                <Archive className="h-3.5 w-3.5 mr-2" />
+                                Archive
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                className="bg-white border-gray-200 hover:bg-gray-50 px-3 py-2 h-8"
+                                onClick={() => {
+                                    // Handle request KYC/KYB
+                                    toast.success('KYC/KYB requests sent!');
+                                    onClose();
+                                }}
+                            >
+                                <Shield className="h-3.5 w-3.5 mr-2" />
+                                Request KYC/KYB
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                className="bg-white border-gray-200 hover:bg-gray-50 px-3 py-2 h-8"
+                                onClick={() => {
+                                    // Handle send next payment
+                                    toast.success('Next payments scheduled!');
+                                    onClose();
+                                }}
+                            >
+                                <CreditCard className="h-3.5 w-3.5 mr-2" />
+                                Send Next Payment
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
-
-            <div className="h-8 w-px bg-gray-200" />
-
-            <div className="flex items-center gap-3">
-                <Button
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={async () => {
-                        // Handle send verification amount
-                        const id = toast.loading('Sending verification amount...');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        toast.dismiss(id)
-                        toast.success('Verification amount sent!', { id })
-                        onClose();
-                    }}
-                >
-                    <Send className="h-4 w-4" />
-                    Send verification amount
-                </Button>
-
-                <Button
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={onArchive}
-                >
-                    <Archive className="h-4 w-4" />
-                    Archive
-                </Button>
-
-                <Button
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={() => {
-                        // Handle request KYC/KYB
-                    }}
-                >
-                    <Shield className="h-4 w-4" />
-                    Request KYC/KYB
-                </Button>
-
-                <Button
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={() => {
-                        // Handle send next payment
-                    }}
-                >
-                    <CreditCard className="h-4 w-4" />
-                    Send next payment
-                </Button>
-            </div>
-
-            <div className="h-8 w-px bg-gray-200" />
-
-            <Button
-                variant="ghost"
-                onClick={onClose}
-                className="text-gray-500"
-            >
-                Cancel
-            </Button>
         </div>
     )
 }

@@ -5,6 +5,7 @@ import { formatCurrency, fromFormattedToNumber } from "@freelii/utils/functions"
 import { Address, Client } from "@prisma/client"
 import dayjs from "dayjs"
 import { Minus, Plus } from "lucide-react"
+import Image from "next/image"
 import { useState } from "react"
 import { type InvoiceFormData } from "./types"
 
@@ -92,8 +93,8 @@ export function InvoicePreview({ data, client }: InvoicePreviewProps) {
                                 </div>
                                 <div className="text-right">
                                     {/* Placeholder for company logo */}
-                                    <div className="w-32 h-12 bg-gray-50 rounded flex items-center justify-center text-gray-400 text-sm">
-                                        LOGO
+                                    <div className="w-32 h-12 rounded flex items-center justify-center text-gray-400 text-sm">
+                                        <Image src="/logo.png" alt="Logo" width={140} height={140} />
                                     </div>
                                 </div>
                             </div>
@@ -103,9 +104,12 @@ export function InvoicePreview({ data, client }: InvoicePreviewProps) {
                                 <div className="w-1/2">
                                     <h3 className="font-medium text-gray-500 mb-2">From</h3>
                                     <div className="text-sm text-gray-600">
-                                        <p className="font-medium">Your Company Name</p>
-                                        <p>123 Business Street</p>
-                                        <p>City, Country</p>
+                                        <p className="font-medium">Freelii Tech, Inc.</p>
+                                        <p>2803 Philadelphia Pike</p>
+                                        <p>Claymont, DE 19703</p>
+                                        <p>United States</p>
+                                        <p className="mt-2">Phone: +1 302 351 0000</p>
+                                        <p>EIN: 00-1430XXX</p>
                                     </div>
                                 </div>
                                 <div className="w-1/2">
@@ -194,7 +198,15 @@ export function InvoicePreview({ data, client }: InvoicePreviewProps) {
                             {/* Footer */}
                             <div className="absolute bottom-16 left-16 right-16 text-center text-sm text-gray-500 border-t border-gray-100 pt-8">
                                 <p>Thank you for your business</p>
-                                <p className="mt-1">Payment is due within {dayjs(data.dueDate).diff(data.issueDate, 'day')} days</p>
+                                {data.dueDate && <>
+                                    {data.dueDate < new Date() && (
+                                        <p className="mt-1">Payment due {dayjs(data.dueDate).format("MMMM D, YYYY")}</p>
+                                    )}
+                                    {data.dueDate > new Date() && (
+                                        <p className="mt-1">Payment is due within {dayjs(data.dueDate).diff(data.issueDate, 'day')} days</p>
+                                    )}
+                                </>
+                                }
                             </div>
                         </div>
                     </div>

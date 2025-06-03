@@ -167,10 +167,10 @@ export default function NewRecipientPage() {
                                         <Button
                                             variant="outline"
                                             onClick={handleSubmit}
-                                            className={cn(createRecipient.isPending && "opacity-50 cursor-not-allowed py-3")}
+                                            className={cn(createRecipient.isPending && "opacity-50 cursor-not-allowed py-3 px-6")}
                                         >
                                             {createRecipient.isPending ?
-                                                <LoadingDots className="h-4 w-4" color="white" />
+                                                <LoadingDots className="h-4 w-4" color="black" />
                                                 : "Save Recipient"}
                                         </Button>
                                     )}
