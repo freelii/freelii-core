@@ -2,6 +2,7 @@
 
 import { XLMIcon } from "@/ui/icons/xlm-icon";
 import {
+  Cards,
   Facebook,
   GreekTemple,
   InvoiceDollar,
@@ -54,6 +55,11 @@ const NAV_AREAS: SidebarNavAreas<{
             name: "Payouts",
             icon: MoneyBills2,
             href: `/${slug}/payouts${queryString}`,
+          },
+          {
+            name: "Bulk Disbursements",
+            icon: Cards,
+            href: `/${slug}/bulk-disbursements${queryString}`,
           },
           {
             name: "Invoices",

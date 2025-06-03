@@ -2,486 +2,571 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // Necessary for Next auth
 model Account {
-    id                       String  @id @default(cuid())
-    userId                   Int
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
+  id                       String  @id @default(cuid())
+  userId                   Int
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? // @db.Text
+  access_token             String? // @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? // @db.Text
+  session_state            String?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refresh_token_expires_in Int?
 
-    @@unique([provider, providerAccountId])
-    @@map("accounts")
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       Int
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@map("sessions")
+  @@map("sessions")
 }
 
 // User model
 model User {
-    id            Int       @id @default(autoincrement())
-    created_at    DateTime  @default(now())
-    updated_at    DateTime  @updatedAt
-    address       Address?
-    email         String    @unique
-    name          String?
-    avatar_url    String?
-    emailVerified DateTime?
+  id            Int       @id @default(autoincrement())
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  address       Address?
+  email         String    @unique
+  name          String?
+  avatar_url    String?
+  emailVerified DateTime?
 
-    // Relationships
-    generated_invoices        Invoice[]                   @relation("GeneratedInvoices")
-    received_invoices         Invoice[]                   @relation("ReceivedInvoices")
-    clients                   Client[]
-    accounts                  Account[]
-    sessions                  Session[]
-    wallets                   Wallet[]
-    transactions              Transactions[]
-    fiat_accounts             FiatAccount[]
-    ewallet_accounts          EwalletAccount[]
-    blockchain_accounts       BlockchainAccount[]
-    PaymentOrchestrationState PaymentOrchestrationState[]
+  // Relationships
+  generated_invoices        Invoice[]                   @relation("GeneratedInvoices")
+  received_invoices         Invoice[]                   @relation("ReceivedInvoices")
+  clients                   Client[]
+  accounts                  Account[]
+  sessions                  Session[]
+  wallets                   Wallet[]
+  transactions              Transactions[]
+  fiat_accounts             FiatAccount[]
+  ewallet_accounts          EwalletAccount[]
+  blockchain_accounts       BlockchainAccount[]
+  PaymentOrchestrationState PaymentOrchestrationState[]
+  bulk_disbursements        BulkDisbursement[]
 
-    @@map("users")
+  @@map("users")
 }
 
 // Client model
 model Client {
-    id                           Int                         @id @default(autoincrement())
-    name                         String
-    email                        String?
-    address                      Address?
-    verification_status          VerificationStatus          @default(PENDING)
-    recipient_type               RecipientType               @default(BUSINESS)
-    tax_number                   String? // VAT/Tax ID
-    created_at                   DateTime                    @default(now())
-    updated_at                   DateTime                    @updatedAt
-    is_archived                  Boolean                     @default(false)
-    user_id                      Int
-    // Relationships
-    user                         User                        @relation(fields: [user_id], references: [id])
-    invoices                     Invoice[]                   @relation("ClientInvoices")
-    transactions                 Transactions[]
-    fiat_accounts                FiatAccount[]
-    blockchain_accounts          BlockchainAccount[]
-    ewallet_accounts             EwalletAccount[]
-    payment_orchestration_states PaymentOrchestrationState[]
-    payment_destinations         PaymentDestination[]
+  id                           Int                         @id @default(autoincrement())
+  name                         String
+  email                        String?
+  address                      Address?
+  verification_status          VerificationStatus          @default(PENDING)
+  recipient_type               RecipientType               @default(BUSINESS)
+  tax_number                   String? // VAT/Tax ID
+  created_at                   DateTime                    @default(now())
+  updated_at                   DateTime                    @updatedAt
+  is_archived                  Boolean                     @default(false)
+  user_id                      Int
+  // Relationships
+  user                         User                        @relation(fields: [user_id], references: [id])
+  invoices                     Invoice[]                   @relation("ClientInvoices")
+  transactions                 Transactions[]
+  fiat_accounts                FiatAccount[]
+  blockchain_accounts          BlockchainAccount[]
+  ewallet_accounts             EwalletAccount[]
+  payment_orchestration_states PaymentOrchestrationState[]
+  payment_destinations         PaymentDestination[]
+  bulk_disbursement_items      BulkDisbursementItem[]
 
-    @@index([user_id])
-    @@map("clients")
+  @@index([user_id])
+  @@map("clients")
 }
 
 model BlockchainAccount {
-    id         String   @id @default(uuid())
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    address     String
-    network     String
-    environment String
+  address     String
+  network     String
+  environment String
 
-    client_id Int?
-    client    Client? @relation(fields: [client_id], references: [id])
+  client_id Int?
+  client    Client? @relation(fields: [client_id], references: [id])
 
-    user_id Int?
-    user    User? @relation(fields: [user_id], references: [id])
+  user_id Int?
+  user    User? @relation(fields: [user_id], references: [id])
 
-    payment_destinations PaymentDestination[]
+  payment_destinations PaymentDestination[]
 
-    @@index([client_id])
-    @@index([user_id])
-    @@map("blockchain_accounts")
+  @@index([client_id])
+  @@index([user_id])
+  @@map("blockchain_accounts")
 }
 
 model FiatAccount {
-    id         String   @id @default(uuid())
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    alias               String
-    account_number      String
-    routing_number      String?
-    account_type        FiatAccountType
-    account_holder_name String?
-    bank_name           String?
-    bank_address        String?
-    bank_city           String?
-    bank_state          String?
-    bank_zip            String?
-    iso_currency        String
-    transfer_method     TransferMethod?
+  alias               String
+  account_number      String
+  routing_number      String?
+  account_type        FiatAccountType
+  account_holder_name String?
+  bank_name           String?
+  bank_address        String?
+  bank_city           String?
+  bank_state          String?
+  bank_zip            String?
+  iso_currency        String
+  transfer_method     TransferMethod?
 
-    client_id Int?
-    client    Client? @relation(fields: [client_id], references: [id])
+  client_id Int?
+  client    Client? @relation(fields: [client_id], references: [id])
 
-    user_id Int?
-    user    User? @relation(fields: [user_id], references: [id])
+  user_id Int?
+  user    User? @relation(fields: [user_id], references: [id])
 
-    payment_destinations PaymentDestination[]
+  payment_destinations PaymentDestination[]
 
-    @@index([client_id])
-    @@index([user_id])
-    @@map("fiat_accounts")
+  @@index([client_id])
+  @@index([user_id])
+  @@map("fiat_accounts")
 }
 
 model EwalletAccount {
-    id         String   @id @default(uuid())
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    iso_currency     String
-    account_number   String?
-    mobile_number    String?
-    ewallet_provider EwalletProvider?
+  iso_currency     String
+  account_number   String?
+  mobile_number    String?
+  ewallet_provider EwalletProvider?
 
-    client_id Int?
-    client    Client? @relation(fields: [client_id], references: [id])
+  client_id Int?
+  client    Client? @relation(fields: [client_id], references: [id])
 
-    user_id Int?
-    user    User? @relation(fields: [user_id], references: [id])
+  user_id Int?
+  user    User? @relation(fields: [user_id], references: [id])
 
-    payment_destinations PaymentDestination[]
+  payment_destinations PaymentDestination[]
 
-    @@index([client_id])
-    @@index([user_id])
-    @@map("ewallet_accounts")
+  @@index([client_id])
+  @@index([user_id])
+  @@map("ewallet_accounts")
 }
 
 model Transactions {
-    id         String   @id @default(uuid())
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    // timeline date-booleans
-    sent_at       DateTime? // Sent to final recipient
-    completed_at  DateTime? // Completed by recipient
-    failed_at     DateTime? // Failed to complete
-    failed_reason String? // Reason for failure
+  // timeline date-booleans
+  sent_at       DateTime? // Sent to final recipient
+  completed_at  DateTime? // Completed by recipient
+  failed_at     DateTime? // Failed to complete
+  failed_reason String? // Reason for failure
 
-    ts                     DateTime
-    movement_type          TransactionMovementType
-    tx_type                TransactionType
-    blockchain_network     String
-    blockchain_environment String
-    blockchain_tx_id       String
-    blockchain_tx_hash     String
-    status                 TransactionStatus
-    amount                 BigInt
-    currency               String
-    fee                    BigInt                  @default(0)
-    reference              String?
+  ts                     DateTime
+  movement_type          TransactionMovementType
+  tx_type                TransactionType
+  blockchain_network     String
+  blockchain_environment String
+  blockchain_tx_id       String
+  blockchain_tx_hash     String
+  status                 TransactionStatus
+  amount                 BigInt
+  currency               String
+  fee                    BigInt                  @default(0)
+  reference              String?
 
-    wallet_id String
-    wallet    Wallet @relation(fields: [wallet_id], references: [id])
+  wallet_id String
+  wallet    Wallet @relation(fields: [wallet_id], references: [id])
 
-    sender_id Int
-    sender    User @relation(fields: [sender_id], references: [id])
+  sender_id Int
+  sender    User @relation(fields: [sender_id], references: [id])
 
-    recipient_id Int
-    recipient    Client @relation(fields: [recipient_id], references: [id])
+  recipient_id Int
+  recipient    Client @relation(fields: [recipient_id], references: [id])
 
-    // Relationship to invoices (for invoices generated from this transaction)
-    invoices Invoice[]
+  // Relationship to invoices (for invoices generated from this transaction)
+  invoices Invoice[]
 
-    @@index([sender_id])
-    @@index([recipient_id])
-    @@index([wallet_id])
-    @@index([blockchain_network, blockchain_environment, blockchain_tx_id, blockchain_tx_hash])
-    @@map("transactions")
+  // Relationship to bulk disbursement item (for transactions created from bulk disbursements)
+  bulk_disbursement_item BulkDisbursementItem?
+
+  @@index([sender_id])
+  @@index([recipient_id])
+  @@index([wallet_id])
+  @@index([blockchain_network, blockchain_environment, blockchain_tx_id, blockchain_tx_hash])
+  @@map("transactions")
 }
 
 // Invoice model
 model Invoice {
-    id             String   @id @default(uuid())
-    invoice_number String
-    po_number      String? // Purchase Order number
-    currency       String // e.g., "PHP", "USD", "USDC"
-    subtotal       Int // Sum of line items before tax
-    tax_rate       Int      @default(0) // Tax rate as percentage (e.g., 12 for 12%)
-    tax_amount     Int      @default(0) // Calculated tax amount
-    total_amount   Int // Final amount including tax
-    status         String   @default("Pending") // "Paid", "Pending", "Overdue", "Cancelled"
-    due_date       DateTime
-    description    String?
-    notes          String?
-    created_at     DateTime @default(now())
-    updated_at     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  invoice_number String
+  po_number      String? // Purchase Order number
+  currency       String // e.g., "PHP", "USD", "USDC"
+  subtotal       Int // Sum of line items before tax
+  tax_rate       Int      @default(0) // Tax rate as percentage (e.g., 12 for 12%)
+  tax_amount     Int      @default(0) // Calculated tax amount
+  total_amount   Int // Final amount including tax
+  status         String   @default("Pending") // "Paid", "Pending", "Overdue", "Cancelled"
+  due_date       DateTime
+  description    String?
+  notes          String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
-    // Optional link to a transaction (for invoices generated from payments)
-    transaction_id String?
-    transaction    Transactions? @relation(fields: [transaction_id], references: [id])
+  // Optional link to a transaction (for invoices generated from payments)
+  transaction_id String?
+  transaction    Transactions? @relation(fields: [transaction_id], references: [id])
 
-    // Fields for invoice generation
-    generator_id Int?
-    generator    User?   @relation("GeneratedInvoices", fields: [generator_id], references: [id])
-    client_id    Int?
-    client       Client? @relation("ClientInvoices", fields: [client_id], references: [id])
+  // Fields for invoice generation
+  generator_id Int?
+  generator    User?   @relation("GeneratedInvoices", fields: [generator_id], references: [id])
+  client_id    Int?
+  client       Client? @relation("ClientInvoices", fields: [client_id], references: [id])
 
-    // Fields for received invoices
-    receiver_id  Int?
-    receiver     User?   @relation("ReceivedInvoices", fields: [receiver_id], references: [id])
-    issuer_name  String? // Name of external invoice issuer
-    issuer_email String? // Email of external invoice issuer
+  // Fields for received invoices
+  receiver_id  Int?
+  receiver     User?   @relation("ReceivedInvoices", fields: [receiver_id], references: [id])
+  issuer_name  String? // Name of external invoice issuer
+  issuer_email String? // Email of external invoice issuer
 
-    // Relationship to line items
-    lineItems LineItem[]
+  // Relationship to line items
+  lineItems LineItem[]
 
-    @@index([generator_id])
-    @@index([client_id])
-    @@index([receiver_id])
-    @@index([transaction_id])
-    @@map("invoices")
+  @@index([generator_id])
+  @@index([client_id])
+  @@index([receiver_id])
+  @@index([transaction_id])
+  @@map("invoices")
 }
 
 // New LineItem model
 model LineItem {
-    id          Int      @id @default(autoincrement())
-    description String
-    quantity    Float
-    unit_price  Float
-    amount      Float // quantity * unitPrice
-    created_at  DateTime @default(now())
-    updated_at  DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  description String
+  quantity    Float
+  unit_price  Float
+  amount      Float // quantity * unitPrice
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-    // Relationship to invoice
-    invoice_id String
-    invoice    Invoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
+  // Relationship to invoice
+  invoice_id String
+  invoice    Invoice @relation(fields: [invoice_id], references: [id], onDelete: Cascade)
 
-    @@index([invoice_id])
-    @@map("line_items")
+  @@index([invoice_id])
+  @@map("line_items")
 }
 
 model Waitlist {
-    id         Int      @id @default(autoincrement())
-    contact    String
-    name       String
-    use_case   String?
-    is_email   Boolean  @default(false)
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  contact    String
+  name       String
+  use_case   String?
+  is_email   Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    @@map("waitlist")
+  @@map("waitlist")
 }
 
 // Address model
 model Address {
-    id         Int      @id @default(autoincrement())
-    street     String
-    city       String
-    state      String?
-    country    String
-    zip_code   String?
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  street     String
+  city       String
+  state      String?
+  country    String
+  zip_code   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    // Relationships
-    user_id   Int?    @unique // One-to-one with User
-    user      User?   @relation(fields: [user_id], references: [id])
-    client_id Int?    @unique // One-to-one with Client
-    client    Client? @relation(fields: [client_id], references: [id])
+  // Relationships
+  user_id   Int?    @unique // One-to-one with User
+  user      User?   @relation(fields: [user_id], references: [id])
+  client_id Int?    @unique // One-to-one with Client
+  client    Client? @relation(fields: [client_id], references: [id])
 
-    @@index([user_id])
-    @@index([client_id])
-    @@map("addresses")
+  @@index([user_id])
+  @@index([client_id])
+  @@map("addresses")
 }
 
 // Wallet model
 model Wallet {
-    id                  String   @id @default(uuid())
-    alias               String? // Custom name for the wallet
-    key_id              String? // Key ID for the wallet
-    address             String? // Blockchain address for crypto wallets
-    network             String? // Network/chain for crypto wallets (e.g., "ETH", "SOL")
-    network_environment String? // Mainnet, Testnet, etc.
-    is_default          Boolean  @default(false)
-    created_at          DateTime @default(now())
-    updated_at          DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  alias               String? // Custom name for the wallet
+  key_id              String? // Key ID for the wallet
+  address             String? // Blockchain address for crypto wallets
+  network             String? // Network/chain for crypto wallets (e.g., "ETH", "SOL")
+  network_environment String? // Mainnet, Testnet, etc.
+  is_default          Boolean  @default(false)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
-    // Relationships
-    user_id                   Int
-    user                      User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-    balances                  WalletBalance[]             @relation("WalletToBalance")
-    main_balance_id           String?
-    main_balance              WalletBalance?              @relation("MainBalance", fields: [main_balance_id], references: [id])
-    Transactions              Transactions[]
-    PaymentOrchestrationState PaymentOrchestrationState[]
+  // Relationships
+  user_id                   Int
+  user                      User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  balances                  WalletBalance[]             @relation("WalletToBalance")
+  main_balance_id           String?
+  main_balance              WalletBalance?              @relation("MainBalance", fields: [main_balance_id], references: [id])
+  Transactions              Transactions[]
+  PaymentOrchestrationState PaymentOrchestrationState[]
 
-    @@unique([user_id, alias])
-    @@unique([address, network])
-    @@index([user_id])
-    @@map("wallets")
+  @@unique([user_id, alias])
+  @@unique([address, network])
+  @@index([user_id])
+  @@map("wallets")
 }
 
 // WalletBalance model
 model WalletBalance {
-    id         String   @id @default(uuid())
-    address    String
-    amount     BigInt   @default(0)
-    currency   String // e.g., "ETH", "USDC", "USD"
-    created_at DateTime @default(now())
-    updated_at DateTime @updatedAt
+  id         String   @id @default(uuid())
+  address    String
+  amount     BigInt   @default(0)
+  currency   String // e.g., "ETH", "USDC", "USD"
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-    // Relationships
-    wallet_id        String
-    wallet           Wallet   @relation("WalletToBalance", fields: [wallet_id], references: [id], onDelete: Cascade)
-    main_for_wallets Wallet[] @relation("MainBalance")
+  // Relationships
+  wallet_id        String
+  wallet           Wallet   @relation("WalletToBalance", fields: [wallet_id], references: [id], onDelete: Cascade)
+  main_for_wallets Wallet[] @relation("MainBalance")
 
-    @@unique([wallet_id, currency])
-    @@index([wallet_id])
-    @@map("wallet_balances")
+  @@unique([wallet_id, currency])
+  @@index([wallet_id])
+  @@map("wallet_balances")
 }
 
 enum TransactionType {
-    ON_CHAIN_TRANSFER
-    OFF_CHAIN_TRANSFER
-    ON_RAMP
-    OFF_RAMP
+  ON_CHAIN_TRANSFER
+  OFF_CHAIN_TRANSFER
+  ON_RAMP
+  OFF_RAMP
 }
 
 enum TransactionStatus {
-    NOT_STARTED
-    PENDING
-    COMPLETED
-    FAILED
+  NOT_STARTED
+  PENDING
+  COMPLETED
+  FAILED
 }
 
 enum TransactionMovementType {
-    IN
-    OUT
+  IN
+  OUT
 }
 
 enum VerificationStatus {
-    PENDING
-    VERIFIED
-    REJECTED
+  PENDING
+  VERIFIED
+  REJECTED
 }
 
 enum RecipientType {
-    BUSINESS
-    INDIVIDUAL
+  BUSINESS
+  INDIVIDUAL
 }
 
 enum FiatAccountType {
-    CHECKING
-    SAVINGS
+  CHECKING
+  SAVINGS
 }
 
 enum TransferMethod {
-    PH_PESONET
-    PH_INSTAPAY
+  PH_PESONET
+  PH_INSTAPAY
 }
 
 enum EwalletProvider {
-    PH_GCASH
-    PH_MAYA
-    PH_COINS_PH
+  PH_GCASH
+  PH_MAYA
+  PH_COINS_PH
 }
 
 enum PaymentOrchestrationStatus {
-    NOT_STARTED
-    PENDING
-    SENT_TO_RECIPIENT
-    COMPLETED
-    FAILED
+  NOT_STARTED
+  PENDING
+  SENT_TO_RECIPIENT
+  COMPLETED
+  FAILED
 }
 
 enum PaymentRail {
-    STELLAR
-    WIRE
-    ACH
-    SEPA
-    PH_INSTAPAY
-    PH_PESONET
-    MX_SPEI
+  STELLAR
+  WIRE
+  ACH
+  SEPA
+  PH_INSTAPAY
+  PH_PESONET
+  MX_SPEI
 }
 
 model PaymentDestination {
-    id           String      @id @default(uuid())
-    created_at   DateTime    @default(now())
-    updated_at   DateTime    @updatedAt
-    payment_rail PaymentRail
-    currency     String
-    is_default   Boolean     @default(false)
+  id           String      @id @default(uuid())
+  created_at   DateTime    @default(now())
+  updated_at   DateTime    @updatedAt
+  payment_rail PaymentRail
+  currency     String
+  is_default   Boolean     @default(false)
 
-    // References to specific account types
-    fiat_account_id       String?
-    fiat_account          FiatAccount?       @relation(fields: [fiat_account_id], references: [id])
-    blockchain_account_id String?
-    blockchain_account    BlockchainAccount? @relation(fields: [blockchain_account_id], references: [id])
-    ewallet_account_id    String?
-    ewallet_account       EwalletAccount?    @relation(fields: [ewallet_account_id], references: [id])
+  // References to specific account types
+  fiat_account_id       String?
+  fiat_account          FiatAccount?       @relation(fields: [fiat_account_id], references: [id])
+  blockchain_account_id String?
+  blockchain_account    BlockchainAccount? @relation(fields: [blockchain_account_id], references: [id])
+  ewallet_account_id    String?
+  ewallet_account       EwalletAccount?    @relation(fields: [ewallet_account_id], references: [id])
 
-    // Relationship with Client
-    client_id Int
-    client    Client @relation(fields: [client_id], references: [id])
+  // Relationship with Client
+  client_id Int
+  client    Client @relation(fields: [client_id], references: [id])
 
-    payment_orchestration_states PaymentOrchestrationState[]
+  payment_orchestration_states PaymentOrchestrationState[]
 
-    @@index([client_id])
-    @@index([fiat_account_id])
-    @@index([blockchain_account_id])
-    @@index([ewallet_account_id])
-    @@map("payment_destinations")
+  @@index([client_id])
+  @@index([fiat_account_id])
+  @@index([blockchain_account_id])
+  @@index([ewallet_account_id])
+  @@map("payment_destinations")
 }
 
 model PaymentOrchestrationState {
-    id                   String                     @id @default(uuid())
-    created_at           DateTime                   @default(now())
-    updated_at           DateTime                   @updatedAt
-    status               PaymentOrchestrationStatus @default(NOT_STARTED)
-    tx_id                String?
-    tx_hash              String?
-    source_currency      String
-    target_currency      String
-    source_amount        Int
-    target_amount        Int
-    exchange_rate        Int
-    anchor               String
-    recipient_id         Int
-    sender_id            Int
-    wallet_id            String
-    sent_to_recipient_at DateTime?
-    sent_at              DateTime?
-    completed_at         DateTime?
-    failed_at            DateTime?
-    failed_reason        String?
+  id                   String                     @id @default(uuid())
+  created_at           DateTime                   @default(now())
+  updated_at           DateTime                   @updatedAt
+  status               PaymentOrchestrationStatus @default(NOT_STARTED)
+  tx_id                String?
+  tx_hash              String?
+  source_currency      String
+  target_currency      String
+  source_amount        Int
+  target_amount        Int
+  exchange_rate        Int
+  anchor               String
+  recipient_id         Int
+  sender_id            Int
+  wallet_id            String
+  sent_to_recipient_at DateTime?
+  sent_at              DateTime?
+  completed_at         DateTime?
+  failed_at            DateTime?
+  failed_reason        String?
 
-    // Destination
-    destination_id String?
-    destination    PaymentDestination? @relation(fields: [destination_id], references: [id])
+  // Destination
+  destination_id String?
+  destination    PaymentDestination? @relation(fields: [destination_id], references: [id])
 
-    // Relationships
-    recipient Client @relation(fields: [recipient_id], references: [id])
-    sender    User   @relation(fields: [sender_id], references: [id])
-    wallet    Wallet @relation(fields: [wallet_id], references: [id])
+  // Relationships
+  recipient              Client                @relation(fields: [recipient_id], references: [id])
+  sender                 User                  @relation(fields: [sender_id], references: [id])
+  wallet                 Wallet                @relation(fields: [wallet_id], references: [id])
+  bulk_disbursement_item BulkDisbursementItem?
 
-    @@index([recipient_id])
-    @@index([sender_id])
-    @@index([wallet_id])
-    @@index([anchor])
-    @@map("payment_orchestration_states")
+  @@index([recipient_id])
+  @@index([sender_id])
+  @@index([wallet_id])
+  @@index([anchor])
+  @@map("payment_orchestration_states")
+}
+
+// Bulk Disbursement models
+model BulkDisbursement {
+  id               String                 @id @default(uuid())
+  created_at       DateTime               @default(now())
+  updated_at       DateTime               @updatedAt
+  status           BulkDisbursementStatus @default(PENDING)
+  total_amount_usd Int // Total amount in USD cents
+  total_recipients Int // Number of recipients
+  initiated_at     DateTime?
+  completed_at     DateTime?
+  failed_at        DateTime?
+  failed_reason    String?
+  reference        String? // Optional reference/memo
+
+  // Relationships
+  sender_id Int
+  sender    User @relation(fields: [sender_id], references: [id])
+
+  // Items in this bulk disbursement
+  items BulkDisbursementItem[]
+
+  @@index([sender_id])
+  @@index([status])
+  @@map("bulk_disbursements")
+}
+
+model BulkDisbursementItem {
+  id              String         @id @default(uuid())
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+  amount_usd      Int // Amount in USD cents
+  target_currency String // Target currency for recipient
+  target_amount   Int // Converted amount in target currency cents
+  exchange_rate   Float? // Exchange rate used for conversion
+  status          BulkItemStatus @default(PENDING)
+  processed_at    DateTime?
+  failed_at       DateTime?
+  failed_reason   String?
+
+  // Relationships
+  bulk_disbursement_id String
+  bulk_disbursement    BulkDisbursement @relation(fields: [bulk_disbursement_id], references: [id], onDelete: Cascade)
+
+  recipient_id Int
+  recipient    Client @relation(fields: [recipient_id], references: [id])
+
+  // Link to the actual transaction created for this item
+  transaction_id String?       @unique
+  transaction    Transactions? @relation(fields: [transaction_id], references: [id])
+
+  // Link to payment orchestration state
+  payment_orchestration_id String?                    @unique
+  payment_orchestration    PaymentOrchestrationState? @relation(fields: [payment_orchestration_id], references: [id])
+
+  @@index([bulk_disbursement_id])
+  @@index([recipient_id])
+  @@index([status])
+  @@index([transaction_id])
+  @@index([payment_orchestration_id])
+  @@map("bulk_disbursement_items")
+}
+
+enum BulkDisbursementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  PARTIALLY_COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum BulkItemStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
 }

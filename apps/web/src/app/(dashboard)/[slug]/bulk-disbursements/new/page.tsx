@@ -36,6 +36,10 @@ export default function BulkDisbursementsPage() {
         limit: 50
     })
 
+    // Bulk disbursement mutations
+    const createBulkDisbursement = api.bulkDisbursement.create.useMutation()
+    const processBulkDisbursement = api.bulkDisbursement.process.useMutation()
+
     // Filter out recipients that are already added
     const availableRecipients = recipients?.filter(
         recipient => !disbursements.some(d => d.recipient.id === recipient.id)
@@ -104,8 +108,20 @@ export default function BulkDisbursementsPage() {
     const handleSubmit = async () => {
         setIsSubmitting(true)
         try {
-            // Here you would call the bulk disbursement API
-            // For now, we'll just show a success message
+            // Create the bulk disbursement
+            const bulkDisbursement = await createBulkDisbursement.mutateAsync({
+                recipients: disbursements.map(d => ({
+                    recipientId: d.recipient.id,
+                    amountUsd: parseFloat(d.amount)
+                })),
+                reference: `Bulk disbursement - ${new Date().toLocaleDateString()}`
+            })
+
+            // Process the bulk disbursement (initiate all payments)
+            await processBulkDisbursement.mutateAsync({
+                id: (bulkDisbursement as any).id
+            })
+
             toast.success(`Bulk disbursement initiated for ${disbursements.length} recipients`)
             router.push("/dashboard/payouts")
         } catch (error) {

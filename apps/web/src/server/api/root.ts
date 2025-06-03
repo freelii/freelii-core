@@ -1,6 +1,7 @@
 import { userRouter } from "@/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { activityRouter } from "./routers/activity";
+import { bulkDisbursementRouter } from "./routers/bulk-disbursement";
 import { clientsRouter } from "./routers/clients";
 import { invoicingRouter } from "./routers/invoicing";
 import { ledgerRouter } from "./routers/ledger";
@@ -20,7 +21,8 @@ export const appRouter = createTRPCRouter({
   webhook: webhookRouter,
   clients: clientsRouter,
   activity: activityRouter,
-  orchestrator: orchestratorRouter
+  orchestrator: orchestratorRouter,
+  bulkDisbursement: bulkDisbursementRouter
 });
 
 // export type definition of API
