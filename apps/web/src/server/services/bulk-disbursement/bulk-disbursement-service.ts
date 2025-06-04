@@ -1,4 +1,5 @@
-import { BaseService } from '@/server/services/base-service';
+import { db } from '@/server/db';
+import { BaseService, BaseServiceOptions } from '@/server/services/base-service';
 import { OrchestratorService } from '@/server/services/orchestrator/orchestrator-service';
 import { CURRENCIES } from '@freelii/utils';
 import { fromUSD } from '@freelii/utils/functions';
@@ -28,12 +29,11 @@ export interface BulkDisbursementWithItems extends BulkDisbursement {
 }
 
 export class BulkDisbursementService extends BaseService {
-    private orchestratorService: OrchestratorService;
 
-    constructor(options: { db: any; session: any }) {
+    constructor(options: BaseServiceOptions) {
         super(options);
-        this.orchestratorService = new OrchestratorService(options);
     }
+
 
     /**
      * Create a new bulk disbursement
@@ -102,7 +102,7 @@ export class BulkDisbursementService extends BaseService {
             const targetAmountCents = Math.round(targetAmount * 100);
 
             // Get exchange rate for tracking
-            const exchangeRate = targetCurrency === 'USD' ? 1 : (CURRENCIES[targetCurrency]?.rate || 1);
+            const exchangeRate = targetCurrency === 'USD' ? 1 : (CURRENCIES[targetCurrency]?.rate ?? 1);
 
             const item = await this.db.bulkDisbursementItem.create({
                 data: {
@@ -189,7 +189,8 @@ export class BulkDisbursementService extends BaseService {
                 }
 
                 // Initiate payment through orchestrator
-                const result = await this.orchestratorService.initiatePayment({
+                const orchestratorService = new OrchestratorService({ db: db, session: this.session });
+                const result = await orchestratorService.initiatePayment({
                     sourceAmount: (item.amount_usd / 100).toString(), // Convert back to dollars
                     senderId: bulkDisbursement.sender_id,
                     walletId: wallet.id,
@@ -213,7 +214,7 @@ export class BulkDisbursementService extends BaseService {
                         data: {
                             status: BulkItemStatus.FAILED,
                             failed_at: new Date(),
-                            failed_reason: result.error || 'Unknown error'
+                            failed_reason: result.error ?? 'Unknown error'
                         }
                     });
                 }
@@ -237,7 +238,7 @@ export class BulkDisbursementService extends BaseService {
     /**
      * Get bulk disbursements for a user
      */
-    async getBulkDisbursements(limit: number = 10, offset: number = 0): Promise<BulkDisbursementWithItems[]> {
+    async getBulkDisbursements(limit = 10, offset = 0): Promise<BulkDisbursementWithItems[]> {
         const senderId = parseInt(this.session.user.id);
 
         return this.db.bulkDisbursement.findMany({
