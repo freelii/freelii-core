@@ -174,63 +174,134 @@ export async function POST(req: NextRequest) {
         console.log('🔑 Transaction Hash:', body.data.hash);
         console.log('📚 Ledger:', body.data.ledger);
         console.log('⏰ Timestamp:', body.data.ts, new Date(body.data.ts * 1000).toISOString());
-        console.log('🏦 Source Account:', body.data.body.tx.tx.source_account);
-        console.log('💰 Fee:', body.data.body.tx.tx.fee);
-        console.log('📝 Memo:', body.data.body.tx.tx.memo);
+
+        // Log full structure for debugging when things are missing
+        console.log('🔍 Full webhook data structure:');
+        console.log('  - data.body exists:', !!body.data.body);
+        console.log('  - data.body.tx exists:', !!body.data.body?.tx);
+        console.log('  - data.body.tx.tx exists:', !!body.data.body?.tx?.tx);
+        console.log('  - data.meta exists:', !!body.data.meta);
+        console.log('  - data.meta.v3 exists:', !!body.data.meta?.v3);
+        console.log('  - data.result exists:', !!body.data.result);
+
+        // Safe access to nested transaction data
+        const txData = body.data.body?.tx?.tx;
+        if (txData) {
+            console.log('🏦 Source Account:', txData.source_account);
+            console.log('💰 Fee:', txData.fee);
+            console.log('📝 Memo:', txData.memo);
+        } else {
+            console.log('⚠️ Transaction data structure missing or incomplete');
+            console.log('📋 Available body keys:', Object.keys(body.data.body || {}));
+            if (body.data.body) {
+                console.log('📋 Body structure preview:', JSON.stringify(body.data.body, null, 2).substring(0, 500) + '...');
+            }
+        }
 
         // Log operations details
-        console.log('🛠️ Operations:', body.data.body.tx.tx.operations.length);
-        body.data.body.tx.tx.operations.forEach((op, index) => {
-            console.log(`  Operation ${index}:`, JSON.stringify(op, null, 2));
-            if (op.body.invoke_contract) {
-                console.log(`    📋 Contract Address: ${op.body.invoke_contract.contract_address}`);
-                console.log(`    🔧 Function: ${op.body.invoke_contract.function_name}`);
-                console.log(`    📝 Args:`, op.body.invoke_contract.args);
-            }
-        });
+        const operations = txData?.operations;
+        if (operations && Array.isArray(operations)) {
+            console.log('🛠️ Operations:', operations.length);
+            operations.forEach((op, index) => {
+                console.log(`  Operation ${index}:`, JSON.stringify(op, null, 2));
+                if (op.body?.invoke_contract) {
+                    console.log(`    📋 Contract Address: ${op.body.invoke_contract.contract_address}`);
+                    console.log(`    🔧 Function: ${op.body.invoke_contract.function_name}`);
+                    console.log(`    📝 Args:`, op.body.invoke_contract.args);
+                }
+            });
+        } else {
+            console.log('🛠️ No operations found or invalid operations structure');
+        }
 
         // Log Soroban events (most important for mapping)
-        console.log('🎯 Soroban Events:', body.data.meta.v3.soroban_meta.events.length);
-        body.data.meta.v3.soroban_meta.events.forEach((event, index) => {
-            console.log(`  Event ${index}:`, JSON.stringify(event, null, 2));
-            if (event.contract_id) {
-                console.log(`    📋 Contract ID: ${event.contract_id}`);
-            }
-            if (event.body.v0) {
-                console.log(`    🏷️ Topics:`, event.body.v0.topics);
-                console.log(`    📊 Data:`, event.body.v0.data);
-            }
-        });
+        const sorobanEvents = body.data.meta?.v3?.soroban_meta?.events;
+        if (sorobanEvents && Array.isArray(sorobanEvents)) {
+            console.log('🎯 Soroban Events:', sorobanEvents.length);
+            sorobanEvents.forEach((event, index) => {
+                console.log(`  Event ${index}:`, JSON.stringify(event, null, 2));
+                if (event.contract_id) {
+                    console.log(`    📋 Contract ID: ${event.contract_id}`);
+                }
+                if (event.body?.v0) {
+                    console.log(`    🏷️ Topics:`, event.body.v0.topics);
+                    console.log(`    📊 Data:`, event.body.v0.data);
+                }
+            });
+        } else {
+            console.log('🎯 No Soroban events found or invalid structure');
+            console.log('📋 Available meta structure:', JSON.stringify(body.data.meta, null, 2));
+        }
 
         // Log transaction result
-        console.log('✅ Transaction Result:', body.data.result.result.fee_charged);
-        if (body.data.result.result.result.tx_success) {
-            console.log('🎉 Success Results:', JSON.stringify(body.data.result.result.result.tx_success, null, 2));
-        }
-        if (body.data.result.result.result.tx_failed) {
-            console.log('❌ Failed Results:', JSON.stringify(body.data.result.result.result.tx_failed, null, 2));
+        const resultData = body.data.result?.result;
+        if (resultData) {
+            console.log('✅ Transaction Result Fee Charged:', resultData.fee_charged);
+            if (resultData.result?.tx_success) {
+                console.log('🎉 Success Results:', JSON.stringify(resultData.result.tx_success, null, 2));
+            }
+            if (resultData.result?.tx_failed) {
+                console.log('❌ Failed Results:', JSON.stringify(resultData.result.tx_failed, null, 2));
+            }
+        } else {
+            console.log('⚠️ Transaction result data missing');
+            console.log('📋 Available result structure:', JSON.stringify(body.data.result, null, 2));
         }
 
         // Log tx_changes for state changes
-        console.log('🔄 State Changes Before:', body.data.meta.v3.tx_changes_before.length);
-        body.data.meta.v3.tx_changes_before.forEach((change, index) => {
-            console.log(`  Change Before ${index}:`, JSON.stringify(change, null, 2));
-        });
+        const metaV3 = body.data.meta?.v3;
+        if (metaV3) {
+            const changesBefore = metaV3.tx_changes_before;
+            const changesAfter = metaV3.tx_changes_after;
 
-        console.log('🔄 State Changes After:', body.data.meta.v3.tx_changes_after.length);
-        body.data.meta.v3.tx_changes_after.forEach((change, index) => {
-            console.log(`  Change After ${index}:`, JSON.stringify(change, null, 2));
-        });
+            if (changesBefore && Array.isArray(changesBefore)) {
+                console.log('🔄 State Changes Before:', changesBefore.length);
+                changesBefore.forEach((change, index) => {
+                    console.log(`  Change Before ${index}:`, JSON.stringify(change, null, 2));
+                });
+            } else {
+                console.log('🔄 No state changes before found');
+            }
+
+            if (changesAfter && Array.isArray(changesAfter)) {
+                console.log('🔄 State Changes After:', changesAfter.length);
+                changesAfter.forEach((change, index) => {
+                    console.log(`  Change After ${index}:`, JSON.stringify(change, null, 2));
+                });
+            } else {
+                console.log('🔄 No state changes after found');
+            }
+        } else {
+            console.log('⚠️ Meta v3 data missing for state changes');
+        }
 
         // Log signatures
-        console.log('✍️ Signatures:', body.data.body.tx.signatures.length);
-        body.data.body.tx.signatures.forEach((sig, index) => {
-            console.log(`  Signature ${index} hint: ${sig.hint}`);
-        });
+        const signatures = body.data.body?.tx?.signatures;
+        if (signatures && Array.isArray(signatures)) {
+            console.log('✍️ Signatures:', signatures.length);
+            signatures.forEach((sig, index) => {
+                console.log(`  Signature ${index} hint: ${sig.hint}`);
+            });
+        } else {
+            console.log('✍️ No signatures found or invalid structure');
+        }
 
         // Process the webhook with our service
         console.log('🔄 Processing webhook with SorobanWebhookService...');
         try {
+            // Validate that we have minimum required data for processing
+            if (!body.data.hash || !body.data.id) {
+                console.log('⚠️ Missing required fields (hash or id), skipping service processing');
+                return NextResponse.json(
+                    {
+                        message: "Webhook received but missing required fields",
+                        transactionHash: body.data.hash,
+                        error: "Invalid webhook structure"
+                    },
+                    { status: 200 }
+                );
+            }
+
             const result = await SorobanWebhookService.processWebhook(body as any);
 
             if (result.isNewTransaction) {

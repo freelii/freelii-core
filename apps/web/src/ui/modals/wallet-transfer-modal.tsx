@@ -4,7 +4,7 @@ import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { useWallet } from "@/wallet/useWallet"
 import { Button, LoadingSpinner } from "@freelii/ui"
 import { fromStroops, toStroops } from "@freelii/utils/functions"
-import { ArrowDownLeft, ArrowUpRight, X } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, X, RefreshCw } from "lucide-react"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
 
@@ -83,74 +83,85 @@ export function WalletTransferModal({ isOpen, onClose }: WalletTransferModalProp
         }
     }
 
+    const handleSwitchWallets = () => {
+        if (sourceWalletId && destinationWalletId) {
+            const tempSource = sourceWalletId
+            setSourceWalletId(destinationWalletId)
+            setDestinationWalletId(tempSource)
+            // Clear amount when switching to recalculate with new source wallet balance
+            setAmount("")
+        }
+    }
+
     if (!isOpen) return null
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold">Transfer Between Wallets</h2>
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-sm mx-4">
+                <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold">Transfer Funds</h2>
                     <button
                         onClick={onClose}
                         className="p-1 rounded-md hover:bg-gray-100 transition-colors"
                     >
-                        <X className="h-5 w-5" />
+                        <X className="h-4 w-4" />
                     </button>
                 </div>
 
-                <div className="p-6 space-y-6">
-                    {/* Source Wallet */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            From Wallet
-                        </label>
-                        <select
-                            value={sourceWalletId}
-                            onChange={(e) => setSourceWalletId(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        >
-                            <option value="">Select source wallet</option>
-                            {wallets.map((wallet) => (
-                                <option key={wallet.id} value={wallet.id}>
-                                    {wallet.alias} - {fromStroops(Number(wallet.main_balance?.amount || 0), 2)} XLM
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Transfer Direction Icon */}
-                    <div className="flex justify-center">
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <ArrowDownLeft className="h-4 w-4 text-primary" />
-                        </div>
-                    </div>
-
-                    {/* Destination Wallet */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            To Wallet
-                        </label>
-                        <select
-                            value={destinationWalletId}
-                            onChange={(e) => setDestinationWalletId(e.target.value)}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                        >
-                            <option value="">Select destination wallet</option>
-                            {wallets
-                                .filter(wallet => wallet.id !== sourceWalletId)
-                                .map((wallet) => (
+                <div className="p-4 space-y-4">
+                    {/* Wallet Selection */}
+                    <div className="space-y-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">From</label>
+                            <select
+                                value={sourceWalletId}
+                                onChange={(e) => setSourceWalletId(e.target.value)}
+                                className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                            >
+                                <option value="">Select source wallet</option>
+                                {wallets.map((wallet) => (
                                     <option key={wallet.id} value={wallet.id}>
-                                        {wallet.alias} - {fromStroops(wallet.main_balance?.amount || 0, 2)} XLM
+                                        {wallet.alias} - {fromStroops(Number(wallet.main_balance?.amount || 0), 2)} XLM
                                     </option>
                                 ))}
-                        </select>
+                            </select>
+                        </div>
+
+                        {/* Switch Button - Inline */}
+                        <div className="flex justify-center">
+                            <button
+                                type="button"
+                                onClick={handleSwitchWallets}
+                                disabled={!sourceWalletId || !destinationWalletId || isTransferring}
+                                className="group w-8 h-8 bg-primary/10 hover:bg-primary/20 disabled:bg-gray-100 rounded-full flex items-center justify-center transition-all duration-200 disabled:cursor-not-allowed"
+                                title="Switch wallets"
+                            >
+                                <RefreshCw className="h-3 w-3 text-primary group-hover:text-primary/80 group-disabled:text-gray-400 group-hover:rotate-180 transition-all duration-300" />
+                            </button>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">To</label>
+                            <select
+                                value={destinationWalletId}
+                                onChange={(e) => setDestinationWalletId(e.target.value)}
+                                className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent"
+                            >
+                                <option value="">Select destination wallet</option>
+                                {wallets
+                                    .filter(wallet => wallet.id !== sourceWalletId)
+                                    .map((wallet) => (
+                                        <option key={wallet.id} value={wallet.id}>
+                                            {wallet.alias} - {fromStroops(wallet.main_balance?.amount || 0, 2)} XLM
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
                     </div>
 
                     {/* Amount */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Amount (XLM)
-                        </label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Amount (XLM)</label>
                         <div className="relative">
                             <input
                                 type="number"
@@ -159,12 +170,12 @@ export function WalletTransferModal({ isOpen, onClose }: WalletTransferModalProp
                                 placeholder="0.00"
                                 step="0.0001"
                                 min="0"
-                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent pr-16"
+                                className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent pr-12"
                             />
                             <button
                                 type="button"
                                 onClick={handleMaxAmount}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 text-sm text-primary hover:bg-primary/10 rounded-md transition-colors"
+                                className="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 text-xs text-primary hover:bg-primary/10 rounded transition-colors"
                                 disabled={!sourceWalletId || maxTransferAmount <= 0}
                             >
                                 MAX
@@ -172,48 +183,36 @@ export function WalletTransferModal({ isOpen, onClose }: WalletTransferModalProp
                         </div>
                         {sourceWalletId && (
                             <p className="text-xs text-gray-500 mt-1">
-                                Available: {fromStroops(maxTransferAmount, 4)} XLM
-                                (0.1 XLM reserved for fees)
+                                Available: {fromStroops(maxTransferAmount, 2)} XLM
                             </p>
                         )}
                     </div>
 
-                    {/* Transfer Summary */}
+                    {/* Transfer Summary - Compact */}
                     {sourceWallet && destinationWallet && amount && (
-                        <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                            <h3 className="text-sm font-medium text-gray-700">Transfer Summary</h3>
-                            <div className="flex justify-between text-sm">
-                                <span>From:</span>
-                                <span className="font-medium">{sourceWallet.alias}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span>To:</span>
+                        <div className="bg-gray-50 rounded-md p-3">
+                            <div className="text-xs text-gray-600 text-center">
+                                <span className="font-medium">{amount} XLM</span> from{' '}
+                                <span className="font-medium">{sourceWallet.alias}</span> to{' '}
                                 <span className="font-medium">{destinationWallet.alias}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span>Amount:</span>
-                                <span className="font-medium">{amount} XLM</span>
-                            </div>
-                            <div className="flex justify-between text-sm text-gray-600">
-                                <span>Network Fee:</span>
-                                <span>~0.001 XLM</span>
+                                <div className="text-gray-500 mt-1">Network fee: ~0.001 XLM</div>
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="flex gap-3 p-6 border-t border-gray-200">
+                <div className="flex gap-2 p-4 border-t border-gray-200">
                     <Button
                         variant="outline"
                         onClick={onClose}
-                        className="flex-1"
+                        className="flex-1 text-sm py-2"
                         disabled={isTransferring}
                     >
                         Cancel
                     </Button>
                     <Button
                         onClick={handleTransfer}
-                        className="flex-1"
+                        className="flex-1 text-sm py-2"
                         disabled={
                             !sourceWalletId ||
                             !destinationWalletId ||
@@ -225,12 +224,12 @@ export function WalletTransferModal({ isOpen, onClose }: WalletTransferModalProp
                     >
                         {isTransferring ? (
                             <>
-                                <LoadingSpinner className="h-4 w-4 mr-2" />
-                                Transferring...
+                                <LoadingSpinner className="h-3 w-3 mr-1" />
+                                Sending...
                             </>
                         ) : (
                             <>
-                                <ArrowUpRight className="h-4 w-4 mr-2" />
+                                <ArrowUpRight className="h-3 w-3 mr-1" />
                                 Transfer
                             </>
                         )}
