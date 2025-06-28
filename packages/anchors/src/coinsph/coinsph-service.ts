@@ -1,13 +1,13 @@
 import axios from 'axios';
 import crypto from 'crypto';
 import { Anchor } from '../shared';
-import { AnchorQuote, AnchorRate, CashoutParams, GetQuoteParams, PaymentRail, QuoteParams } from '../shared/interfaces';
+import { AnchorQuote, AnchorRate, CashoutParams, GetQuoteParams, PaymentDestination, PaymentRail, QuoteParams } from '../shared/interfaces';
 import {
     Account,
-    CashOutParams,
-    CashOutResponse,
     COINS_CASH_OUT_ERRORS,
     COINS_ERRORS,
+    CashOutParams,
+    CashOutResponse,
     CoinsPHQuote,
     CoinsResponse,
     FiatOrderDetails,
@@ -730,7 +730,7 @@ expiry	Quote expire time seconds.
         }
     }
 
-    async getLiquidationAddress(): Promise<string> {
+    async getLiquidationAddress(_destination: PaymentDestination): Promise<string> {
         // if (process.env.NODE_ENV !== 'production') {
         //     return "GDLS6OIZ3TOC7NXHB3OZKHXLUEZV4EUANOMOOMOHUZAZHLLGNN43IALX";
         // }

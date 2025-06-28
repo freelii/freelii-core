@@ -20,6 +20,8 @@ import {
 import Link from "next/link"
 import { useState } from "react"
 
+import { WalletTransferModal } from "@/ui/modals/wallet-transfer-modal"
+
 dayjs.extend(relativeTime)
 
 const WalletBadge = ({ walletAlias, onClick }: { walletAlias?: string | null; onClick?: () => void }) => {
@@ -36,14 +38,25 @@ const WalletBadge = ({ walletAlias, onClick }: { walletAlias?: string | null; on
   );
 };
 
-const QuickActionButton = ({ icon, label, href }: { icon: JSX.Element, label: string, href: string }) => {
+const QuickActionButton = ({ icon, label, href, onClick }: { icon: JSX.Element, label: string, href?: string, onClick?: () => void }) => {
+  if (href) {
+    return (
+      <Link href={href} className="block p-4 border border-gray-200 rounded-lg bg-white hover:border-primary/20 transition-all">
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="text-sm">{label}</span>
+        </div>
+      </Link>
+    )
+  }
+
   return (
-    <Link href={href} className="block p-4 border border-gray-200 rounded-lg bg-white hover:border-primary/20 transition-all">
+    <button onClick={onClick} className="block p-4 border border-gray-200 rounded-lg bg-white hover:border-primary/20 transition-all w-full text-left">
       <div className="flex items-center gap-2">
         {icon}
         <span className="text-sm">{label}</span>
       </div>
-    </Link>
+    </button>
   )
 }
 
@@ -139,6 +152,7 @@ export default function PageClient() {
   const [selectedRecipient, setSelectedRecipient] = useState('')
   const [selectedTransaction, setSelectedTransaction] = useState<ITransactionDetails | null>(null)
   const [, setIsQuickActionsOpen] = useState(false)
+  const [isWalletTransferModalOpen, setIsWalletTransferModalOpen] = useState(false)
 
   // tRPC procedures
   const trpcUtils = api.useUtils();
@@ -243,6 +257,13 @@ export default function PageClient() {
               label="Send Money"
               href="/dashboard/payouts/new"
             />
+            {wallets.length > 1 && (
+              <QuickActionButton
+                icon={<ArrowUpRight className="h-4 w-4" />}
+                label="Transfer Between Wallets"
+                onClick={() => setIsWalletTransferModalOpen(true)}
+              />
+            )}
             <QuickActionButton
               icon={<CreditCard className="h-4 w-4" />}
               label="Cards"
@@ -435,6 +456,12 @@ export default function PageClient() {
       </div>
 
       {/* Mobile slide-over and transaction details remain unchanged */}
+
+      {/* Wallet Transfer Modal */}
+      <WalletTransferModal
+        isOpen={isWalletTransferModalOpen}
+        onClose={() => setIsWalletTransferModalOpen(false)}
+      />
     </div >
   )
 }

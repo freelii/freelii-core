@@ -30,14 +30,6 @@ console.log('Server config:', {
     mercuryUrl: server.mercuryUrl
 });
 
-console.log('Environment check:', {
-    rpcUrl: env.NEXT_PUBLIC_RPC_URL,
-    launchtubeUrl: env.NEXT_PUBLIC_LAUNCHTUBE_URL,
-    mercuryUrl: env.NEXT_PUBLIC_MERCURY_URL,
-    // Don't log JWTs in production!
-    hasLaunchtubeJwt: !!env.NEXT_PUBLIC_LAUNCHTUBE_JWT,
-    hasMercuryJwt: !!env.NEXT_PUBLIC_MERCURY_JWT
-});
 
 export const mockPubkey = StrKey.encodeEd25519PublicKey(Buffer.alloc(32))
 export const mockSource = new Account(mockPubkey, '0')

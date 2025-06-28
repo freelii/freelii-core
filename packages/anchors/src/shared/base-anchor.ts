@@ -3,12 +3,14 @@ import type {
     AnchorRate,
     CashoutParams,
     GetQuoteParams,
+    PaymentDestination,
     PaymentRail,
     QuoteParams
 } from "./interfaces";
 
 // Abstract base class that all anchors must implement
-export abstract class Anchor {
+export abstract class
+    Anchor {
     abstract name: string;
     abstract supportedPaymentRails: PaymentRail[];
     abstract supportedCurrencies: string[];
@@ -35,7 +37,7 @@ export abstract class Anchor {
         params: CashoutParams
     ): Promise<any>;
 
-    abstract getLiquidationAddress(): Promise<string>;
+    abstract getLiquidationAddress(destination: PaymentDestination): Promise<string>;
 
     abstract convertCurrency(
         sourceCurrency: string,
