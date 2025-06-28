@@ -3,6 +3,8 @@ import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler";
 import { fundPubkey, fundSigner, sac, server, account as smartWallet } from "@/lib/stellar-smart-wallet";
 import { api } from "@/trpc/react";
 import { XLM_SAC } from "@freelii/utils/constants";
+import { Keypair, } from "@stellar/stellar-sdk";
+import { SignerStore } from "passkey-kit";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -49,7 +51,6 @@ export function useWallet() {
         try {
 
             const result = await smartWallet.createWallet("Freelii", alias);
-
             const {
                 contractId: cid,
                 signedTx,
@@ -83,11 +84,30 @@ export function useWallet() {
         }
     }
 
+    const addSigner_Ed25519 = async (): Promise<{ keypair: Keypair }> => {
+        if (!account?.key_id) {
+            throw new Error("No keyId found");
+        }
+        try {
+            const keypair = Keypair.random();
+            const at = await account.addEd25519(keypair.publicKey(), new Map(), SignerStore.Temporary);
+
+            const signedTx = await account.sign(at, { keyId });
+            const res = await server.send(signedTx);
+            console.log('Transaction response:', res);
+            return { keypair };
+        } catch (error) {
+            console.error('Add signer error:', error);
+            throw error;
+        }
+    }
+
     async function transfer({ to, amount, sacAddress }: { to: string, amount: bigint, sacAddress?: string }) {
         if (!account) {
             console.log('No account found', account);
             throw new Error('No account found');
         }
+        console.log('account', account);
         const { address, key_id } = account;
         if (!address || !key_id) {
             throw new Error('No address or keyId found');
@@ -95,6 +115,7 @@ export function useWallet() {
 
 
         console.log('transfer', address, to, amount, sacAddress);
+        console.log('account.smartWallet', smartWallet);
         if (!smartWallet.wallet) await connect();
         const asset = sac.getSACClient(sacAddress ?? XLM_SAC);
         const at = await asset.transfer({
@@ -162,8 +183,14 @@ export function useWallet() {
     }
 
     const connect = async () => {
+        console.log('connect', account);
         if (!!account?.key_id) {
-            await smartWallet.connectWallet({ keyId: account?.key_id });
+            try {
+                await smartWallet.connectWallet({ keyId: account?.key_id });
+            } catch (error) {
+                console.error('Connect error:', error);
+                toast.error((error as Error)?.message ?? "Unknown error");
+            }
         }
     }
 
@@ -176,6 +203,7 @@ export function useWallet() {
         isFunding,
         fundWallet,
         connect,
+        addSigner_Ed25519,
         isLoadingAccount: isLoadingAccount || accountStatus === 'pending'
     }
 }

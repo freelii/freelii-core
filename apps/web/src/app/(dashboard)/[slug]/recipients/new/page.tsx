@@ -7,7 +7,7 @@ import { FiatDetails } from "@/ui/render-fiat-details"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { NavSteps } from "@/ui/shared/nav-steps"
 import { Button, ExpandingArrow, Input, LoadingDots, MaxWidthWrapper, Tooltip, useRouterStuff } from "@freelii/ui"
-import { cn } from "@freelii/utils"
+import { cn, shortAddress } from "@freelii/utils"
 import { ArrowLeft, Building2, Check, FileText, HelpCircle, InfoIcon, Mail, Plus, User2, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
@@ -261,7 +261,7 @@ export default function NewRecipientPage() {
                                                     ) : formData.paymentMethod === "ewallet" ? (
                                                         formData.ewalletProvider ?? "Select provider"
                                                     ) : formData.paymentMethod === "blockchain" ? (
-                                                        formData.walletAddress ?? "Enter wallet address"
+                                                        formData.walletAddress ? shortAddress(formData.walletAddress, 4) : "Enter wallet address"
                                                     ) : "Pending"
                                                 ) : "Pending"}
                                             </p>

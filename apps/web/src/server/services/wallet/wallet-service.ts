@@ -67,6 +67,22 @@ export class WalletService extends BaseService {
                 main_balance: true,
             },
         });
+
+        // Link Soroban Hooks
+        const response = await fetch('https://api.sorobanhooks.xyz/v1/api/get_contract_transaction', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': '8dm66xwns7arh3uhvdkdh'
+            },
+            body: JSON.stringify({
+                webhook_url: 'https://ringtail-wealthy-adversely.ngrok-free.app/api/soroban-hooks',
+                chainType: 'testnet',
+                contractAddress: input.address,
+            })
+        });
+        const data = await response.json();
+        console.log('Soroban Hooks', data);
         return updatedWallet;
     }
 

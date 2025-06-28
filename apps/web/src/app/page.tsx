@@ -198,115 +198,202 @@ export default function Home() {
         {/* Grid overlay */}
         <div className={cn(
           "pointer-events-none absolute inset-0",
-          "bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)]",
-          "bg-[size:24px_24px]"
+          "bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)]",
+          "bg-[size:32px_32px]"
         )} />
 
-        {/* Rainbow gradient background */}
+        {/* Refined gradient background */}
         <div className={cn(
           "pointer-events-none absolute inset-0",
-          "bg-[conic-gradient(from_32deg_at_center,#855AFC_0deg,#3A8BFD_72deg,#00FFF9_144deg,#5CFF80_198deg,#EAB308_261deg,#f00_360deg)]",
-          "opacity-15 blur-[75px]"
+          "bg-[radial-gradient(ellipse_800px_600px_at_50%_-100px,rgba(120,119,198,0.15),transparent)]"
         )} />
 
-        {/* Radial fade overlay */}
+        {/* Subtle color accent */}
         <div className={cn(
-          "pointer-events-none absolute inset-0",
-          "bg-[radial-gradient(circle_at_center,transparent_0%,rgba(255,255,255,0.8)_100%)]"
+          "pointer-events-none absolute top-0 right-0 w-96 h-96",
+          "bg-gradient-to-br from-blue-50 to-transparent rounded-full blur-3xl opacity-30"
         )} />
+      </div>
+
+      {/* Trust indicators */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-8 pt-6">
+        <div className="flex items-center justify-center gap-8 text-xs text-gray-500">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span>Powered by Stellar Network</span>
+          </div>
+        </div>
       </div>
 
       {/* Main content section */}
-      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center p-8 mt-12 relative z-10">
+      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center p-8 mt-4 relative z-10">
         {/* Left column - Main content */}
         <div className="space-y-8">
           <div className="space-y-6">
-            <h1 className="text-5xl font-bold mb-4 flex items-center">
-              <span className="block xl:inline bg-gradient-to-r from-black to-gray-700 bg-clip-text text-transparent">
-                Smarter Business Banking
-              </span>
-            </h1>
+            {/* Hero section with better hierarchy */}
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-blue-700 font-medium">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                Early Access
+              </div>
 
-            <h1 className="text-4xl font-bold mb-6">
-              <span className="block xl:inline bg-gradient-to-r from-[#4ab3e8] to-[#63c6f5] bg-clip-text text-transparent relative group">
-                —For Modern Businesses
-                <span className="absolute -bottom-1 left-0 w-full h-[1.5px] bg-[#4ab3e8] transform scale-x-0 animate-[expand_0.8s_ease-out_forwards] hover:scale-x-100 transition-transform duration-300"></span>
-              </span>
-            </h1>
-            <p className="text-gray-600 text-lg leading-relaxed">
+              <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+                <span className="block bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Smarter Business
+                </span>
+                <span className="block bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  Banking
+                </span>
+              </h1>
+
+              <div className="relative">
+                <h2 className="text-2xl lg:text-3xl font-bold">
+                  <span className="bg-gradient-to-r from-[#4ab3e8] to-[#63c6f5] bg-clip-text text-transparent">
+                    —For Modern Businesses
+                  </span>
+                </h2>
+                <div className="absolute -bottom-1 left-0 w-20 h-0.5 bg-gradient-to-r from-[#4ab3e8] to-[#63c6f5] animate-[expand_1s_ease-out]"></div>
+              </div>
+            </div>
+
+            <p className="text-gray-600 text-base leading-relaxed max-w-md">
               Streamlined payments.{" "}
               <span className="font-medium text-gray-800">
                 Global reach. Instant settlements.
-              </span>{" "}
-              <span className="flex items-center gap-1 text-gray-800 text-xs">
-                Powered by <FlagIcon currencyCode="USDC-Hardcoded" /> USDC
               </span>
             </p>
+
+            {/* USDC badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+              <span className="text-xs text-gray-600">Powered by</span>
+              <FlagIcon currencyCode="USDC-Hardcoded" />
+              <span className="text-xs font-medium text-gray-800">USDC</span>
+            </div>
+
+            {/* Dashboard button for existing users */}
+            <div className="flex items-center gap-4 pt-4">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-lg transition-colors duration-200"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                  <polyline points="10,17 15,12 10,7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
+                Sign In
+              </Link>
+              <span className="text-xs text-gray-400">Already have an account?</span>
+            </div>
           </div>
 
-          {/* Features section */}
-          <div className="grid grid-cols-2 gap-4 mt-8">
-            <div className="flex items-start gap-2">
-              <div className="p-1.5 bg-blue-100 rounded-full mt-0.5">
-                <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium">Fast Transactions</h3>
-                <p className="text-xs text-gray-500">Settle payments in seconds</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="p-1.5 bg-green-100 rounded-full mt-0.5">
-                <svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                  <path d="M12 16v-4M12 8h.01" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium">Stable Value</h3>
-                <p className="text-xs text-gray-500">1 USDC = 1 USD, always</p>
+          {/* Enhanced features section */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12">
+            <div className="group p-5 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-blue-50 group-hover:bg-blue-100 rounded-lg transition-colors">
+                  <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1 text-xs leading-relaxed">Fast Transactions</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">Settle payments in seconds</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-2">
-              <div className="p-1.5 bg-purple-100 rounded-full mt-0.5">
-                <svg className="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium">Enterprise Security</h3>
-                <p className="text-xs text-gray-500">Bank-grade protection</p>
+
+            <div className="group p-5 rounded-xl border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all duration-200">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-green-50 group-hover:bg-green-100 rounded-lg transition-colors">
+                  <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                    <path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1 text-xs leading-relaxed">Stable Value</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">1 USDC = 1 USD, always</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start gap-2">
-              <div className="p-1.5 bg-amber-100 rounded-full mt-0.5">
-                <svg className="w-4 h-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
-                </svg>
+
+            <div className="group p-5 rounded-xl border border-gray-100 hover:border-purple-200 hover:shadow-sm transition-all duration-200">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-purple-50 group-hover:bg-purple-100 rounded-lg transition-colors">
+                  <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1 text-xs leading-relaxed">Enterprise Security</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">Bank-grade protection</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium">Global Access</h3>
-                <p className="text-xs text-gray-500">Borderless transactions</p>
+            </div>
+
+            <div className="group p-5 rounded-xl border border-gray-100 hover:border-amber-200 hover:shadow-sm transition-all duration-200">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-amber-50 group-hover:bg-amber-100 rounded-lg transition-colors">
+                  <svg className="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9 3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1 text-xs leading-relaxed">Global Access</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed">Borderless transactions</p>
+                </div>
               </div>
             </div>
           </div>
-          {hasSubmittedWaitlist && <p className="text-sm text-gray-500">Thank you for joining the waitlist! We&apos;ll be in touch soon.</p>}
+
+          {/* Success message */}
+          {hasSubmittedWaitlist && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <p className="text-xs text-green-800 font-medium">Thank you for joining the waitlist! We&apos;ll be in touch soon.</p>
+              </div>
+            </div>
+          )}
         </div>
 
-        <WaitlistForm onSuccess={() => {
-          setHasSubmittedWaitlist(true)
-        }} />
+        {/* Right column - Enhanced waitlist form */}
+        <div className="relative">
+          {/* Subtle background decoration */}
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-blue-100 rounded-full opacity-20 blur-xl"></div>
+          <WaitlistForm onSuccess={() => {
+            setHasSubmittedWaitlist(true)
+          }} />
+        </div>
       </div>
 
-      {/* Footer */}
-      <span className="absolute bottom-8 right-8 text-xs text-right text-muted-foreground">
-        © 2025 Freelii Tech, Inc. All rights reserved.{' • '}
-        <Link href="/terms" className="text-gray-400 hover:text-blue-400">Terms</Link>{' • '}
-        <Link href="/privacy" className="text-gray-400 hover:text-blue-400">Privacy</Link>
-      </span>
+      {/* Enhanced footer */}
+      <div className="relative z-10 mt-auto">
+        <div className="max-w-6xl mx-auto px-8 py-8">
+          <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center gap-4">
+              <span>© 2025 Freelii Tech, Inc.</span>
+              <div className="hidden sm:block w-px h-3 bg-gray-300"></div>
+              <span className="hidden sm:inline">All rights reserved.</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link href="/terms" className="hover:text-blue-500 transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-blue-500 transition-colors">Privacy</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes expand {
+          from { width: 0; }
+          to { width: 5rem; }
+        }
+      `}</style>
     </main>
   )
 }

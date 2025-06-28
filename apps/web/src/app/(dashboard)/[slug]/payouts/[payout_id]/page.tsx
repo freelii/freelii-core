@@ -14,7 +14,7 @@ import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { AnimatePresence, motion } from "framer-motion"
 import { Check, Download, Edit2, XCircle } from "lucide-react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { AccountDetails } from "../new/steps/account-details"
@@ -26,17 +26,13 @@ export default function PayoutDetailsPage() {
     const { account, transfer } = useWallet();
     const { setSelectedWalletId, selectedWalletId } = useWalletStore();
     const params = useParams();
+    const router = useRouter();
     const { searchParams } = useRouterStuff();
     const paymentId = params?.payout_id as string;
     const [isProcessing, setIsProcessing] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [transferStep, setTransferStep] = useState<'idle' | 'initiating' | 'processing' | 'confirming'>('idle');
 
-    useEffect(() => {
-        if (account && account.id !== selectedWalletId) {
-            setSelectedWalletId(account.id);
-        }
-    }, [account, selectedWalletId]);
 
     // tRPC procedures
     const { mutateAsync: processPaymentSettled, isPending: isProcessingPaymentSettled } = api.orchestrator.processPaymentSettled.useMutation();
@@ -47,6 +43,16 @@ export default function PayoutDetailsPage() {
         enabled: !!paymentId
     })
     const { mutateAsync: confirmBlockchainConfirmation } = api.orchestrator.confirmBlockchainConfirmation.useMutation({})
+
+    useEffect(() => {
+        console.log('payment', payment?.wallet_id)
+        console.log('account', account?.id)
+        console.log('selectedWalletId', selectedWalletId)
+        if (payment && selectedWalletId !== payment?.wallet_id) {
+            console.log('setting selectedWalletId', payment.wallet_id)
+            setSelectedWalletId(payment.wallet_id);
+        }
+    }, [account, selectedWalletId, payment]);
 
     // Show loading state if data is being fetched
     if (isLoadingPayment) {
@@ -178,6 +184,7 @@ export default function PayoutDetailsPage() {
                 return;
             }
 
+            console.log('here', account?.main_balance?.amount, payment.source_amount)
             if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(payment.source_amount))) {
                 toast.error("Insufficient balance")
                 return;
@@ -185,6 +192,7 @@ export default function PayoutDetailsPage() {
                 toast.error("Invalid amount for payment")
                 return;
             }
+            console.log('here 2')
 
             setIsProcessing(true)
             setTransferStep('initiating')
@@ -194,6 +202,8 @@ export default function PayoutDetailsPage() {
                 toast.error("Liquidation address not found")
                 return;
             }
+
+            console.log('here 3', liquidationAddress)
 
             setTransferStep('processing')
 
@@ -205,7 +215,7 @@ export default function PayoutDetailsPage() {
             // Perform the transfer
             const at = await transfer({
                 to: liquidationAddress,
-                amount: toStroops(Number(payment.source_amount)),
+                amount: toStroops(Number(payment.source_amount) / 100),
                 sacAddress: TESTNET.XLM_SAC
             })
 
@@ -235,7 +245,7 @@ export default function PayoutDetailsPage() {
     const isInstant = !!payment?.destination?.blockchain_account;
 
     const onEdit = () => {
-        console.log('onEdit')
+        router.back();
     }
 
     const handleConfirm = () => {
@@ -352,7 +362,7 @@ export default function PayoutDetailsPage() {
                                                             {fromStroops(account.main_balance?.amount ?? 0, 2)}
                                                         </span>
                                                     </div>
-                                                    {hasEnoughBalance(account?.main_balance?.amount ?? 0, toStroops(payment?.source_amount ?? 0)) ?
+                                                    {hasEnoughBalance(account?.main_balance?.amount ?? 0, toStroops(payment?.source_amount / 100 ?? 0)) ?
                                                         <span className="text-[10px] text-gray-500">Available balance</span> :
                                                         <span className="text-[10px] text-red-500">Insufficient balance</span>
                                                     }
@@ -448,7 +458,7 @@ export default function PayoutDetailsPage() {
                                                         currencyCode={payment.target_currency}
                                                         size={16}
                                                     />}
-                                                    {payment.target_currency !== "USD" && <FlagIcon
+                                                    {!isInstant && payment.target_currency !== "USD" && <FlagIcon
                                                         currencyCode={payment.target_currency}
                                                         size={16}
                                                     />}

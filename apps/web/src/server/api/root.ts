@@ -6,6 +6,7 @@ import { clientsRouter } from "./routers/clients";
 import { invoicingRouter } from "./routers/invoicing";
 import { ledgerRouter } from "./routers/ledger";
 import { orchestratorRouter } from "./routers/orchestrator";
+import { sorobanRouter } from "./routers/soroban";
 import { walletRouter } from "./routers/wallet";
 import { webhookRouter } from "./routers/webhook";
 /**
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   invoicing: invoicingRouter,
   wallet: walletRouter,
   ledger: ledgerRouter,
+  soroban: sorobanRouter,
   webhook: webhookRouter,
   clients: clientsRouter,
   activity: activityRouter,

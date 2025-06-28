@@ -3,12 +3,13 @@
 import { XLMIcon } from "@/ui/icons/xlm-icon";
 import {
   Cards,
+  CreditCard,
   Facebook,
   GreekTemple,
   InvoiceDollar,
   MoneyBills2,
+  Users6,
   useRouterStuff,
-  Users6
 } from "@freelii/ui";
 import { useParams } from "next/navigation";
 import { type ReactNode } from "react";
@@ -71,16 +72,16 @@ const NAV_AREAS: SidebarNavAreas<{
             icon: Users6,
             href: `/${slug}/recipients${queryString}`,
           },
-          // {
-          //   name: "Cards",
-          //   icon: CreditCard,
-          //   href: `/${slug}/cards${queryString}`,
-          // },
-          // {
-          //   name: "Deposits",
-          //   icon: CreditCard,
-          //   href: `/${slug}/deposits${queryString}`,
-          // },
+          {
+            name: "Cards",
+            icon: CreditCard,
+            href: `/${slug}/cards${queryString}`,
+          },
+          {
+            name: "Deposits",
+            icon: CreditCard,
+            href: `/${slug}/deposits${queryString}`,
+          },
           // {
           //   name: "Settings",
           //   icon: Gear,

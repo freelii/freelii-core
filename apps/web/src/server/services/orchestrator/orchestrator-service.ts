@@ -4,14 +4,14 @@ import {
     type GetQuoteParams
 } from '@freelii/anchors';
 import {
+    PaymentOrchestrationStatus,
+    TransactionStatus,
     type BlockchainAccount,
     type Client,
     type EwalletAccount,
     type FiatAccount,
     type PaymentDestination,
     type PaymentOrchestrationState,
-    PaymentOrchestrationStatus,
-    TransactionStatus,
     type PrismaClient
 } from '@prisma/client';
 import { BaseService } from '@services/base-service';
@@ -113,6 +113,8 @@ export class OrchestratorService extends BaseService {
                 targetCurrency,
                 PaymentRail.CRYPTO
             );
+            console.log('anchor', anchor)
+            console.log('rate', rate)
 
             const targetAmount = this.getExpectedTargetAmount(sourceAmount, rate.exchangeRate);
 
@@ -149,10 +151,19 @@ export class OrchestratorService extends BaseService {
 
     async getPaymentInstructions(stateId: string) {
         const state = await this.db.paymentOrchestrationState.findUniqueOrThrow({
-            where: { id: stateId }
+            where: { id: stateId },
+            include: {
+                destination: {
+                    include: {
+                        blockchain_account: true,
+                        ewallet_account: true,
+                        fiat_account: true
+                    }
+                }
+            }
         });
         const anchor = this.anchorService.getAnchor(state.anchor);
-        const walletAddress = await anchor.getLiquidationAddress();
+        const walletAddress = await anchor.getLiquidationAddress(state.destination);
         return {
             amount: state.source_amount,
             walletAddress
@@ -246,7 +257,7 @@ export class OrchestratorService extends BaseService {
                 }
             }
         });
-        console.log('state', this.session.user.id, state)
+        console.log('getPaymentState state', this.session.user.id, state)
         return state ?? null;
     }
 
