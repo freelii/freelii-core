@@ -3,9 +3,11 @@ import { Asset } from "@stellar/stellar-sdk/minimal";
 export function getAsset(sac: string): Asset {
     console.log('sac', sac);
     if (sac === "XLM") return Asset.native();
-    const [code, issuer] = sacToAddress(sac).split('-') as [string, string];
+    const address = sacToAddress(sac);
+    if (address === "native") return Asset.native();
+    const [code, issuer] = address.split('-') as [string, string];
     if (!code || !issuer) {
-        throw new Error(`Invalid SAC format ${sac}`);
+        throw new Error(`Invalid SAC format ${address}`);
     }
     return new Asset(code, issuer);
 }
