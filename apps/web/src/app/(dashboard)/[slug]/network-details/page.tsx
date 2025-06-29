@@ -1,11 +1,13 @@
 "use client"
+import { NetworkWalletInfo } from "@/components/network-wallet-info";
+import { useStellar } from "@/contexts/stellar-context";
 import { XLMIcon } from "@/ui/icons/xlm-icon";
 import { PageContent } from "@/ui/layout/page-content";
 import { USDCBadge } from "@/ui/shared/badges/usdc-badge";
 import { useWallet } from "@/wallet/useWallet";
 import { Button, MaxWidthWrapper, useCopyToClipboard } from "@freelii/ui";
 import { shortAddress } from "@freelii/utils/functions";
-import { Copy, Info, Shield, User, Wallet } from "lucide-react";
+import { Copy, ExternalLink, Info, Shield, User, Wallet } from "lucide-react";
 import Link from "next/link";
 
 
@@ -13,6 +15,7 @@ import Link from "next/link";
 export default function NetworkDetails() {
     const [, copyToClipboard] = useCopyToClipboard()
     const { account, isLoadingAccount: isLoading } = useWallet();
+    const { network, config } = useStellar();
 
     return (
         <PageContent title="Network Details" description="View your network details">
@@ -237,6 +240,59 @@ export default function NetworkDetails() {
                                         </div>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Debug Section - Subtle and Discrete */}
+                    <div className="mt-16 pt-8 border-t border-gray-100">
+                        <div className="bg-gray-50/50 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                                    Development Info
+                                </h4>
+                                <div className="flex items-center gap-3">
+                                    {/* Stellar Explorer Link */}
+                                    <Link
+                                        href={`https://stellar.expert/explorer/${network === 'mainnet' ? 'public' : 'testnet'}/contract/${config.mainBalance}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                                        title="View contract on Stellar Explorer"
+                                    >
+                                        <ExternalLink className="h-3 w-3" />
+                                        <span>Explorer</span>
+                                    </Link>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Network Info */}
+                                <div className="space-y-2">
+                                    <NetworkWalletInfo className="text-xs" />
+                                </div>
+                                
+                                {/* Technical Details */}
+                                <div className="space-y-2">
+                                    <div className="text-xs text-gray-500 space-y-1">
+                                        <div className="flex justify-between">
+                                            <span>RPC:</span>
+                                            <code className="text-gray-600 font-mono">{shortAddress(config.rpcUrl, 12)}</code>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Passphrase:</span>
+                                            <code className="text-gray-600 font-mono">{shortAddress(config.networkPassphrase, 12)}</code>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>WASM:</span>
+                                            <code className="text-gray-600 font-mono">{shortAddress(config.walletWasmHash, 12)}</code>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Mercury:</span>
+                                            <code className="text-gray-600 font-mono">{shortAddress(config.mercuryUrl, 12)}</code>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

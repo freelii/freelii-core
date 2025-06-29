@@ -234,20 +234,8 @@ export function AppSidebarNav({
       bottom={
         <>
           {/* Network Switcher */}
-          <div className="p-4 border-t space-y-3">
-            <NetworkWalletInfo />
+          <div className="p-4 border-t">
             <NetworkSwitcher className="w-full" />
-            
-            {/* Technical details (collapsible) */}
-            <details className="text-xs text-gray-500">
-              <summary className="cursor-pointer hover:text-gray-700">Technical Details</summary>
-              <div className="mt-2 space-y-1">
-                <p>RPC: {shortAddress(config.rpcUrl)}</p>
-                <p>Passphrase: {shortAddress(config.networkPassphrase)}</p>
-                <p>WASM: {shortAddress(config.walletWasmHash)}</p>
-                <p>Mercury: {config.mercuryUrl}</p>
-              </div>
-            </details>
           </div>
           {/* TODO <UserSurveyButton /> */}
           {/* <Usage /> */}
