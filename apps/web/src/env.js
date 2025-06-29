@@ -46,6 +46,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
   */
   client: {
+    NEXT_PUBLIC_APP_URL: z.string(),
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
     // Network-specific variables (testnet/mainnet)
     NEXT_PUBLIC_TESTNET_RPC_URL: z.string(),
@@ -122,6 +123,7 @@ export const env = createEnv({
     COINS_PH_PROXY_API_SECRET: process.env.COINS_PH_PROXY_API_SECRET,
     USE_COINS_PH_PROXY: process.env.USE_COINS_PH_PROXY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
 
   /**

@@ -74,7 +74,7 @@ export class WalletService extends BaseService {
                 'x-api-key': '8dm66xwns7arh3uhvdkdh'
             },
             body: JSON.stringify({
-                webhook_url: 'https://ringtail-wealthy-adversely.ngrok-free.app/api/soroban-hooks',
+                webhook_url: `${env.NEXT_PUBLIC_APP_URL}/api/soroban-hooks`,
                 chainType: 'testnet',
                 contractAddress: input.address,
             })
