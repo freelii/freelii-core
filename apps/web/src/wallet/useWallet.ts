@@ -1,11 +1,12 @@
 import { useWalletStore } from "@/hooks/stores/wallet-store";
+import { useNetworkWalletSync } from "@/hooks/use-network-wallet-sync";
+import { useStellarClients } from "@/hooks/use-stellar-clients";
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler";
-import { fundPubkey, fundSigner, sac, server, account as smartWallet } from "@/lib/stellar-smart-wallet";
 import { api } from "@/trpc/react";
-import { XLM_SAC } from "@freelii/utils/constants";
 import { Keypair, } from "@stellar/stellar-sdk";
+import { useParams, useRouter } from "next/navigation";
 import { SignerStore } from "passkey-kit";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 
 interface SignedTx {
@@ -14,12 +15,39 @@ interface SignedTx {
 
 export function useWallet() {
     const [isFunding, setIsFunding] = useState(false);
-    const { setSelectedWalletId, setWallets, selectedWalletId } = useWalletStore();
+    const { setSelectedWalletId, setWallets, selectedWalletId, clearSelection } = useWalletStore();
+    const router = useRouter();
+    const params = useParams();
+
+    // Ensure wallet selection is cleared when switching networks
+    useNetworkWalletSync();
+
+    // Get network-aware Stellar clients
+    const {
+        account: smartWallet,
+        server,
+        sac,
+        getFundPubkey,
+        getFundSigner,
+        network
+    } = useStellarClients();
 
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
-    const { data: wallets } = api.wallet.getAll.useQuery();
+    const { data: allWallets } = api.wallet.getAll.useQuery();
+
+    // Filter wallets by current network environment
+    const wallets = useMemo(() => {
+        if (!allWallets) return [];
+
+        return allWallets.filter(wallet => {
+            // Use network_environment field for testnet/mainnet filtering
+            const walletEnvironment = wallet.network_environment || 'testnet'; // Default to testnet for legacy wallets
+            return walletEnvironment === network;
+        });
+    }, [allWallets, network]);
+
     const { data: account, status: accountStatus, isLoading: isLoadingAccount } = api.wallet.getAccount.useQuery({ walletId: String(selectedWalletId) }, {
         enabled: !!selectedWalletId,
     });
@@ -34,22 +62,60 @@ export function useWallet() {
         }
     });
 
-    useEffect(() => {
-        void connect();
-    }, []);
 
+    // Update store when wallets change (including network filtering)
     useEffect(() => {
-        console.log('wallets', wallets);
         if (wallets) {
-            console.log('wallets', wallets);
             setWallets(wallets);
+            void connect();
         }
-    }, [wallets]);
+    }, [wallets, network]);
 
+    // Clear selected wallet if it doesn't exist in current network
+    useEffect(() => {
+        if (selectedWalletId && allWallets) {
+            // Check if the selected wallet exists in the current network's filtered wallets
+            const selectedWalletExists = wallets.some(w => w.id === selectedWalletId);
+            if (!selectedWalletExists) {
+                clearSelection();
+            }
+        }
+    }, [wallets, selectedWalletId, clearSelection, allWallets]);
+
+    // Also clear selection when network changes if no wallets exist in new network
+    useEffect(() => {
+        if (selectedWalletId && allWallets && wallets.length === 0) {
+            clearSelection();
+        }
+    }, [network, selectedWalletId, allWallets, wallets.length, clearSelection]);
+
+    // Clear selection immediately when network changes (proactive clearing)
+    const [lastNetwork, setLastNetwork] = useState(network);
+    useEffect(() => {
+        if (lastNetwork !== network) {
+            if (selectedWalletId) {
+                clearSelection();
+            }
+            setLastNetwork(network);
+        }
+    }, [network, lastNetwork, selectedWalletId, clearSelection]);
+
+    // Redirect to wallet creation if no wallets available for current network
+    useEffect(() => {
+        // Only redirect if we have data loaded and no wallets exist
+        if (allWallets && wallets.length === 0) {
+            const slug = params?.slug as string;
+            const currentPath = window.location.pathname;
+
+            // Don't redirect if we're already on the add-wallet page
+            if (slug && !currentPath.includes('/add-wallet')) {
+                router.push(`/${slug}/add-wallet`);
+            }
+        }
+    }, [allWallets, wallets.length, router, params?.slug]);
 
     const create = async (alias: string) => {
         try {
-
             const result = await smartWallet.createWallet("Freelii", alias);
             const {
                 contractId: cid,
@@ -63,7 +129,7 @@ export function useWallet() {
             const walletRes = await createWallet({
                 alias,
                 isDefault: wallets?.length === 0,
-                network: "testnet",
+                network: network, // This should be the network_environment value
                 address: cid,
                 keyId: keyIdBase64,
             })
@@ -94,7 +160,6 @@ export function useWallet() {
 
             const signedTx = await account.sign(at, { keyId });
             const res = await server.send(signedTx);
-            console.log('Transaction response:', res);
             return { keypair };
         } catch (error) {
             console.error('Add signer error:', error);
@@ -107,15 +172,12 @@ export function useWallet() {
             console.log('No account found', account);
             throw new Error('No account found');
         }
-        console.log('account', account);
         const { address, key_id } = account;
         if (!address || !key_id) {
             throw new Error('No address or keyId found');
         }
 
 
-        console.log('transfer', address, to, amount, sacAddress);
-        console.log('account.smartWallet', smartWallet);
         if (!smartWallet.wallet) await connect();
         const asset = sac.getSACClient(sacAddress ?? XLM_SAC);
         const at = await asset.transfer({
@@ -124,8 +186,6 @@ export function useWallet() {
             amount: BigInt(amount),
         });
 
-        console.log('at', at.options);
-        console.log('keyId', key_id);
 
         const signedTx = await smartWallet.sign(at.built!, { keyId: key_id })
 
@@ -162,6 +222,9 @@ export function useWallet() {
         setIsFunding(true);
         try {
             const native = sac.getSACClient(XLM_SAC);
+            const fundPubkey = await getFundPubkey();
+            const fundSigner = await getFundSigner();
+
             const { built, ...transfer } = await native.transfer({
                 to: id,
                 from: fundPubkey,
@@ -183,10 +246,9 @@ export function useWallet() {
     }
 
     const connect = async () => {
-        console.log('connect', account);
-        if (!!account?.key_id) {
+        if (account && account.key_id) {
             try {
-                await smartWallet.connectWallet({ keyId: account?.key_id });
+                await smartWallet.connectWallet({ keyId: account.key_id });
             } catch (error) {
                 console.error('Connect error:', error);
                 toast.error((error as Error)?.message ?? "Unknown error");

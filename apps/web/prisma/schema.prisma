@@ -186,6 +186,12 @@ model Transactions {
   @@index([recipient_id])
   @@index([wallet_id])
   @@index([blockchain_network, blockchain_environment, blockchain_tx_id, blockchain_tx_hash])
+  @@index([wallet_id, created_at])
+  @@index([wallet_id, status, created_at])
+  @@index([sender_id, created_at])
+  @@index([sender_id, status, created_at])
+  @@index([recipient_id, created_at])
+  @@index([status, created_at])
   @@map("transactions")
 }
 
@@ -220,6 +226,11 @@ model Invoice {
   @@index([client_id])
   @@index([receiver_id])
   @@index([transaction_id])
+  @@index([generator_id, created_at])
+  @@index([receiver_id, created_at])
+  @@index([generator_id, status, created_at])
+  @@index([receiver_id, status, created_at])
+  @@index([client_id, status, created_at])
   @@map("invoices")
 }
 
@@ -293,6 +304,9 @@ model Wallet {
   @@unique([user_id, alias])
   @@unique([address, network])
   @@index([user_id])
+  @@index([address, network, network_environment])
+  @@index([user_id, is_default])
+  @@index([user_id, created_at])
   @@map("wallets")
 }
 
@@ -368,6 +382,9 @@ model PaymentOrchestrationState {
   @@index([sender_id])
   @@index([wallet_id])
   @@index([anchor])
+  @@index([sender_id, created_at])
+  @@index([sender_id, status, created_at])
+  @@index([wallet_id, status, created_at])
   @@map("payment_orchestration_states")
 }
 
@@ -389,6 +406,9 @@ model BulkDisbursement {
 
   @@index([sender_id])
   @@index([status])
+  @@index([sender_id, status])
+  @@index([sender_id, created_at])
+  @@index([status, created_at])
   @@map("bulk_disbursements")
 }
 
@@ -457,6 +477,13 @@ model SorobanTransaction {
   @@index([timestamp])
   @@index([source_wallet_id])
   @@index([user_id])
+  @@index([user_id, created_at])
+  @@index([user_id, timestamp])
+  @@index([source_wallet_id, timestamp])
+  @@index([source_wallet_id, created_at])
+  @@index([is_successful, timestamp])
+  @@index([user_id, is_successful, timestamp])
+  @@index([source_wallet_id, is_successful, timestamp])
   @@map("soroban_transactions")
 }
 
@@ -477,6 +504,8 @@ model SorobanOperation {
   @@index([transaction_id])
   @@index([contract_address])
   @@index([function_name])
+  @@index([function_name, contract_address])
+  @@index([transaction_id, operation_index])
   @@map("soroban_operations")
 }
 
@@ -501,6 +530,9 @@ model SorobanEvent {
   @@index([contract_id])
   @@index([event_type])
   @@index([related_wallet_id])
+  @@index([transaction_id, event_index])
+  @@index([contract_id, event_type])
+  @@index([related_wallet_id, in_successful_contract_call])
   @@map("soroban_events")
 }
 
@@ -521,6 +553,9 @@ model SorobanStateChange {
   @@index([transaction_id])
   @@index([affected_address])
   @@index([affected_wallet_id])
+  @@index([transaction_id, change_index])
+  @@index([change_type, change_kind])
+  @@index([affected_wallet_id, change_type])
   @@map("soroban_state_changes")
 }
 

@@ -1,7 +1,6 @@
 "use client";
 import { WalletOnboarding } from "@/components/onboarding/wallet-onboarding";
 import { api } from "@/trpc/react";
-import { useWallet } from "@/wallet/useWallet";
 import { Skeleton } from "@freelii/ui";
 import { cn } from "@freelii/utils";
 import { useSession } from "next-auth/react";
@@ -66,7 +65,6 @@ function LoadingSkeleton() {
 
 export default function Layout({ children }: { children: ReactNode }) {
     const session = useSession();
-    const { } = useWallet();
 
     // Query for wallets
     const { data: wallets, isLoading: isLoadingWallets } = api.wallet.getAll.useQuery(

@@ -15,6 +15,7 @@ import {
     type PrismaClient
 } from '@prisma/client';
 import { BaseService } from '@services/base-service';
+import { EmailService } from '../email/email.service';
 import type {
     PaymentOrchestrationConfig,
     PaymentOrchestrationResult,
@@ -163,6 +164,9 @@ export class OrchestratorService extends BaseService {
             }
         });
         const anchor = this.anchorService.getAnchor(state.anchor);
+        if (!state.destination) {
+            throw new Error('Destination not found');
+        }
         const walletAddress = await anchor.getLiquidationAddress(state.destination);
         return {
             amount: state.source_amount,
@@ -186,12 +190,30 @@ export class OrchestratorService extends BaseService {
                     tx_hash: txHash,
                     status: TransactionStatus.PENDING,
                     sent_at: new Date()
+                },
+                select: {
+                    recipient: true,
+                    source_amount: true,
+                    source_currency: true,
+                    tx_id: true,
+                    sender: true,
                 }
             });
 
+            if (state.sender.email) {
+                const emailService = new EmailService({ db: this.db, session: this.session });
+                await emailService.sendPaymentSentNotification({
+                    recipientName: state.recipient.name,
+                    amount: (state.source_amount / 100).toString(),
+                    currency: state.source_currency,
+                    transactionId: txId,
+                    to: state.sender.email
+                });
+            }
+
             return {
                 success: true,
-                state
+                state: null
             };
         } catch (error) {
             console.error('Failed to process blockchain confirmation:', error);

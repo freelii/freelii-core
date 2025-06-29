@@ -46,7 +46,7 @@ export default function CardsPage() {
                             Your Digital Card is Coming Soon
                         </h2>
                         <p className="text-muted-foreground">
-                            We know that spending crypto isn&apos;t always easy, and we&apos;re working to change that.
+                            We know that spending digital currencies isn&apos;t always easy, and we&apos;re working to change that.
                         </p>
                     </div>
 

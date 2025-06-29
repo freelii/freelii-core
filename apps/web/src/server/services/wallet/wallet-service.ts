@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { BaseService } from "../base-service";
 import { StellarService } from "../stellar/stellar-service";
 
@@ -30,19 +31,16 @@ export class WalletService extends BaseService {
                 key_id: input.keyId,
                 address: input.address,
                 network: 'stellar',
-                network_environment: 'testnet',
+                network_environment: input.network, // Use the network parameter for environment
                 balances: {
                     create: [
                         {
-                            address: 'XLM',
+                            address: input.network === "mainnet" ?
+                                env.NEXT_PUBLIC_MAINNET_MAIN_BALANCE_CONTRACT_ID :
+                                env.NEXT_PUBLIC_TESTNET_MAIN_BALANCE_CONTRACT_ID,
                             currency: 'USDC',
                             amount: 0,
                         },
-                        // {
-                        //     address: input.network === "mainnet" ? MAINNET.USDC : TESTNET.USDC,
-                        //     currency: "USDC",
-                        //     amount: 0,
-                        // }
                     ],
                 },
             },
@@ -102,6 +100,8 @@ export class WalletService extends BaseService {
         if (wallet.network === "stellar") {
             const stellar = new StellarService({ wallet });
             const { wallet: stellarWallet, balancesToUpdate } = await stellar.getAccount();
+            console.log('stellarWallet', stellarWallet);
+            console.log('balancesToUpdate', balancesToUpdate);
             if (balancesToUpdate.length > 0) {
                 await Promise.all(
                     balancesToUpdate.map(balance =>

@@ -1,63 +1,38 @@
-import { env } from "@/env";
+// DEPRECATED: This file is no longer functional due to network context migration
+// 
+// MIGRATION REQUIRED:
+// 
+// Old usage:
+// import { account, server, rpc, sac } from '@/lib/stellar-smart-wallet';
+// 
+// New usage in React components:
+// import { useStellarClients } from '@/hooks/use-stellar-clients';
+// const { account, server, rpc, sac } = useStellarClients();
+// 
+// New usage in non-React code:
+// import { createStellarClients } from '@/lib/stellar-smart-wallet-context';
+// import { useStellar } from '@/contexts/stellar-context';
+// const clients = createStellarClients(config);
 
-import { Account, Keypair, StrKey } from "@stellar/stellar-sdk/minimal";
-import { basicNodeSigner } from "@stellar/stellar-sdk/minimal/contract";
-import { Server } from "@stellar/stellar-sdk/minimal/rpc";
-import { noop } from "@tanstack/react-table";
-import { PasskeyKit, PasskeyServer, SACClient } from "passkey-kit";
+throw new Error(`
+❌ MIGRATION REQUIRED: stellar-smart-wallet.ts is deprecated
 
+The direct exports from this file are no longer available due to the network context migration.
 
-export const rpc = new Server(env.NEXT_PUBLIC_RPC_URL);
+To fix this error, update your imports:
 
-export const account = new PasskeyKit({
-    rpcUrl: env.NEXT_PUBLIC_RPC_URL,
-    networkPassphrase: env.NEXT_PUBLIC_NETWORK_PASSPHRASE,
-    walletWasmHash: env.NEXT_PUBLIC_WALLET_WASM_HASH,
-});
+1. For React components/hooks:
+   OLD: import { account, server, rpc } from '@/lib/stellar-smart-wallet';
+   NEW: 
+   import { useStellarClients } from '@/hooks/use-stellar-clients';
+   const { account, server, rpc } = useStellarClients();
 
-export const server = new PasskeyServer({
-    rpcUrl: env.NEXT_PUBLIC_RPC_URL,
-    launchtubeUrl: env.NEXT_PUBLIC_LAUNCHTUBE_URL,
-    launchtubeJwt: env.NEXT_PUBLIC_LAUNCHTUBE_JWT,
-    mercuryProjectName: env.NEXT_PUBLIC_MERCURY_PROJECT_NAME,
-    mercuryUrl: env.NEXT_PUBLIC_MERCURY_URL,
-    mercuryJwt: env.NEXT_PUBLIC_MERCURY_JWT,
-});
+2. For non-React code:
+   Use createStellarClients() factory with network config.
 
-console.log('Server config:', {
-    rpcUrl: server.rpcUrl,
-    launchtubeUrl: server.launchtubeUrl,
-    mercuryUrl: server.mercuryUrl
-});
+Files that need updating:
+- src/wallet/useWallet.ts
+- Any other files importing from this module
 
-
-export const mockPubkey = StrKey.encodeEd25519PublicKey(Buffer.alloc(32))
-export const mockSource = new Account(mockPubkey, '0')
-
-export const fundKeypair = async () => {
-    const now = new Date();
-
-    now.setMinutes(0, 0, 0);
-
-    const nowData = new TextEncoder().encode(now.getTime().toString());
-    const hashBuffer = await crypto.subtle.digest('SHA-256', nowData);
-    const keypair = Keypair.fromRawEd25519Seed(Buffer.from(hashBuffer))
-    const publicKey = keypair.publicKey()
-
-    rpc.getAccount(publicKey)
-        .catch(() => rpc.requestAirdrop(publicKey))
-        .catch(noop)
-
-    return keypair
-}
-
-
-export const fundPubkey = (await fundKeypair()).publicKey()
-export const fundSigner = basicNodeSigner(await fundKeypair(), env.NEXT_PUBLIC_NETWORK_PASSPHRASE)
-
-
-export const sac = new SACClient({
-    rpcUrl: env.NEXT_PUBLIC_RPC_URL,
-    networkPassphrase: env.NEXT_PUBLIC_NETWORK_PASSPHRASE,
-});
-export const native = sac.getSACClient(env.NEXT_PUBLIC_NATIVE_CONTRACT_ID)
+See NETWORK_SWITCHING.md for complete migration guide.
+`);

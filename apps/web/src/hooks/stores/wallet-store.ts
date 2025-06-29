@@ -8,6 +8,7 @@ interface WalletState {
   selectedWalletId: string | null
   setSelectedWalletId: (id: string) => void
   setWallets: (wallets: Wallet[]) => void
+  clearSelection: () => void
   getSelectedWallet: () => (Wallet & { main_balance?: WalletBalance | null }) | undefined
 }
 
@@ -20,6 +21,10 @@ export const useWalletStore = create<WalletState>()(
 
       setSelectedWalletId: (id) => {
         set({ selectedWalletId: id })
+      },
+
+      clearSelection: () => {
+        set({ selectedWalletId: null })
       },
 
       setWallets: (wallets) => {

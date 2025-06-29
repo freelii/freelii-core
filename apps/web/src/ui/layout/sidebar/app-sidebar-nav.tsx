@@ -1,5 +1,8 @@
 "use client";
 
+import { NetworkSwitcher } from "@/components/network-switcher";
+import { NetworkWalletInfo } from "@/components/network-wallet-info";
+import { useStellar } from "@/contexts/stellar-context";
 import { XLMIcon } from "@/ui/icons/xlm-icon";
 import {
   Cards,
@@ -11,6 +14,7 @@ import {
   Users6,
   useRouterStuff,
 } from "@freelii/ui";
+import { shortAddress } from "@freelii/utils/functions";
 import { useParams } from "next/navigation";
 import { type ReactNode } from "react";
 import { SidebarNav, type SidebarNavAreas } from "./sidebar-nav";
@@ -200,6 +204,7 @@ export function AppSidebarNav({
 }) {
   const { slug } = useParams<{ slug: string }>() ?? { slug: '' };
   const { getQueryString } = useRouterStuff();
+  const { network, config } = useStellar();
   //   const { data: session } = useSession();
   // TODO trpc  const { programs } = usePrograms();
 
@@ -228,6 +233,22 @@ export function AppSidebarNav({
       switcher={<WalletDropdown />}
       bottom={
         <>
+          {/* Network Switcher */}
+          <div className="p-4 border-t space-y-3">
+            <NetworkWalletInfo />
+            <NetworkSwitcher className="w-full" />
+            
+            {/* Technical details (collapsible) */}
+            <details className="text-xs text-gray-500">
+              <summary className="cursor-pointer hover:text-gray-700">Technical Details</summary>
+              <div className="mt-2 space-y-1">
+                <p>RPC: {shortAddress(config.rpcUrl)}</p>
+                <p>Passphrase: {shortAddress(config.networkPassphrase)}</p>
+                <p>WASM: {shortAddress(config.walletWasmHash)}</p>
+                <p>Mercury: {config.mercuryUrl}</p>
+              </div>
+            </details>
+          </div>
           {/* TODO <UserSurveyButton /> */}
           {/* <Usage /> */}
           <span className="text-xs text-muted-foreground p-4">© 2025 Freelii Tech, Inc. All rights reserved.</span>

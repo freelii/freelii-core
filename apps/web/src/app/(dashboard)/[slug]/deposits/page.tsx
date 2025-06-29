@@ -12,6 +12,153 @@ import { useState } from "react"
 
 dayjs.extend(relativeTime)
 
+/**
+ * Extract payment amount from Soroban transaction events
+ * Looks for transfer events in the events array and extracts i128 amounts
+ * Maps contract address to actual currency from wallet balances
+ */
+const extractSorobanPaymentAmount = (transaction: any): { amount: string; currency: string } => {
+  let amount = "0";
+  let currency = "XLM"; // Default fallback
+  let contractAddress: string | undefined;
+
+  try {
+    console.log('🔍 DEBUG: Starting Soroban events extraction for transaction:', transaction.transaction_hash);
+    console.log('🔍 DEBUG: Events count:', transaction.events?.length || 0);
+    console.log('🔍 DEBUG: Operations count:', transaction.operations?.length || 0);
+
+    // First, try to extract contract address from operations
+    if (transaction.operations && Array.isArray(transaction.operations) && transaction.operations.length > 0) {
+      for (const operation of transaction.operations) {
+        if (operation.contract_address) {
+          contractAddress = operation.contract_address;
+          console.log('🔍 DEBUG: Found contract address from operation:', contractAddress);
+          break;
+        }
+      }
+    }
+
+    // If no contract address from operations, try to extract from raw webhook data
+    if (!contractAddress && transaction.raw_webhook_data) {
+      const operations = transaction.raw_webhook_data?.data?.body?.tx?.tx?.operations;
+      if (operations && Array.isArray(operations)) {
+        for (const op of operations) {
+          if (op.body?.invoke_host_function?.host_function?.invoke_contract?.contract_address) {
+            contractAddress = op.body.invoke_host_function.host_function.invoke_contract.contract_address;
+            console.log('🔍 DEBUG: Found contract address from webhook data:', contractAddress);
+            break;
+          }
+        }
+      }
+    }
+
+    // Look at the stored Soroban events (from database)
+    const events = transaction.events;
+
+    if (!events || !Array.isArray(events) || events.length === 0) {
+      console.log('🔍 DEBUG: No events found in transaction');
+      return { amount, currency };
+    }
+
+    // Find transfer events and extract amount
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      console.log(`🔍 DEBUG: Processing event ${i}:`, JSON.stringify(event, null, 2));
+
+      // Check if this is a transfer event by looking at topics
+      const topics = event.topics;
+      if (!topics || !Array.isArray(topics) || topics.length === 0) {
+        console.log(`🔍 DEBUG: Event ${i} has no topics`);
+        continue;
+      }
+
+      // Look for transfer symbol in first topic
+      const firstTopic = topics[0];
+      if (!firstTopic || firstTopic.symbol !== "transfer") {
+        console.log(`🔍 DEBUG: Event ${i} is not a transfer event, first topic:`, firstTopic);
+        continue;
+      }
+
+      console.log(`🔍 DEBUG: Found transfer event! Topics:`, topics);
+      console.log(`🔍 DEBUG: Event data:`, event.data);
+
+      // Extract amount from data field
+      const data = event.data;
+      if (!data) {
+        console.log(`🔍 DEBUG: Event ${i} has no data field`);
+        continue;
+      }
+
+      // Handle i128 format (Stellar's large number format)
+      if (data.i128) {
+        const hi = data.i128.hi || 0;
+        const lo = data.i128.lo || 0;
+
+        // For most normal amounts, hi will be 0 and lo contains the amount in stroops
+        // Convert from stroops to asset units by dividing by 10,000,000
+        const stroopsAmount = hi * Math.pow(2, 32) + lo; // Combine hi and lo parts
+        const assetAmount = stroopsAmount / 10000000;
+
+        amount = assetAmount.toString();
+        console.log(`🔍 DEBUG: Extracted amount from i128: ${stroopsAmount} stroops = ${assetAmount} units`);
+        break;
+      }
+
+      // Handle direct number format (fallback)
+      else if (typeof data === 'number' && data > 0) {
+        const assetAmount = data / 10000000;
+        amount = assetAmount.toString();
+        console.log(`🔍 DEBUG: Extracted amount from direct number: ${data} stroops = ${assetAmount} units`);
+        break;
+      }
+
+      // Handle other potential formats
+      else if (typeof data === 'object' && data !== null) {
+        // Look for common amount field names
+        const amountFields = ['amount', 'value', 'balance'];
+        for (const field of amountFields) {
+          if (data[field] !== undefined) {
+            const fieldValue = data[field];
+            if (typeof fieldValue === 'number' && fieldValue > 0) {
+              const assetAmount = fieldValue / 10000000;
+              amount = assetAmount.toString();
+              console.log(`🔍 DEBUG: Extracted amount from ${field}: ${fieldValue} stroops = ${assetAmount} units`);
+              break;
+            }
+          }
+        }
+        if (amount !== "0") break;
+      }
+    }
+
+    // Map contract address to currency using a simple lookup
+    // In a real implementation, you'd query the database, but for UI we can do a simple mapping
+    if (contractAddress) {
+      console.log(`🔍 DEBUG: Looking up currency for contract address: ${contractAddress}`);
+      // Map known contract addresses to currencies
+      const contractToCurrency: Record<string, string> = {
+        'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC': 'USDC', // Testnet main balance contract
+        // Add more mappings as needed
+      };
+
+      const mappedCurrency = contractToCurrency[contractAddress];
+      if (mappedCurrency) {
+        currency = mappedCurrency;
+        console.log(`🔍 DEBUG: Mapped contract ${contractAddress} to currency: ${currency}`);
+      } else {
+        console.log(`🔍 DEBUG: Unknown contract address ${contractAddress}, using default currency: ${currency}`);
+      }
+    }
+
+    console.log(`🔍 DEBUG: Final extracted amount: ${amount} ${currency} for transaction ${transaction.transaction_hash}`);
+
+  } catch (error) {
+    console.error('Error extracting Soroban payment amount from events:', error);
+  }
+
+  return { amount, currency };
+};
+
 const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
   const getTransactionType = () => {
     // Check operations for contract calls that indicate transaction type
@@ -66,6 +213,8 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
     return `Fee: $${(feeInXLM * 0.12).toFixed(2)}`; // Approximate USD conversion for display
   };
 
+  const { amount, currency } = extractSorobanPaymentAmount(transaction);
+
   return (
     <div className="p-4 border border-gray-200 rounded-lg bg-white hover:border-primary/20 transition-all group">
       <div className="flex items-center justify-between mb-3">
@@ -80,9 +229,14 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
             </p>
           </div>
         </div>
-        <div className={`px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.textColor} flex items-center gap-1`}>
-          {status.icon}
-          {status.text}
+        <div className="text-right">
+          <div className="font-semibold text-sm text-gray-900 mb-1">
+            {amount !== "0" ? `${parseFloat(amount).toFixed(7).replace(/\.?0+$/, '')} ${currency}` : "Processing..."}
+          </div>
+          <div className={`px-2 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.textColor} flex items-center gap-1`}>
+            {status.icon}
+            {status.text}
+          </div>
         </div>
       </div>
 

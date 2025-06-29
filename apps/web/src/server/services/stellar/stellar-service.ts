@@ -1,7 +1,7 @@
+import { env } from "@/env";
 import { getAsset } from "@/lib/get-asset";
-import { MAINNET, TESTNET } from "@freelii/utils/constants/stellar-sac";
 import { type Wallet, type WalletBalance } from "@prisma/client";
-import { Asset, Horizon, rpc, StrKey } from "@stellar/stellar-sdk";
+import { Asset, Horizon, StrKey, rpc } from "@stellar/stellar-sdk";
 
 interface StellarServiceOptions {
     wallet: Wallet & { balances?: WalletBalance[], main_balance?: WalletBalance | null };
@@ -9,7 +9,7 @@ interface StellarServiceOptions {
 
 export class StellarService {
     readonly horizon: Horizon.Server;
-
+    readonly rpc: rpc.Server;
     readonly network: string;
     readonly networkPassphrase: string;
     readonly wallet: Wallet & { balances?: WalletBalance[], main_balance?: WalletBalance | null };
@@ -17,8 +17,15 @@ export class StellarService {
     constructor(options: StellarServiceOptions) {
         this.wallet = options.wallet;
         this.network = options.wallet.network ?? "";
-        this.networkPassphrase = options.wallet.network_environment === "testnet" ? TESTNET.PASSPHRASE : MAINNET.PASSPHRASE;
-        this.horizon = new Horizon.Server("https://horizon-testnet.stellar.org");
+        this.networkPassphrase = options.wallet.network_environment === "testnet" ?
+            env.NEXT_PUBLIC_TESTNET_NETWORK_PASSPHRASE
+            : env.NEXT_PUBLIC_MAINNET_NETWORK_PASSPHRASE;
+        this.horizon = new Horizon.Server(this.network === "mainnet" ?
+            env.NEXT_PUBLIC_MAINNET_HORIZON_URL :
+            env.NEXT_PUBLIC_TESTNET_HORIZON_URL);
+        this.rpc = new rpc.Server(this.network === "mainnet" ?
+            env.NEXT_PUBLIC_MAINNET_RPC_URL :
+            env.NEXT_PUBLIC_TESTNET_RPC_URL);
     }
 
     /**
@@ -27,13 +34,15 @@ export class StellarService {
      */
     async getAccount() {
         // Get contract Balance
-        const sorobanServer = new rpc.Server("https://soroban-testnet.stellar.org");
+
         const indexedSAC = this.wallet.balances?.map(b => getAsset(b.address)) ?? [];
         indexedSAC.push(Asset.native());
 
+        console.log('indexedSAC', indexedSAC);
+
         if (this.wallet.address) {
             const balancePromises = indexedSAC.map(async sac => {
-                const balance = await sorobanServer.getSACBalance(
+                const balance = await this.rpc.getSACBalance(
                     String(this.wallet.address),
                     sac,
                     this.networkPassphrase

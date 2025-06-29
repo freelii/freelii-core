@@ -24,7 +24,7 @@ export const appRouter = createTRPCRouter({
   clients: clientsRouter,
   activity: activityRouter,
   orchestrator: orchestratorRouter,
-  bulkDisbursement: bulkDisbursementRouter
+  bulkDisbursement: bulkDisbursementRouter,
 });
 
 // export type definition of API

@@ -8,7 +8,7 @@ import { StatusBadge } from "@/ui/shared/badges/status-badge"
 import { FlagIcon } from "@/ui/shared/flag-icon"
 import { useWallet } from "@/wallet/useWallet"
 import { Badge, BlurImage, Button, LoadingDots, LoadingSpinner, MaxWidthWrapper, Separator, useRouterStuff, Webhook } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, TESTNET } from "@freelii/utils"
+import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -184,7 +184,6 @@ export default function PayoutDetailsPage() {
                 return;
             }
 
-            console.log('here', account?.main_balance?.amount, payment.source_amount)
             if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(payment.source_amount))) {
                 toast.error("Insufficient balance")
                 return;
@@ -192,7 +191,6 @@ export default function PayoutDetailsPage() {
                 toast.error("Invalid amount for payment")
                 return;
             }
-            console.log('here 2')
 
             setIsProcessing(true)
             setTransferStep('initiating')
@@ -203,7 +201,6 @@ export default function PayoutDetailsPage() {
                 return;
             }
 
-            console.log('here 3', liquidationAddress)
 
             setTransferStep('processing')
 

@@ -4,7 +4,7 @@ import { useWalletStore } from "@/hooks/stores/wallet-store"
 import { useWallet } from "@/wallet/useWallet"
 import { Button, LoadingSpinner } from "@freelii/ui"
 import { fromStroops, toStroops } from "@freelii/utils/functions"
-import { ArrowDownLeft, ArrowUpRight, X, RefreshCw } from "lucide-react"
+import { ArrowUpRight, RefreshCw, X } from "lucide-react"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
 
@@ -161,7 +161,7 @@ export function WalletTransferModal({ isOpen, onClose }: WalletTransferModalProp
 
                     {/* Amount */}
                     <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">Amount (XLM)</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Amount</label>
                         <div className="relative">
                             <input
                                 type="number"

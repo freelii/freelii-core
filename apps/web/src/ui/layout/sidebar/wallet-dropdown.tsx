@@ -32,9 +32,6 @@ export function WalletDropdown() {
   const wallet = getSelectedWallet();
 
 
-  useEffect(() => {
-    console.log('WalletDropdown.wallet', wallet)
-  }, [wallet])
 
   if (isLoading) {
     return <WalletDropdownSkeleton />;

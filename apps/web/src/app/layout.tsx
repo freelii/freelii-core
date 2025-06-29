@@ -1,6 +1,7 @@
 import { geistMono, inter, satoshi } from "@/styles/fonts";
 import "@/styles/globals.css";
 import { TRPCReactProvider } from "@/trpc/react";
+import { StellarProvider } from "@/contexts/stellar-context";
 import { cn } from "@freelii/utils";
 import { type Metadata } from "next";
 import { Toaster } from 'react-hot-toast';
@@ -33,10 +34,12 @@ export default function RootLayout({
       )}
     >
       <body>
-        <TRPCReactProvider>
-          <Toaster />
-          {children}
-        </TRPCReactProvider>
+        <StellarProvider>
+          <TRPCReactProvider>
+            <Toaster />
+            {children}
+          </TRPCReactProvider>
+        </StellarProvider>
       </body>
     </html>
   );
