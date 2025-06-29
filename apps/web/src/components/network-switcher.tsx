@@ -20,26 +20,24 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({ className }) =
       <span className="text-sm font-medium text-gray-700">Network:</span>
       <div className="flex rounded-md border border-gray-300 overflow-hidden">
         <Button
-          size="sm"
           variant={network === 'testnet' ? 'default' : 'outline'}
           onClick={() => handleNetworkChange('testnet')}
           className={cn(
             'rounded-none border-0 px-3 py-1 text-xs',
-            network === 'testnet' 
-              ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' 
+            network === 'testnet'
+              ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
               : 'bg-white text-gray-600 hover:bg-gray-50'
           )}
         >
           Testnet
         </Button>
         <Button
-          size="sm"
           variant={network === 'mainnet' ? 'default' : 'outline'}
           onClick={() => handleNetworkChange('mainnet')}
           className={cn(
             'rounded-none border-0 px-3 py-1 text-xs',
-            network === 'mainnet' 
-              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+            network === 'mainnet'
+              ? 'bg-green-100 text-green-800 hover:bg-green-200'
               : 'bg-white text-gray-600 hover:bg-gray-50'
           )}
         >

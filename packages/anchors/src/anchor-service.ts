@@ -1,5 +1,5 @@
 import { CoinsPHService } from "./coinsph/coinsph-service";
-import { Anchor, AnchorRate, PaymentRail } from "./shared";
+import { Anchor, AnchorRate } from "./shared";
 import { StellarService } from "./stellar/stellar-service";
 
 
@@ -28,7 +28,7 @@ export class AnchorService {
         amount: number,
         sourceCurrency: string,
         targetCurrency: string,
-        paymentRail: PaymentRail
+        paymentRail: "STELLAR" | "WIRE" | "ACH" | "SEPA" | "PH_INSTAPAY" | "PH_PESONET" | "MX_SPEI"
     ): Promise<Array<{ anchor: Anchor; rate: AnchorRate }>> {
         console.log('getAvailableAnchors', amount, sourceCurrency, targetCurrency, paymentRail);
         const availableAnchors = this.anchors.filter(anchor =>
@@ -68,7 +68,7 @@ export class AnchorService {
         amount: number,
         sourceCurrency: string,
         destinationCurrency: string,
-        paymentRail: PaymentRail,
+        paymentRail: "STELLAR" | "WIRE" | "ACH" | "SEPA" | "PH_INSTAPAY" | "PH_PESONET" | "MX_SPEI",
         preferences: {
             prioritizeFee?: boolean;
             prioritizeExchangeRate?: boolean;

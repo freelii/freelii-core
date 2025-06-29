@@ -3,7 +3,7 @@ import { Anchor, AnchorQuote, AnchorRate, CashoutParams, GetQuoteParams, Payment
 
 export class StellarService extends Anchor {
     name = "Stellar";
-    supportedPaymentRails = [PaymentRail.CRYPTO];
+    supportedPaymentRails: PaymentRail[] = ["STELLAR"];
     supportedCurrencies = ["USDC"];
 
     requestQuote(params: GetQuoteParams): Promise<AnchorQuote> {

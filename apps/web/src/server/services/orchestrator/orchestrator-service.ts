@@ -1,6 +1,5 @@
 import {
     AnchorService,
-    PaymentRail,
     type GetQuoteParams
 } from '@freelii/anchors';
 import {
@@ -65,7 +64,7 @@ export class OrchestratorService extends BaseService {
             amount,
             sourceCurrency,
             targetCurrency,
-            PaymentRail.CRYPTO
+            "STELLAR"
         );
 
         return result;
@@ -112,7 +111,7 @@ export class OrchestratorService extends BaseService {
                 sourceAmount,
                 sourceCurrency,
                 targetCurrency,
-                PaymentRail.CRYPTO
+                "STELLAR"
             );
             console.log('anchor', anchor)
             console.log('rate', rate)
@@ -155,6 +154,21 @@ export class OrchestratorService extends BaseService {
             where: { id: stateId },
             include: {
                 destination: {
+                    select: {
+                        id: true,
+                        created_at: true,
+                        updated_at: true,
+                        payment_rail: true,
+                        currency: true,
+                        client_id: true,
+                        blockchain_account_id: true,
+                        ewallet_account_id: true,
+                        fiat_account_id: true,
+                        is_default: true,
+                        blockchain_account: true,
+                        ewallet_account: true,
+                        fiat_account: true,
+                    },
                     include: {
                         blockchain_account: true,
                         ewallet_account: true,
@@ -167,6 +181,8 @@ export class OrchestratorService extends BaseService {
         if (!state.destination) {
             throw new Error('Destination not found');
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const walletAddress = await anchor.getLiquidationAddress(state.destination);
         return {
             amount: state.source_amount,

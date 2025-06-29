@@ -3,9 +3,7 @@ import { useNetworkWalletSync } from "@/hooks/use-network-wallet-sync";
 import { useStellarClients } from "@/hooks/use-stellar-clients";
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler";
 import { api } from "@/trpc/react";
-import { Keypair, } from "@stellar/stellar-sdk";
 import { useParams, useRouter } from "next/navigation";
-import { SignerStore } from "passkey-kit";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -26,10 +24,11 @@ export function useWallet() {
     const {
         account: smartWallet,
         server,
-        sac,
         getFundPubkey,
         getFundSigner,
-        network
+        network,
+        mainBalance,
+        native
     } = useStellarClients();
 
 
@@ -150,26 +149,9 @@ export function useWallet() {
         }
     }
 
-    const addSigner_Ed25519 = async (): Promise<{ keypair: Keypair }> => {
-        if (!account?.key_id) {
-            throw new Error("No keyId found");
-        }
-        try {
-            const keypair = Keypair.random();
-            const at = await account.addEd25519(keypair.publicKey(), new Map(), SignerStore.Temporary);
 
-            const signedTx = await account.sign(at, { keyId });
-            const res = await server.send(signedTx);
-            return { keypair };
-        } catch (error) {
-            console.error('Add signer error:', error);
-            throw error;
-        }
-    }
-
-    async function transfer({ to, amount, sacAddress }: { to: string, amount: bigint, sacAddress?: string }) {
+    async function transfer({ to, amount }: { to: string, amount: bigint }) {
         if (!account) {
-            console.log('No account found', account);
             throw new Error('No account found');
         }
         const { address, key_id } = account;
@@ -179,8 +161,7 @@ export function useWallet() {
 
 
         if (!smartWallet.wallet) await connect();
-        const asset = sac.getSACClient(sacAddress ?? XLM_SAC);
-        const at = await asset.transfer({
+        const at = await mainBalance.transfer({
             from: address,
             to,
             amount: BigInt(amount),
@@ -221,7 +202,6 @@ export function useWallet() {
         console.log('funding wallet', id);
         setIsFunding(true);
         try {
-            const native = sac.getSACClient(XLM_SAC);
             const fundPubkey = await getFundPubkey();
             const fundSigner = await getFundSigner();
 
@@ -265,7 +245,6 @@ export function useWallet() {
         isFunding,
         fundWallet,
         connect,
-        addSigner_Ed25519,
         isLoadingAccount: isLoadingAccount || accountStatus === 'pending'
     }
 }

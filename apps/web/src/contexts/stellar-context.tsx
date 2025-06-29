@@ -24,6 +24,7 @@ export interface StellarNetworkConfig {
   mercuryProjectName: string;
   nativeContractId: string;
   horizonUrl?: string;
+  mainBalance: string;
 }
 
 interface StellarContextType {
@@ -46,8 +47,9 @@ const NETWORK_CONFIGS: Record<NetworkType, StellarNetworkConfig> = {
     mercuryUrl: process.env.NEXT_PUBLIC_TESTNET_MERCURY_URL ?? 'https://api.mercurydata.app',
     mercuryJwt: process.env.NEXT_PUBLIC_TESTNET_MERCURY_JWT ?? '',
     mercuryProjectName: process.env.NEXT_PUBLIC_TESTNET_MERCURY_PROJECT_NAME ?? 'smart-wallets-next-dima',
-    nativeContractId: process.env.NEXT_PUBLIC_TESTNET_MAIN_BALANCE_CONTRACT_ID ?? TESTNET_XLM_SAC,
+    nativeContractId: TESTNET_XLM_SAC,
     horizonUrl: process.env.NEXT_PUBLIC_TESTNET_HORIZON_URL ?? 'https://horizon-testnet.stellar.org',
+    mainBalance: process.env.NEXT_PUBLIC_TESTNET_MAIN_BALANCE_CONTRACT_ID ?? TESTNET_XLM_SAC,
   },
   mainnet: {
     rpcUrl: process.env.NEXT_PUBLIC_MAINNET_RPC_URL ?? 'https://mainnet.sorobanrpc.com',
@@ -59,8 +61,9 @@ const NETWORK_CONFIGS: Record<NetworkType, StellarNetworkConfig> = {
     mercuryUrl: process.env.NEXT_PUBLIC_MAINNET_MERCURY_URL ?? 'https://api.mercurydata.app',
     mercuryJwt: process.env.NEXT_PUBLIC_MAINNET_MERCURY_JWT ?? '',
     mercuryProjectName: process.env.NEXT_PUBLIC_MAINNET_MERCURY_PROJECT_NAME ?? '',
-    nativeContractId: process.env.NEXT_PUBLIC_MAINNET_MAIN_BALANCE_CONTRACT_ID ?? MAINNET_XLM_SAC,
+    nativeContractId: MAINNET_XLM_SAC,
     horizonUrl: process.env.NEXT_PUBLIC_MAINNET_HORIZON_URL ?? 'https://horizon.stellar.org',
+    mainBalance: process.env.NEXT_PUBLIC_MAINNET_MAIN_BALANCE_CONTRACT_ID!,
   },
 };
 

@@ -213,7 +213,6 @@ export default function PayoutDetailsPage() {
             const at = await transfer({
                 to: liquidationAddress,
                 amount: toStroops(Number(payment.source_amount) / 100),
-                sacAddress: TESTNET.XLM_SAC
             })
 
             if (at?.txHash) {
@@ -359,7 +358,7 @@ export default function PayoutDetailsPage() {
                                                             {fromStroops(account.main_balance?.amount ?? 0, 2)}
                                                         </span>
                                                     </div>
-                                                    {hasEnoughBalance(account?.main_balance?.amount ?? 0, toStroops(payment?.source_amount / 100 ?? 0)) ?
+                                                    {hasEnoughBalance(account?.main_balance?.amount ?? 0, toStroops(payment?.source_amount / 100)) ?
                                                         <span className="text-[10px] text-gray-500">Available balance</span> :
                                                         <span className="text-[10px] text-red-500">Insufficient balance</span>
                                                     }

@@ -1,3 +1,4 @@
+import { type SorobanTransaction } from "prisma/prisma-client";
 import { db } from "../../db";
 
 interface SorobanHookData {
@@ -167,7 +168,7 @@ export class SorobanWebhookService {
     /**
      * Check if we've already processed this transaction hash
      */
-    private static async checkExistingTransaction(transactionHash: string): Promise<any | null> {
+    private static async checkExistingTransaction(transactionHash: string): Promise<SorobanTransaction | null> {
         try {
             console.log('🔍 Checking for existing transaction:', transactionHash);
 

@@ -1,10 +1,9 @@
-import { env } from "@/env";
+import type { StellarNetworkConfig } from "@/contexts/stellar-context";
 import { Account, Keypair, StrKey } from "@stellar/stellar-sdk/minimal";
 import { basicNodeSigner } from "@stellar/stellar-sdk/minimal/contract";
 import { Server } from "@stellar/stellar-sdk/minimal/rpc";
 import { noop } from "@tanstack/react-table";
 import { PasskeyKit, PasskeyServer, SACClient } from "passkey-kit";
-import type { StellarNetworkConfig } from "@/contexts/stellar-context";
 
 // Factory function to create Stellar clients based on network configuration
 export const createStellarClients = (config: StellarNetworkConfig) => {
@@ -53,6 +52,7 @@ export const createStellarClients = (config: StellarNetworkConfig) => {
   });
 
   const native = sac.getSACClient(config.nativeContractId);
+  const mainBalance = sac.getSACClient(config.mainBalance);
 
   return {
     rpc,
@@ -63,8 +63,8 @@ export const createStellarClients = (config: StellarNetworkConfig) => {
     fundKeypair,
     getFundPubkey,
     getFundSigner,
-    sac,
     native,
+    mainBalance
   };
 };
 

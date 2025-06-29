@@ -1,15 +1,3 @@
-export enum PaymentRail {
-    CRYPTO = "crypto",
-    FIAT = "fiat",
-    STELLAR = "stellar",
-    WIRE = "wire",
-    ACH = "ach",
-    SEPA = "sepa",
-    PH_INSTAPAY = "ph_instapay",
-    PH_PESONET = "ph_pesonet",
-    MX_SPEI = "mx_spei"
-}
-
 export interface QuoteParams {
     sourceCurrency: string;
     targetCurrency: string;
@@ -62,7 +50,7 @@ export interface PaymentDestination {
     id: string;
     created_at: Date;
     updated_at: Date;
-    payment_rail: PaymentRail;
+    payment_rail: "STELLAR" | "WIRE" | "ACH" | "SEPA" | "PH_INSTAPAY" | "PH_PESONET" | "MX_SPEI";
     currency: string;
     client_id: number;
     blockchain_account_id: string | null;
@@ -132,3 +120,5 @@ enum TransferMethod {
     PH_PESONET = "ph_pesonet",
     PH_INSTAPAY = "ph_instapay"
 }
+
+export type PaymentRail = "STELLAR" | "WIRE" | "ACH" | "SEPA" | "PH_INSTAPAY" | "PH_PESONET" | "MX_SPEI";

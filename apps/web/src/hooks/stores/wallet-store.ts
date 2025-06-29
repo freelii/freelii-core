@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware'
 
 interface WalletState {
   isLoading: boolean
-  wallets: Wallet[]
+  wallets: (Wallet & { main_balance?: WalletBalance | null })[]
   selectedWalletId: string | null
   setSelectedWalletId: (id: string) => void
   setWallets: (wallets: Wallet[]) => void

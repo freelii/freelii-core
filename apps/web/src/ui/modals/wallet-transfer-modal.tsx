@@ -60,7 +60,7 @@ export function WalletTransferModal({ isOpen, onClose }: WalletTransferModalProp
             await new Promise(resolve => setTimeout(resolve, 100))
 
             const result = await transfer({
-                to: destinationWallet.address,
+                to: destinationWallet.address!,
                 amount: toStroops(transferAmount)
             })
 

@@ -136,7 +136,7 @@ export class ActivityService extends BaseService {
             if (!activity[timestamp]) {
                 activity[timestamp] = [];
             }
-            activity[timestamp]!.push({ type: 'new_wallet', raw: wallet });
+            activity[timestamp]?.push({ type: 'new_wallet', raw: wallet });
         });
         return activity;
     }
@@ -148,7 +148,7 @@ export class ActivityService extends BaseService {
             if (!activity[timestamp]) {
                 activity[timestamp] = [];
             }
-            activity[timestamp]!.push({ type: 'transfer_out', raw: payment });
+            activity[timestamp]?.push({ type: 'transfer_out', raw: payment });
         });
         return activity;
     }
@@ -160,7 +160,7 @@ export class ActivityService extends BaseService {
             if (!activity[timestamp]) {
                 activity[timestamp] = [];
             }
-            activity[timestamp]!.push({ type: 'soroban_transaction', raw: transaction });
+            activity[timestamp]?.push({ type: 'soroban_transaction', raw: transaction });
         });
         return activity;
     }
@@ -173,9 +173,9 @@ export class ActivityService extends BaseService {
                 activity[timestamp] = [];
             }
             if (type === 'received') {
-                activity[timestamp]!.push({ type: 'invoice_received', raw: invoice });
+                activity[timestamp]?.push({ type: 'invoice_received', raw: invoice });
             } else {
-                activity[timestamp]!.push({ type: 'invoice_created', raw: invoice });
+                activity[timestamp]?.push({ type: 'invoice_created', raw: invoice });
             }
         });
         return activity;

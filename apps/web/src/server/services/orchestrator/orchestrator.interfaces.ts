@@ -1,4 +1,3 @@
-import { type PaymentRail } from "@freelii/anchors";
 import { type EwalletProvider, type PaymentOrchestrationState, type TransactionStatus } from "@prisma/client";
 
 export interface LiquidationAddress {
@@ -9,7 +8,7 @@ export interface LiquidationAddress {
     address: string; // Blockchain address
     blockchainMemo?: string; // For memo-based chains like Stellar
     externalAccountId?: string; // Linked bank account
-    destinationPaymentRail: PaymentRail;
+    destinationPaymentRail: "STELLAR" | "WIRE" | "ACH" | "SEPA" | "PH_INSTAPAY" | "PH_PESONET" | "MX_SPEI";
     destinationCurrency: string; // "usd", "eur", etc.
     destinationAddress?: string; // If another crypto address is used
     createdAt: Date;

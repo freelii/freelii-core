@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useStellar } from '@/contexts/stellar-context';
 import { createStellarClients } from '@/lib/stellar-smart-wallet-context';
+import { useMemo } from 'react';
 
 export const useStellarClients = () => {
   const { config, network } = useStellar();
@@ -32,9 +32,4 @@ export const useStellarAccount = () => {
 export const useStellarServer = () => {
   const { server } = useStellarClients();
   return server;
-};
-
-export const useStellarSac = () => {
-  const { sac, native } = useStellarClients();
-  return { sac, native };
 };

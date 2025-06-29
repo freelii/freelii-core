@@ -21,7 +21,7 @@ import {
 
 export class CoinsPHService extends Anchor {
     name = "CoinsPH";
-    supportedPaymentRails = [PaymentRail.CRYPTO];
+    supportedPaymentRails: PaymentRail[] = ["PH_INSTAPAY", "PH_PESONET", "MX_SPEI", "STELLAR"];
     supportedCurrencies = ["USDC", "EURC", "PHP"];
 
     private readonly useProxy: boolean;
