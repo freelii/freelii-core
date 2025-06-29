@@ -128,7 +128,7 @@ export function useWallet() {
             const walletRes = await createWallet({
                 alias,
                 isDefault: wallets?.length === 0,
-                network: network, // This should be the network_environment value
+                network: network === "mainnet" ? "mainnet" : "testnet",
                 address: cid,
                 keyId: keyIdBase64,
             })

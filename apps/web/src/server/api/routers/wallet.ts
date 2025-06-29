@@ -24,7 +24,7 @@ export const walletRouter = createTRPCRouter({
             z.object({
                 alias: z.string(),
                 isDefault: z.boolean().default(false),
-                network: z.string(),
+                network: z.enum(["mainnet", "testnet"]),
                 address: z.string(),
                 keyId: z.string(),
             })

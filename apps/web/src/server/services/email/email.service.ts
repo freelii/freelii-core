@@ -54,6 +54,12 @@ export interface WaitlistConfirmationData {
   position?: number;
 }
 
+export interface SubAccountCreatedData {
+  userName: string;
+  accountAlias: string;
+  createdDate: string;
+}
+
 // Email options interface
 export interface EmailOptions {
   to: string | string[];
@@ -237,6 +243,20 @@ export class EmailService {
       subject: `Welcome to the Freelii Waitlist! 🚀`,
       html,
       text: `Thank you for joining the Freelii waitlist, ${data.name}! We're excited to have you on board and will keep you updated on our progress.`,
+    });
+  }
+
+  /**
+   * Send sub account created notification email
+   */
+  async sendSubAccountCreatedNotification(data: SubAccountCreatedData & { to: string }) {
+    const html = this.generateSubAccountCreatedTemplate(data);
+
+    return this.sendEmail({
+      to: data.to,
+      subject: `New Sub Account Created - ${data.accountAlias}`,
+      html,
+      text: `Your new sub account "${data.accountAlias}" has been successfully created and is ready to use.`,
     });
   }
 
@@ -609,6 +629,73 @@ export class EmailService {
               <p>© 2024 Freelii. All rights reserved.</p>
               <p>You're receiving this because you joined our waitlist at freelii.app</p>
               <p>If you didn't sign up for this, you can safely ignore this email.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  private generateSubAccountCreatedTemplate(data: SubAccountCreatedData): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>New Sub Account Created</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9fafb; }
+            .account-info { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+            .account-info h3 { color: #2563eb; margin-top: 0; }
+            .account-alias { font-size: 18px; font-weight: bold; color: #2563eb; margin: 15px 0; }
+            .features { background: #e0f2fe; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .features h3 { color: #0277bd; margin-top: 0; }
+            .features ul { margin: 0; padding-left: 20px; }
+            .features li { margin-bottom: 8px; }
+            .button { background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; }
+            .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✅ New Sub Account Created</h1>
+            </div>
+            <div class="content">
+              <h2>Hello ${data.userName}!</h2>
+              <p>Great news! Your new sub account has been successfully created and is ready to use.</p>
+              
+              <div class="account-info">
+                <h3>📁 Account Details</h3>
+                <p><strong>Account Name:</strong></p>
+                <div class="account-alias">${data.accountAlias}</div>
+                <p><strong>Created Date:</strong> ${data.createdDate}</p>
+                <p><strong>Status:</strong> Active</p>
+              </div>
+              
+              <div class="features">
+                <h3>🚀 What You Can Do with Your Sub Account</h3>
+                <ul>
+                  <li><strong>Organize Transactions</strong> - Keep different types of payments separate</li>
+                  <li><strong>Multi-Purpose Management</strong> - Use different accounts for various business needs</li>
+                  <li><strong>Easy Switching</strong> - Seamlessly switch between your main and sub accounts</li>
+                  <li><strong>Independent Tracking</strong> - Monitor balances and transactions separately</li>
+                  <li><strong>Flexible Organization</strong> - Customize how you manage your finances</li>
+                </ul>
+              </div>
+              
+              <p>Your sub account is now part of your main account ecosystem and can be accessed from your dashboard. You can send payments, receive funds, and manage transactions just like your main account.</p>
+              
+              <a href="https://freelii.com/dashboard" class="button">Access Your Account</a>
+              
+              <p>If you have any questions about using your new sub account, our support team is here to help.</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 Freelii. All rights reserved.</p>
+              <p>This email was sent because a new sub account was created for your Freelii account.</p>
             </div>
           </div>
         </body>

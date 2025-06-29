@@ -1,6 +1,7 @@
 import { env } from "@/env";
 import { BaseService } from "../base-service";
 import { StellarService } from "../stellar/stellar-service";
+import { EmailService } from "../email/email.service";
 
 interface CreateWalletInput {
     alias: string;
@@ -75,12 +76,37 @@ export class WalletService extends BaseService {
             },
             body: JSON.stringify({
                 webhook_url: `${env.NEXT_PUBLIC_APP_URL}/api/soroban-hooks`,
-                chainType: 'testnet',
+                chainType: input.network === "mainnet" ? "mainnet" : "testnet",
                 contractAddress: input.address,
             })
         });
         const data = await response.json();
-        console.log('Soroban Hooks', data);
+
+        // Get user info for email
+        const user = await this.db.user.findUniqueOrThrow({
+            where: { id: Number(this.session.user.id) },
+        });
+
+        // Send sub account created email
+        if (user.email) {
+            const emailService = new EmailService({
+                db: this.db,
+                session: this.session,
+            });
+
+            try {
+                await emailService.sendSubAccountCreatedNotification({
+                    to: user.email,
+                    userName: user.name || 'User',
+                    accountAlias: input.alias,
+                    createdDate: new Date().toLocaleDateString(),
+                });
+            } catch (emailError) {
+                console.error('Failed to send sub account creation email:', emailError);
+                // Don't fail the wallet creation if email fails
+            }
+        }
+
         return updatedWallet;
     }
 
