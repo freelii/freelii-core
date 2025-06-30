@@ -218,15 +218,19 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
     if (webhookData.data.body.tx) {
         // Regular transaction
         txData = webhookData.data.body.tx?.tx;
-        senderAddress = txData.source_account;
+        senderAddress = txData?.source_account;
         console.log('🔍 DEBUG: Processing regular transaction');
     } else if (webhookData.data.body.tx_fee_bump) {
         // Fee bump transaction - get the inner transaction
-        txData = (webhookData.data.body as any)?.tx_fee_bump?.inner_tx?.tx?.tx;
-        senderAddress = txData.source_account;
+        txData = webhookData.data.body.tx_fee_bump?.tx?.inner_tx?.tx?.tx;
+        senderAddress = txData?.source_account;
         console.log('🔍 DEBUG: Processing fee bump transaction');
     } else {
         throw new Error('Unknown transaction structure - neither tx nor tx_fee_bump found');
+    }
+
+    if (!txData || !senderAddress) {
+        throw new Error('Unable to extract transaction data or source account from webhook payload');
     }
 
     let recipientAddress: string | undefined;
@@ -629,7 +633,7 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
                 console.log('🔍 DEBUG: Memo is object, checking for different memo types:', mainMemo);
 
                 // Type assertion for memo object since webhook data might vary from interface
-                const memoObj = mainMemo;
+                const memoObj = mainMemo as any;
 
                 // Check for different Stellar memo types
                 if (memoObj.text) {
