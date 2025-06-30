@@ -580,7 +580,8 @@ export class SorobanWebhookService {
         hookData: SorobanHookData,
         primaryMapping: WalletMapping | null
     ): Promise<any> {
-        const isSuccessful = !!hookData.data.result.result.result.tx_success;
+        const isSuccessful = !!(hookData.data.result.result.result.tx_success?.length) && 
+                             !hookData.data.result.result.result.tx_failed;
 
         try {
             console.log('💾 Storing transaction:', hookData.data.hash);

@@ -185,8 +185,8 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
       console.log(`🔍 DEBUG: Looking up currency for contract address: ${contractAddress}`);
       // Map known contract addresses to currencies
       const contractToCurrency: Record<string, string> = {
-        'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC': 'USD', // Testnet main balance contract
-        'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA': 'USD', // Mainnet main balance contract
+        'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC': 'USDC', // Testnet main balance contract
+        'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA': 'USDC', // Mainnet main balance contract
         // Add more mappings as needed
       };
 
@@ -209,13 +209,43 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
 };
 
 const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
+  const { account } = useWallet();
+  
   const getTransactionType = () => {
     // Check operations for contract calls that indicate transaction type
     const operation = transaction.operations?.[0];
     if (operation?.function_name) {
       switch (operation.function_name) {
         case 'transfer':
-          return { type: 'Money Transfer', icon: <ArrowRight className="h-4 w-4" />, color: 'text-blue-600' };
+          // Determine if this is outbound or inbound for the current user
+          // Parse the events to get FROM/TO addresses
+          const events = transaction.events || [];
+          let isOutbound = false;
+          let recipientAddress = '';
+          
+          for (const event of events) {
+            if (event.topics?.[0]?.symbol === 'transfer') {
+              // Transfer event structure: [transfer, from, to, asset]
+              const fromAddr = event.topics?.[1]?.address;
+              const toAddr = event.topics?.[2]?.address;
+              
+              if (fromAddr && toAddr) {
+                // Check if current wallet's address matches the FROM address
+                const currentWalletAddress = account?.stellar_address;
+                if (currentWalletAddress === fromAddr) {
+                  isOutbound = true;
+                  recipientAddress = toAddr;
+                }
+                break;
+              }
+            }
+          }
+          
+          if (isOutbound) {
+            return { type: 'Money Sent', icon: <ArrowUpRight className="h-4 w-4" />, color: 'text-red-600' };
+          } else {
+            return { type: 'Money Received', icon: <ArrowDownLeft className="h-4 w-4" />, color: 'text-green-600' };
+          }
         case 'swap':
           return { type: 'Currency Exchange', icon: <ArrowUpRight className="h-4 w-4" />, color: 'text-purple-600' };
         case 'deposit':

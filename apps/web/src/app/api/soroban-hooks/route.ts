@@ -283,79 +283,126 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
                         if (args && Array.isArray(args)) {
                             console.log(`🔍 DEBUG: Analyzing ${args.length} arguments for recipient and amount...`);
 
-                            for (let i = 0; i < args.length; i++) {
-                                const arg = args[i];
-                                console.log(`🔍 DEBUG: Analyzing arg ${i}:`, arg);
+                            // For transfer function, expect pattern: [from, to, amount]
+                            if (functionName === 'transfer' && args.length >= 3) {
+                                // Args[0] = FROM (sender), Args[1] = TO (recipient), Args[2] = AMOUNT
+                                const fromArg = args[0];
+                                const toArg = args[1];
+                                const amountArg = args[2];
 
-                                // Try to identify recipient address (usually first or second arg)
-                                if (typeof arg === 'string' && arg.length > 20 && (/^[A-Z0-9]+$/.exec(arg))) {
-                                    // This looks like a Stellar address
-                                    if (!recipientAddress && arg !== senderAddress) {
-                                        recipientAddress = arg;
-                                        console.log(`🔍 DEBUG: Found potential recipient address: ${recipientAddress}`);
-                                    }
-                                } else if (typeof arg === 'object' && arg !== null) {
-                                    // Check if the object contains address information
-                                    if (arg.address && typeof arg.address === 'string' && arg.address !== senderAddress) {
-                                        recipientAddress = arg.address;
-                                        console.log(`🔍 DEBUG: Found recipient address in object: ${recipientAddress}`);
-                                    }
-                                    if (arg.to && typeof arg.to === 'string' && arg.to !== senderAddress) {
-                                        recipientAddress = arg.to;
-                                        console.log(`🔍 DEBUG: Found recipient address in 'to' field: ${recipientAddress}`);
-                                    }
-                                    if (arg.destination && typeof arg.destination === 'string' && arg.destination !== senderAddress) {
-                                        recipientAddress = arg.destination;
-                                        console.log(`🔍 DEBUG: Found recipient address in 'destination' field: ${recipientAddress}`);
-                                    }
+                                // Extract FROM address
+                                let fromAddress: string | undefined;
+                                if (typeof fromArg === 'string') {
+                                    fromAddress = fromArg;
+                                } else if (fromArg?.address) {
+                                    fromAddress = fromArg.address;
                                 }
 
-                                // Strategy 1: Direct number or string
-                                if (typeof arg === 'number' && arg > 0) {
-                                    amount = arg.toString();
-                                    console.log(`🔍 DEBUG: Found amount (direct number): ${amount}`);
-                                    break;
+                                // Extract TO address (recipient)
+                                if (typeof toArg === 'string') {
+                                    recipientAddress = toArg;
+                                    console.log(`🔍 DEBUG: Found recipient address (arg[1]): ${recipientAddress}`);
+                                } else if (toArg?.address) {
+                                    recipientAddress = toArg.address;
+                                    console.log(`🔍 DEBUG: Found recipient address in object (arg[1]): ${recipientAddress}`);
                                 }
 
-                                if (typeof arg === 'string') {
-                                    const numValue = parseFloat(arg);
-                                    if (!isNaN(numValue) && numValue > 0) {
-                                        amount = numValue.toString();
-                                        console.log(`🔍 DEBUG: Found amount (string): ${amount}`);
+                                // Extract amount
+                                if (amountArg?.i128) {
+                                    const hi = amountArg.i128.hi || 0;
+                                    const lo = amountArg.i128.lo || 0;
+                                    const fullAmount = hi * Math.pow(2, 32) + lo;
+                                    amount = fullAmount.toString();
+                                    console.log(`🔍 DEBUG: Found transfer amount (i128): ${amount} stroops (hi: ${hi}, lo: ${lo})`);
+                                } else if (typeof amountArg === 'number') {
+                                    amount = amountArg.toString();
+                                    console.log(`🔍 DEBUG: Found transfer amount (number): ${amount}`);
+                                }
+
+                                console.log(`🔍 DEBUG: Transfer parsed - FROM: ${fromAddress}, TO: ${recipientAddress}, AMOUNT: ${amount}`);
+                            } else {
+                                // Fallback to generic parsing for other function types
+                                for (let i = 0; i < args.length; i++) {
+                                    const arg = args[i];
+                                    console.log(`🔍 DEBUG: Analyzing arg ${i}:`, arg);
+
+                                    // Try to identify recipient address (usually first or second arg)
+                                    if (typeof arg === 'string' && arg.length > 20 && (/^[A-Z0-9]+$/.exec(arg))) {
+                                        // This looks like a Stellar address
+                                        if (!recipientAddress && arg !== senderAddress) {
+                                            recipientAddress = arg;
+                                            console.log(`🔍 DEBUG: Found potential recipient address: ${recipientAddress}`);
+                                        }
+                                    } else if (typeof arg === 'object' && arg !== null) {
+                                        // Check if the object contains address information
+                                        if (arg.address && typeof arg.address === 'string' && arg.address !== senderAddress) {
+                                            recipientAddress = arg.address;
+                                            console.log(`🔍 DEBUG: Found recipient address in object: ${recipientAddress}`);
+                                        }
+                                        if (arg.to && typeof arg.to === 'string' && arg.to !== senderAddress) {
+                                            recipientAddress = arg.to;
+                                            console.log(`🔍 DEBUG: Found recipient address in 'to' field: ${recipientAddress}`);
+                                        }
+                                        if (arg.destination && typeof arg.destination === 'string' && arg.destination !== senderAddress) {
+                                            recipientAddress = arg.destination;
+                                            console.log(`🔍 DEBUG: Found recipient address in 'destination' field: ${recipientAddress}`);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // For non-transfer functions, parse amount from arguments
+                            if (functionName !== 'transfer' && amount === "0") {
+                                for (let i = 0; i < args.length; i++) {
+                                    const arg = args[i];
+
+                                    // Strategy 1: Direct number or string
+                                    if (typeof arg === 'number' && arg > 0) {
+                                        amount = arg.toString();
+                                        console.log(`🔍 DEBUG: Found amount (direct number): ${amount}`);
                                         break;
                                     }
-                                }
 
-                                // Strategy 2: Object with amount field
-                                if (typeof arg === 'object' && arg !== null) {
-                                    // Handle Stellar i128 format (common for large amounts)
-                                    if (arg.i128 && typeof arg.i128 === 'object') {
-                                        if (arg.i128.lo !== undefined) {
-                                            // Stellar i128 format: combine hi and lo parts
-                                            const hi = arg.i128.hi || 0;
-                                            const lo = arg.i128.lo || 0;
-                                            // For most transfers, hi=0 and lo contains the amount
-                                            const fullAmount = hi * Math.pow(2, 32) + lo;
-                                            amount = fullAmount.toString();
-                                            console.log(`🔍 DEBUG: Found amount (i128 format): ${amount} stroops (hi: ${hi}, lo: ${lo})`);
+                                    if (typeof arg === 'string') {
+                                        const numValue = parseFloat(arg);
+                                        if (!isNaN(numValue) && numValue > 0) {
+                                            amount = numValue.toString();
+                                            console.log(`🔍 DEBUG: Found amount (string): ${amount}`);
                                             break;
                                         }
                                     }
 
-                                    if (arg.amount !== undefined) {
-                                        amount = arg.amount.toString();
-                                        console.log(`🔍 DEBUG: Found amount (object.amount): ${amount}`);
-                                        break;
-                                    }
-                                    if (arg.value !== undefined) {
-                                        amount = arg.value.toString();
-                                        console.log(`🔍 DEBUG: Found amount (object.value): ${amount}`);
-                                        break;
-                                    }
-                                    if (arg.balance !== undefined) {
-                                        amount = arg.balance.toString();
-                                        console.log(`🔍 DEBUG: Found amount (object.balance): ${amount}`);
-                                        break;
+                                    // Strategy 2: Object with amount field
+                                    if (typeof arg === 'object' && arg !== null) {
+                                        // Handle Stellar i128 format (common for large amounts)
+                                        if (arg.i128 && typeof arg.i128 === 'object') {
+                                            if (arg.i128.lo !== undefined) {
+                                                // Stellar i128 format: combine hi and lo parts
+                                                const hi = arg.i128.hi || 0;
+                                                const lo = arg.i128.lo || 0;
+                                                // For most transfers, hi=0 and lo contains the amount
+                                                const fullAmount = hi * Math.pow(2, 32) + lo;
+                                                amount = fullAmount.toString();
+                                                console.log(`🔍 DEBUG: Found amount (i128 format): ${amount} stroops (hi: ${hi}, lo: ${lo})`);
+                                                break;
+                                            }
+                                        }
+
+                                        if (arg.amount !== undefined) {
+                                            amount = arg.amount.toString();
+                                            console.log(`🔍 DEBUG: Found amount (object.amount): ${amount}`);
+                                            break;
+                                        }
+                                        if (arg.value !== undefined) {
+                                            amount = arg.value.toString();
+                                            console.log(`🔍 DEBUG: Found amount (object.value): ${amount}`);
+                                            break;
+                                        }
+                                        if (arg.balance !== undefined) {
+                                            amount = arg.balance.toString();
+                                            console.log(`🔍 DEBUG: Found amount (object.balance): ${amount}`);
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -743,23 +790,38 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
         console.error('❌ Error extracting payment details:', error);
     }
 
-    // Map contract address to actual currency from wallet balances
+    // Map contract address to actual currency from wallet balances or known mappings
     if (contractAddress) {
         console.log(`🔍 DEBUG: Looking up currency for contract address: ${contractAddress}`);
-        try {
-            const walletBalance = await db.walletBalance.findFirst({
-                where: { address: contractAddress },
-                select: { currency: true }
-            });
+        
+        // First check known contract mappings
+        const contractToCurrency: Record<string, string> = {
+            'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC': 'USDC', // Testnet main balance contract
+            'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA': 'USDC', // Mainnet main balance contract
+            // Add more mappings as needed
+        };
 
-            if (walletBalance?.currency) {
-                currency = walletBalance.currency;
-                console.log(`🔍 DEBUG: Found currency from wallet balance: ${currency}`);
-            } else {
-                console.log(`🔍 DEBUG: No wallet balance found for contract ${contractAddress}, using default: ${currency}`);
+        const knownCurrency = contractToCurrency[contractAddress];
+        if (knownCurrency) {
+            currency = knownCurrency;
+            console.log(`🔍 DEBUG: Found currency from known mapping: ${currency}`);
+        } else {
+            // Fallback to database lookup
+            try {
+                const walletBalance = await db.walletBalance.findFirst({
+                    where: { address: contractAddress },
+                    select: { currency: true }
+                });
+
+                if (walletBalance?.currency) {
+                    currency = walletBalance.currency;
+                    console.log(`🔍 DEBUG: Found currency from wallet balance: ${currency}`);
+                } else {
+                    console.log(`🔍 DEBUG: No wallet balance found for contract ${contractAddress}, using default: ${currency}`);
+                }
+            } catch (error) {
+                console.error('❌ Error looking up currency for contract address:', error);
             }
-        } catch (error) {
-            console.error('❌ Error looking up currency for contract address:', error);
         }
     }
 
