@@ -2,6 +2,7 @@
 import { Badge } from "@freelii/ui";
 import { Info, X } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 export function DisclaimerBanner() {
     const [isVisible, setIsVisible] = useState(true)
@@ -22,9 +23,9 @@ export function DisclaimerBanner() {
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">Public Beta</Badge>
             </div>
             <p className="mt-2 text-sm text-blue-800">
-                Welcome to Freelii's public beta! Our smart contracts are currently undergoing security audits. 
+                Welcome to Freelii&apos;s public beta! Our smart contracts are currently undergoing security audits. 
                 Please proceed with caution and review our{" "}
-                <a href="/terms-of-service" className="underline hover:no-underline">Terms of Service</a>.
+                <Link href="/terms-of-service" className="underline hover:no-underline">Terms of Service</Link>.
             </p>
         </div>
     )
