@@ -210,7 +210,7 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
 
 const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
   const { account } = useWallet();
-  
+
   const getTransactionType = () => {
     // Check operations for contract calls that indicate transaction type
     const operation = transaction.operations?.[0];
@@ -222,16 +222,16 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
           const events = transaction.events || [];
           let isOutbound = false;
           let recipientAddress = '';
-          
+
           for (const event of events) {
             if (event.topics?.[0]?.symbol === 'transfer') {
               // Transfer event structure: [transfer, from, to, asset]
               const fromAddr = event.topics?.[1]?.address;
               const toAddr = event.topics?.[2]?.address;
-              
+
               if (fromAddr && toAddr) {
                 // Check if current wallet's address matches the FROM address
-                const currentWalletAddress = account?.stellar_address;
+                const currentWalletAddress = account?.address;
                 if (currentWalletAddress === fromAddr) {
                   isOutbound = true;
                   recipientAddress = toAddr;
@@ -240,7 +240,7 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
               }
             }
           }
-          
+
           if (isOutbound) {
             return { type: 'Money Sent', icon: <ArrowUpRight className="h-4 w-4" />, color: 'text-red-600' };
           } else {
