@@ -54,6 +54,15 @@ export default function PayoutDetailsPage() {
         }
     }, [account, selectedWalletId, payment]);
 
+    // Redirect to success page when payment status is COMPLETED
+    useEffect(() => {
+        if (payment?.status === 'COMPLETED') {
+            const slug = String(params && Array.isArray(params.slug) ? params.slug[0] : params?.slug || '');
+            const id = String(Array.isArray(paymentId) ? paymentId[0] : (paymentId || ''));
+            router.push(`/${slug}/payouts/${id}/success`);
+        }
+    }, [payment?.status, params?.slug, paymentId, router]);
+
     // Show loading state if data is being fetched
     if (isLoadingPayment) {
         return (

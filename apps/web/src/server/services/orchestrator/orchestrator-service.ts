@@ -191,8 +191,9 @@ export class OrchestratorService extends BaseService {
                 data: {
                     tx_id: txId,
                     tx_hash: txHash,
-                    status: TransactionStatus.PENDING,
-                    sent_at: new Date()
+                    status: PaymentOrchestrationStatus.COMPLETED,
+                    sent_at: new Date(),
+                    completed_at: new Date()
                 },
                 select: {
                     recipient: true,
@@ -226,9 +227,10 @@ export class OrchestratorService extends BaseService {
                         recipient_id: state.recipient.id,
                         amount: BigInt(state.source_amount),
                         currency: state.source_currency,
-                        status: TransactionStatus.PENDING,
+                        status: TransactionStatus.COMPLETED,
                         wallet_id: wallet.id,
-                        reference: `Payment orchestration: ${paymentId}`
+                        reference: `Payment orchestration: ${paymentId}`,
+                        completed_at: new Date()
                     }
                 });
                 console.log('✅ Transaction record created for payout tracking');
