@@ -217,12 +217,12 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
 
     if (webhookData.data.body.tx) {
         // Regular transaction
-        txData = webhookData.data.body.tx.tx;
+        txData = webhookData.data.body.tx?.tx;
         senderAddress = txData.source_account;
         console.log('🔍 DEBUG: Processing regular transaction');
     } else if (webhookData.data.body.tx_fee_bump) {
         // Fee bump transaction - get the inner transaction
-        txData = (webhookData.data.body as any).tx_fee_bump.inner_tx.tx.tx;
+        txData = (webhookData.data.body as any)?.tx_fee_bump?.inner_tx?.tx?.tx;
         senderAddress = txData.source_account;
         console.log('🔍 DEBUG: Processing fee bump transaction');
     } else {
@@ -242,7 +242,7 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
         console.log('🔍 DEBUG: Operations count:', operations?.length || 0);
 
         if (operations && operations.length > 0) {
-            operations.forEach((op, index) => {
+            operations.forEach((op: any, index: number) => {
                 console.log(`🔍 DEBUG: Operation ${index}:`, JSON.stringify(op, null, 2));
 
                 // Handle both invoke_contract and invoke_host_function
@@ -1239,7 +1239,7 @@ export async function POST(req: NextRequest) {
                         "Webhook received and processed" :
                         "Webhook received (duplicate transaction, idempotency handled)",
                     transactionHash: body.data.hash,
-                    sourceAccount: body.data.body.tx.tx.source_account,
+                    sourceAccount: body.data.body.tx?.tx.source_account || body.data.body.tx_fee_bump?.tx.inner_tx.tx.tx.source_account,
                     recipientAccount: paymentAnalysis.recipientAddress,
                     paymentAmount: paymentAnalysis.amount,
                     transferType: paymentAnalysis.transferType,

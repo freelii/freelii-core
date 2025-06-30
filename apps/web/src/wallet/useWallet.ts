@@ -42,7 +42,7 @@ export function useWallet() {
 
         return allWallets.filter(wallet => {
             // Use network_environment field for testnet/mainnet filtering
-            const walletEnvironment = wallet.network_environment || 'testnet'; // Default to testnet for legacy wallets
+            const walletEnvironment = wallet.network_environment ?? 'testnet'; // Default to testnet for legacy wallets
             return walletEnvironment === network;
         });
     }, [allWallets, network]);

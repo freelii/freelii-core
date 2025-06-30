@@ -10,7 +10,7 @@ interface SorobanHookData {
         ts: number;
         protocol: number;
         body: {
-            tx: {
+            tx?: {
                 tx: {
                     source_account: string;
                     fee: number;
@@ -30,6 +30,43 @@ interface SorobanHookData {
                     }>;
                     ext: any;
                 };
+                signatures: Array<{
+                    hint: string;
+                    signature: string;
+                }>;
+            };
+            tx_fee_bump?: {
+                tx: {
+                    fee_source: string;
+                    fee: number;
+                    inner_tx: {
+                        tx: {
+                            tx: {
+                                source_account: string;
+                                fee: number;
+                                seq_num: number;
+                                cond: any;
+                                memo: string;
+                                operations: Array<{
+                                    source_account?: string;
+                                    body: {
+                                        invoke_contract?: {
+                                            contract_address: string;
+                                            function_name: string;
+                                            args: Array<any>;
+                                        };
+                                        [key: string]: any;
+                                    };
+                                }>;
+                                ext: any;
+                            };
+                            signatures: Array<{
+                                hint: string;
+                                signature: string;
+                            }>;
+                        };
+                    };
+                } & { inner_tx: any }; // Add this to ensure inner_tx is accessible
                 signatures: Array<{
                     hint: string;
                     signature: string;
@@ -118,6 +155,34 @@ setInterval(() => {
 
 export class SorobanWebhookService {
     /**
+     * Extract transaction data from either regular or fee bump transaction structure
+     */
+    private static extractTransactionData(hookData: SorobanHookData): {
+        tx: any;
+        signatures: any[];
+        sourceAccount: string;
+    } {
+        if (hookData.data.body.tx) {
+            // Regular transaction
+            return {
+                tx: hookData.data.body.tx.tx,
+                signatures: hookData.data.body.tx.signatures,
+                sourceAccount: hookData.data.body.tx.tx.source_account
+            };
+        } else if (hookData.data.body.tx_fee_bump) {
+            // Fee bump transaction - extract inner transaction
+            const feeBumpTx = hookData.data.body.tx_fee_bump as any;
+            return {
+                tx: feeBumpTx.tx.inner_tx.tx.tx,
+                signatures: feeBumpTx.tx.inner_tx.tx.signatures,
+                sourceAccount: feeBumpTx.tx.inner_tx.tx.tx.source_account
+            };
+        } else {
+            throw new Error('Unknown transaction structure - neither tx nor tx_fee_bump found');
+        }
+    }
+
+    /**
      * Process a Soroban webhook and store the data
      */
     static async processWebhook(hookData: SorobanHookData): Promise<{
@@ -156,8 +221,11 @@ export class SorobanWebhookService {
         const walletMappings = await this.findMatchingWallets(addresses);
         console.log('🔗 Found wallet mappings:', walletMappings);
 
+        // Extract transaction data for consistent access
+        const { sourceAccount } = this.extractTransactionData(hookData);
+
         // Determine primary wallet and user
-        const primaryMapping = this.determinePrimaryMapping(walletMappings, hookData.data.body.tx.tx.source_account);
+        const primaryMapping = this.determinePrimaryMapping(walletMappings, sourceAccount);
 
         // Store the transaction and related data
         const transaction = await this.storeTransaction(hookData, primaryMapping);
@@ -278,11 +346,14 @@ export class SorobanWebhookService {
     private static async extractAddresses(hookData: SorobanHookData): Promise<Set<string>> {
         const addresses = new Set<string>();
 
+        // Extract transaction data using helper method
+        const { tx, sourceAccount } = this.extractTransactionData(hookData);
+
         // Add source account
-        addresses.add(hookData.data.body.tx.tx.source_account);
+        addresses.add(sourceAccount);
 
         // Extract from operations
-        hookData.data.body.tx.tx.operations.forEach(op => {
+        tx.operations.forEach((op: any) => {
             if (op.source_account) {
                 addresses.add(op.source_account);
             }
@@ -533,10 +604,10 @@ export class SorobanWebhookService {
                     chain: hookData.data.chain,
                     paging_token: hookData.data.paging_token,
                     message: hookData.data.message,
-                    source_account: hookData.data.body.tx.tx.source_account,
-                    fee: hookData.data.body.tx.tx.fee,
-                    seq_num: BigInt(hookData.data.body.tx.tx.seq_num),
-                    memo: hookData.data.body.tx.tx.memo,
+                    source_account: this.extractTransactionData(hookData).sourceAccount,
+                    fee: this.extractTransactionData(hookData).tx.fee,
+                    seq_num: BigInt(this.extractTransactionData(hookData).tx.seq_num),
+                    memo: this.extractTransactionData(hookData).tx.memo,
                     fee_charged: hookData.data.result.result.fee_charged,
                     return_value: hookData.data.meta.v3.soroban_meta.return_value,
                     is_successful: isSuccessful,
@@ -587,12 +658,15 @@ export class SorobanWebhookService {
      * Store all related data in separate operations
      */
     private static async storeAllRelatedData(transactionId: string, hookData: SorobanHookData): Promise<void> {
+        // Extract transaction data once for consistent access
+        const { tx, signatures } = this.extractTransactionData(hookData);
+
         const operations = [
             // Operations
             async () => {
-                if (hookData.data.body.tx.tx.operations?.length > 0) {
+                if (tx.operations?.length > 0) {
                     console.log('📝 Storing operations...');
-                    await this.storeOperations(transactionId, hookData.data.body.tx.tx.operations);
+                    await this.storeOperations(transactionId, tx.operations);
                 }
             },
 
@@ -635,9 +709,9 @@ export class SorobanWebhookService {
 
             // Signatures
             async () => {
-                if (hookData.data.body.tx.signatures?.length > 0) {
+                if (signatures?.length > 0) {
                     console.log('📝 Storing signatures...');
-                    await this.storeSignatures(transactionId, hookData.data.body.tx.signatures);
+                    await this.storeSignatures(transactionId, signatures);
                 }
             }
         ];

@@ -12,8 +12,8 @@ import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
 import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functions"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import { AnimatePresence, motion } from "framer-motion"
-import { Check, Download, Edit2, XCircle } from "lucide-react"
+import { motion } from "framer-motion"
+import { Edit2, XCircle } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
@@ -234,7 +234,9 @@ export default function PayoutDetailsPage() {
             setIsProcessing(false)
             setTransferStep('idle')
             // Redirect to success page
-            router.push(`/dashboard/${params?.slug}/payouts/${paymentId}/success`)
+            const slug = String(params && Array.isArray(params.slug) ? params.slug[0] : params?.slug || '');
+            const id = String(Array.isArray(paymentId) ? paymentId[0] : (paymentId || ''));
+            router.push(`/dashboard/${slug}/payouts/${id}/success`)
         } catch (error) {
             console.error(error)
             toast.error("Error processing payment")
@@ -325,10 +327,10 @@ export default function PayoutDetailsPage() {
                                     <div className="">
                                         <div className="flex items-start gap-3">
                                             <BlurImage
-                                                src={`${DICEBEAR_SOLID_AVATAR_URL}${payment?.recipient?.name}`}
+                                                src={`${DICEBEAR_SOLID_AVATAR_URL}${payment?.recipient?.name || ''}`}
                                                 width={48}
                                                 height={48}
-                                                alt={payment?.recipient?.name}
+                                                alt={payment?.recipient?.name || ''}
                                                 className="size-12 shrink-0 overflow-hidden rounded-full"
                                             />
                                             <div className="flex-1">
