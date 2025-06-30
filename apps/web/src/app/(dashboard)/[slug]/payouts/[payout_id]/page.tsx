@@ -13,7 +13,7 @@ import { fromStroops, hasEnoughBalance, toStroops } from "@freelii/utils/functio
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import { motion } from "framer-motion"
-import { Edit2, XCircle } from "lucide-react"
+import { Edit2, Send, XCircle } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
@@ -30,7 +30,6 @@ export default function PayoutDetailsPage() {
     const { searchParams } = useRouterStuff();
     const paymentId = params?.payout_id as string;
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isConfirmed, setIsConfirmed] = useState(false);
     const [transferStep, setTransferStep] = useState<'idle' | 'initiating' | 'processing' | 'confirming'>('idle');
 
 
@@ -194,7 +193,7 @@ export default function PayoutDetailsPage() {
         </div>)
     }
 
-    const handleTransfer = async () => {
+    const handleConfirm = async () => {
         try {
             if (!payment) {
                 toast.error("Payment not found")
@@ -217,7 +216,6 @@ export default function PayoutDetailsPage() {
                 toast.error("Liquidation address not found")
                 return;
             }
-
 
             setTransferStep('processing')
 
@@ -264,9 +262,7 @@ export default function PayoutDetailsPage() {
         router.back();
     }
 
-    const handleConfirm = () => {
-        console.log('handleConfirm')
-    }
+
 
     const loadingStates = {
         initiating: {
@@ -572,13 +568,15 @@ export default function PayoutDetailsPage() {
 
                             {/* Action Buttons */}
                             <div className="flex items-center justify-end">
-
                                 <div className="flex items-center gap-2">
                                     <Button variant="outline" onClick={onEdit} className="gap-2 text-xs">
                                         <Edit2 className="size-4" />
                                         Edit
                                     </Button>
-                                    <Button disabled={isProcessing} onClick={handleTransfer}
+
+                                    <Button
+                                        disabled={isProcessing}
+                                        onClick={handleConfirm}
                                         className={cn(
                                             "gap-2 h-8 relative overflow-hidden",
                                             isProcessing && "opacity-90"
@@ -603,7 +601,10 @@ export default function PayoutDetailsPage() {
                                                     {loadingStates[transferStep]?.title || "Processing..."}
                                                 </>
                                             ) : (
-                                                "Confirm Payment"
+                                                <>
+                                                    <Send className="size-4" />
+                                                    Confirm
+                                                </>
                                             )}
                                         </span>
                                     </Button>
@@ -611,6 +612,7 @@ export default function PayoutDetailsPage() {
                             </div>
                         </div>
                     </div>
+
 
 
                 </div>
