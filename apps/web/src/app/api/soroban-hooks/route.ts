@@ -1,3 +1,4 @@
+import { fromStroops } from "@freelii/utils";
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "../../../server/db";
 import { EmailService } from "../../../server/services/email/email.service";
@@ -998,9 +999,7 @@ async function processPaymentReceivedEmails(
 
             // Convert stroops to XLM for email display (if amount looks like stroops)
             const amountNum = parseFloat(paymentDetails.amount);
-            const emailAmount = amountNum > 10000000 ? // If > 1 XLM in stroops
-                (amountNum / 10000000).toFixed(7).replace(/\.?0+$/, '') : // Remove trailing zeros
-                paymentDetails.amount;
+            const emailAmount = fromStroops(amountNum);
 
             // Send payment received email
             console.log(`📧 Sending payment received email to: ${userEmail}`);
