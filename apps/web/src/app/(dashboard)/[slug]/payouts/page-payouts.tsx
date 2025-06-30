@@ -279,9 +279,7 @@ export default function PayoutsTable() {
   useEffect(() => {
     if (txs) {
       setPayouts(txs.map(tx => {
-        console.log('payout', tx)
-        const amount = fromStroops(tx.amount * BigInt(1_000_000))
-        console.log('amount', amount)
+        const amount = fromStroops(tx.amount * BigInt(100_000))
         return {
           createdAt: tx.created_at,
           id: tx.id,
