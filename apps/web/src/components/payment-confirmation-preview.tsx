@@ -36,8 +36,8 @@ export const PaymentConfirmationPreview = forwardRef<HTMLDivElement, PaymentConf
     ({ payment, transactionId, transactionHash, showZoomControls = true }, ref) => {
         const [zoom, setZoom] = useState(65)
         const confirmationNumber = payment.id.split('-')[0]?.toUpperCase() || payment.id.slice(0, 8).toUpperCase()
-        const amount = payment.source_amount / 100
-        const recipientAmount = payment.target_amount / 100
+        const amount = payment.source_amount
+        const recipientAmount = payment.target_amount
 
         const handleZoomIn = () => {
             setZoom(prev => Math.min(prev + 5, 200))

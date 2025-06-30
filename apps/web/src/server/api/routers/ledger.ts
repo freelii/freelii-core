@@ -1,5 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { LedgerService } from "@/server/services/ledger/ledger-service";
+import { toStroops } from "@freelii/utils/index";
 import { z } from "zod";
 
 export const ledgerRouter = createTRPCRouter({
@@ -55,7 +56,7 @@ export const ledgerRouter = createTRPCRouter({
                 txHash: input.txHash,
                 senderId: input.senderId,
                 recipientId: input.recipientId,
-                amount: BigInt(input.amount),
+                amount: BigInt(toStroops(input.amount)),
                 currency: input.currency,
                 reference: input.reference,
             });

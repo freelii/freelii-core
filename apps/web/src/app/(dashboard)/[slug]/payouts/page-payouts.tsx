@@ -11,18 +11,18 @@ import {
   TableHeader,
   TableRow,
 } from "@freelii/ui/table"
-import { cn, DICEBEAR_SOLID_AVATAR_URL, fromStroops, noop } from "@freelii/utils"
+import { DICEBEAR_SOLID_AVATAR_URL, cn, fromStroops, noop } from "@freelii/utils"
 import { VerificationStatus } from "@prisma/client"
 import {
-  type ColumnDef,
-  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type SortingState,
   useReactTable,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type SortingState,
   type VisibilityState,
 } from "@tanstack/react-table"
 import dayjs from 'dayjs'
@@ -279,7 +279,9 @@ export default function PayoutsTable() {
   useEffect(() => {
     if (txs) {
       setPayouts(txs.map(tx => {
-        const amount = fromStroops(tx.amount)
+        console.log('payout', tx)
+        const amount = fromStroops(BigInt(tx.amount))
+        console.log('amount', amount)
         return {
           createdAt: tx.created_at,
           id: tx.id,
