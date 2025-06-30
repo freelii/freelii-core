@@ -1,84 +1,136 @@
-# Turborepo starter
+# Freelii - Non-Custodial Crypto Wallet
 
-This Turborepo starter is maintained by the Turborepo core team.
+Freelii is a non-custodial crypto wallet built on the Stellar blockchain, designed for **remittances, P2P payments, and DeFi access** through messaging platforms like **Viber and Telegram**. It combines advanced blockchain capabilities with a familiar user experience via chatbot UIs inside social platforms.
 
-## Using this example
+## What is Freelii?
 
-Run the following command:
+Freelii makes decentralized financial services accessible to everyday users, especially in remittance-heavy, underbanked regions like the Philippines and Mexico. Users can onboard without needing to understand crypto complexities—unlocking global financial services in a simple, secure, and localized way.
 
-```sh
-npx create-turbo@latest
-```
+**Key Features:**
+- 🧩 **No browser or wallet extensions** — onboarding via chat apps
+- 🔒 **PassKey-based security** — no private key management
+- 🤖 **Chatbot-first UX** — familiar, friendly, localized onboarding
+- 💸 **Fiat On/Off ramps** — direct access via local partners (Coins.ph, GCash, PayMaya)
+- 🔁 **Customizable flows** — using Soroban smart contracts
 
-## What's inside?
+## Architecture
 
-This Turborepo includes the following packages/apps:
+This is a Turborepo monorepo with multiple applications and shared packages:
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- **`apps/web`**: Main Next.js application with dashboard, authentication, and wallet functionality
+- **`apps/payments-server`**: Express.js API server for wallet operations and payment processing
+- **`apps/docs`**: Documentation site
+- **`apps/cli`**: Command-line interface tool
+- **`packages/ui`**: Shared React component library with Tailwind CSS
+- **`packages/utils`**: Shared utility functions and constants
+- **`packages/anchors`**: Stellar anchor services for fiat on/off ramps
+- **`contracts/`**: Rust-based Soroban smart contracts and SDK
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Tech Stack
 
-### Utilities
+- **Frontend**: Next.js 15, React 18, tRPC, TanStack Query, Tailwind CSS
+- **Backend**: Express.js, tRPC, Prisma ORM, PostgreSQL
+- **Blockchain**: Stellar SDK, Soroban smart contracts (Rust)
+- **Authentication**: NextAuth.js with PassKey support
+- **Monorepo**: Turborepo with pnpm workspace
+- **Database**: PostgreSQL with Prisma migrations
 
-This Turborepo has some additional tools already setup for you:
+## Getting Started
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+### Prerequisites
 
-### Build
+- Node.js 18+
+- pnpm
+- PostgreSQL database
 
-To build all apps and packages, run the following command:
+### Installation
 
+```bash
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp apps/web/.env.example apps/web/.env.local
+# Configure your DATABASE_URL and other required environment variables
+
+# Set up database
+pnpm db:push
 ```
-cd my-turborepo
-pnpm build
-```
 
-### Develop
+### Development
 
-To develop all apps and packages, run the following command:
+To develop all apps and packages:
 
-```
-cd my-turborepo
+```bash
 pnpm dev
 ```
 
-### Remote Caching
+To develop specific apps:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+```bash
+# Web app only
+pnpm --filter web dev
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+# Payments server only
+pnpm --filter payments-server dev
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Build
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+To build all apps and packages:
 
+```bash
+pnpm build
 ```
-npx turbo link
+
+### Database Operations
+
+```bash
+pnpm db:generate    # Generate Prisma client after schema changes
+pnpm db:migrate     # Run Prisma migrations in development
+pnpm db:push        # Push schema changes to database
+pnpm db:studio      # Open Prisma Studio
 ```
 
-## Useful Links
+## Key Integrations
 
-Learn more about the power of Turborepo:
+- **Stellar Blockchain**: Core wallet functionality, PassKey authentication
+- **Circle USDC**: Stablecoin operations
+- **Soroban Smart Contracts**: Custom automation and DeFi flows
+- **Anchor Partners**: Coins.ph, GCash, PayMaya for fiat on/off ramps
+- **AI Services**: Anthropic AI for CSV mapping and user assistance
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+## Target Markets
+
+- 🇵🇭 **Philippines**: $37B remittance market, 71% Viber penetration
+- 🇲🇽 **Mexico** (expansion): Strong appetite for crypto among users
+
+## Development Commands
+
+### Linting and Type Checking
+
+```bash
+pnpm lint           # Lint all packages
+pnpm typecheck      # TypeScript type checking
+pnpm format         # Format code with Prettier
+```
+
+### Testing
+
+```bash
+# Check package.json files for specific test commands
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `pnpm lint` and `pnpm typecheck`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
