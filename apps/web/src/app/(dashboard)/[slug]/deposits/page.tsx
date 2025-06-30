@@ -185,6 +185,7 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
   const { type, icon, color } = getTransactionType();
 
   const getStatusDisplay = () => {
+    console.log('transaction:', transaction)
     if (transaction.is_successful) {
       return {
         icon: <CheckCircle className="h-4 w-4 text-green-500" />,

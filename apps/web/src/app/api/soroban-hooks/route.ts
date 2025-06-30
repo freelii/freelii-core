@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "../../../server/db";
 import { EmailService } from "../../../server/services/email/email.service";
-import { SorobanWebhookService } from "../../../server/services/soroban/soroban-webhook-service";
+import { SorobanHookData, SorobanWebhookService } from "../../../server/services/soroban/soroban-webhook-service";
 
 interface SorobanHook {
     eventType: 'get_contract_transaction';
@@ -218,13 +218,13 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
     if (webhookData.data.body.tx) {
         // Regular transaction
         txData = webhookData.data.body.tx?.tx;
-        senderAddress = txData?.source_account;
+        senderAddress = SorobanWebhookService.getTransferOriginAccount(webhookData as unknown as SorobanHookData);
         console.log('🔍 DEBUG: Processing regular transaction');
     } else if (webhookData.data.body.tx_fee_bump) {
         // Fee bump transaction - get the inner transaction
         txData = webhookData.data.body.tx_fee_bump?.tx?.inner_tx?.tx?.tx;
-        senderAddress = txData?.source_account;
-        console.log('🔍 DEBUG: Processing fee bump transaction');
+        senderAddress = SorobanWebhookService.getTransferOriginAccount(webhookData as unknown as SorobanHookData);
+        console.log('🔍 DEBUG: Processing fee bump transaction:', senderAddress);
     } else {
         throw new Error('Unknown transaction structure - neither tx nor tx_fee_bump found');
     }
@@ -793,7 +793,7 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
     // Map contract address to actual currency from wallet balances or known mappings
     if (contractAddress) {
         console.log(`🔍 DEBUG: Looking up currency for contract address: ${contractAddress}`);
-        
+
         // First check known contract mappings
         const contractToCurrency: Record<string, string> = {
             'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC': 'USDC', // Testnet main balance contract
@@ -1029,7 +1029,7 @@ export async function POST(req: NextRequest) {
         console.log('  - data.result exists:', !!body.data.result);
 
         // Safe access to nested transaction data
-        const txData = body.data.body?.tx?.tx;
+        const txData = body.data.body?.tx?.tx ?? body.data.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx;
         if (txData) {
             console.log('🏦 Source Account:', txData.source_account);
             console.log('💰 Fee:', txData.fee);
@@ -1120,7 +1120,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Log signatures
-        const signatures = body.data.body?.tx?.signatures;
+        const signatures = body.data.body?.tx?.signatures ?? body?.data?.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx?.operations[0]?.body?.invoke_host_function?.auth[0]?.credentials?.signature;
         if (signatures && Array.isArray(signatures)) {
             console.log('✍️ Signatures:', signatures.length);
             signatures.forEach((sig, index) => {

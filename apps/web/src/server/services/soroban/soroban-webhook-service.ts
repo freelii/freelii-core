@@ -1,7 +1,7 @@
 import { type SorobanTransaction } from "prisma/prisma-client";
 import { db } from "../../db";
 
-interface SorobanHookData {
+export interface SorobanHookData {
     eventType: 'get_contract_transaction';
     data: {
         id: string;
@@ -116,6 +116,14 @@ interface SorobanHookData {
                 fee_charged: number;
                 result: {
                     tx_success?: Array<any>;
+                    tx_fee_bump_inner_success?: {
+                        result: {
+                            result: {
+                                tx_success?: Array<any>;
+                                tx_failed?: any;
+                            };
+                        };
+                    };
                     tx_failed?: any;
                 };
                 ext: string;
@@ -166,20 +174,42 @@ export class SorobanWebhookService {
             // Regular transaction
             return {
                 tx: hookData.data.body.tx.tx,
-                signatures: hookData.data.body.tx.signatures,
-                sourceAccount: hookData.data.body.tx.tx.source_account
+                signatures: this.getTransferOriginSignatures(hookData),
+                sourceAccount: this.getTransferOriginAccount(hookData)
             };
         } else if (hookData.data.body.tx_fee_bump) {
             // Fee bump transaction - extract inner transaction
             const feeBumpTx = hookData.data.body.tx_fee_bump as any;
             return {
                 tx: feeBumpTx.tx.inner_tx.tx.tx,
-                signatures: feeBumpTx.tx.inner_tx.tx.signatures,
-                sourceAccount: feeBumpTx.tx.inner_tx.tx.tx.source_account
+                signatures: this.getTransferOriginSignatures(hookData),
+                sourceAccount: this.getTransferOriginAccount(hookData)
             };
         } else {
             throw new Error('Unknown transaction structure - neither tx nor tx_fee_bump found');
         }
+    }
+
+    static getTransferOriginAccount(hookData: SorobanHookData): string {
+        if (hookData?.data?.body?.tx) {
+            return hookData.data?.body?.tx?.tx?.source_account ?? '';
+        } else if (hookData?.data?.body?.tx_fee_bump) {
+            console.log('🔍 DEBUG: Processing fee bump transaction:', hookData.data?.body?.tx_fee_bump);
+            const fallback = hookData.data?.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx?.source_account;
+            const sourceAccount = hookData?.data?.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx?.operations[0]?.body?.invoke_host_function?.auth[0]?.credentials?.address?.address;
+            return sourceAccount ?? fallback ?? '';
+        }
+        return '';
+    }
+
+    private static getTransferOriginSignatures(hookData: SorobanHookData): any[] {
+
+        if (hookData?.data?.body?.tx) {
+            return hookData?.data?.body?.tx?.signatures;
+        } else if (hookData?.data?.body?.tx_fee_bump) {
+            return hookData?.data?.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx?.operations[0]?.body?.invoke_host_function?.auth[0]?.credentials?.signature;
+        }
+        return [];
     }
 
     /**
@@ -195,12 +225,6 @@ export class SorobanWebhookService {
         // Check for idempotency - have we already processed this transaction?
         const existingTransaction = await this.checkExistingTransaction(hookData.data.hash);
         if (existingTransaction) {
-            console.log('🔄 Transaction already processed, returning existing record:', {
-                hash: hookData.data.hash,
-                existingId: existingTransaction.id || 'mock-id',
-                processedAt: existingTransaction.created_at || 'unknown'
-            });
-
             // Get wallet mappings for the existing transaction
             const walletMappings = await this.getWalletMappingsForTransaction(existingTransaction);
 
@@ -211,11 +235,9 @@ export class SorobanWebhookService {
             };
         }
 
-        console.log('✨ New transaction detected, processing...');
 
         // Extract addresses from the webhook data
         const addresses = await this.extractAddresses(hookData);
-        console.log('📍 Extracted addresses:', addresses);
 
         // Find matching wallets
         const walletMappings = await this.findMatchingWallets(addresses);
@@ -580,8 +602,12 @@ export class SorobanWebhookService {
         hookData: SorobanHookData,
         primaryMapping: WalletMapping | null
     ): Promise<any> {
-        const isSuccessful = !!(hookData.data.result.result.result.tx_success?.length) && 
-                             !hookData.data.result.result.result.tx_failed;
+        console.log('🔍 DEBUG: Storing transaction:', hookData.data.result);
+        const txSuccess = hookData.data.result.result.result?.tx_success ?? hookData.data.result.result.result?.tx_fee_bump_inner_success?.result?.result?.tx_success;
+        console.log('🔍 DEBUG: txSuccess:', txSuccess);
+        const txFailed = hookData.data.result.result.result?.tx_failed ?? hookData.data.result.result.result?.tx_fee_bump_inner_success?.result?.result?.tx_failed;
+        console.log('🔍 DEBUG: txFailed:', txFailed);
+        const isSuccessful = !!(txSuccess?.length) && !txFailed;
 
         try {
             console.log('💾 Storing transaction:', hookData.data.hash);

@@ -104,36 +104,28 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
     const events = transaction.events;
 
     if (!events || !Array.isArray(events) || events.length === 0) {
-      console.log('🔍 DEBUG: No events found in transaction');
       return { amount, currency };
     }
 
     // Find transfer events and extract amount
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
-      console.log(`🔍 DEBUG: Processing event ${i}:`, JSON.stringify(event, null, 2));
 
       // Check if this is a transfer event by looking at topics
       const topics = event.topics;
       if (!topics || !Array.isArray(topics) || topics.length === 0) {
-        console.log(`🔍 DEBUG: Event ${i} has no topics`);
         continue;
       }
 
       // Look for transfer symbol in first topic
       const firstTopic = topics[0];
       if (!firstTopic || firstTopic.symbol !== "transfer") {
-        console.log(`🔍 DEBUG: Event ${i} is not a transfer event, first topic:`, firstTopic);
         continue;
       }
-
-      console.log(`🔍 DEBUG: Found transfer event! Topics:`, topics);
-      console.log(`🔍 DEBUG: Event data:`, event.data);
 
       // Extract amount from data field
       const data = event.data;
       if (!data) {
-        console.log(`🔍 DEBUG: Event ${i} has no data field`);
         continue;
       }
 
@@ -148,7 +140,6 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
         const assetAmount = stroopsAmount / 10000000;
 
         amount = assetAmount.toString();
-        console.log(`🔍 DEBUG: Extracted amount from i128: ${stroopsAmount} stroops = ${assetAmount} units`);
         break;
       }
 
@@ -156,7 +147,6 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
       else if (typeof data === 'number' && data > 0) {
         const assetAmount = data / 10000000;
         amount = assetAmount.toString();
-        console.log(`🔍 DEBUG: Extracted amount from direct number: ${data} stroops = ${assetAmount} units`);
         break;
       }
 
@@ -264,6 +254,7 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
   const { type, icon, color } = getTransactionType();
 
   const getStatusDisplay = () => {
+    console.log('transaction:', transaction)
     if (transaction.is_successful) {
       return {
         icon: <CheckCircle className="h-4 w-4 text-green-500" />,
