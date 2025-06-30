@@ -4,7 +4,9 @@ import {
 } from '@freelii/anchors';
 import {
     PaymentOrchestrationStatus,
+    TransactionMovementType,
     TransactionStatus,
+    TransactionType,
     type BlockchainAccount,
     type Client,
     type EwalletAccount,
@@ -198,8 +200,39 @@ export class OrchestratorService extends BaseService {
                     source_currency: true,
                     tx_id: true,
                     sender: true,
+                    wallet: {
+                        select: {
+                            id: true,
+                            network: true,
+                            network_environment: true
+                        }
+                    }
                 }
             });
+
+            // Create a transaction record for tracking in the payouts table
+            const wallet = state.wallet;
+            if (wallet?.network && wallet?.network_environment) {
+                await this.db.transactions.create({
+                    data: {
+                        ts: new Date(),
+                        movement_type: TransactionMovementType.OUT,
+                        tx_type: TransactionType.ON_CHAIN_TRANSFER,
+                        blockchain_network: wallet.network,
+                        blockchain_environment: wallet.network_environment,
+                        blockchain_tx_id: txId,
+                        blockchain_tx_hash: txHash,
+                        sender_id: state.sender.id,
+                        recipient_id: state.recipient.id,
+                        amount: BigInt(state.source_amount),
+                        currency: state.source_currency,
+                        status: TransactionStatus.PENDING,
+                        wallet_id: wallet.id,
+                        reference: `Payment orchestration: ${paymentId}`
+                    }
+                });
+                console.log('✅ Transaction record created for payout tracking');
+            }
 
             if (state.sender.email) {
                 const emailService = new EmailService({ db: this.db, session: this.session });

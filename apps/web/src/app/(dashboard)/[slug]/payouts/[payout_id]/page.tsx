@@ -236,7 +236,7 @@ export default function PayoutDetailsPage() {
             // Redirect to success page
             const slug = String(params && Array.isArray(params.slug) ? params.slug[0] : params?.slug || '');
             const id = String(Array.isArray(paymentId) ? paymentId[0] : (paymentId || ''));
-            router.push(`/dashboard/${slug}/payouts/${id}/success`)
+            router.push(`/${slug}/payouts/${id}/success`)
         } catch (error) {
             console.error(error)
             toast.error("Error processing payment")
