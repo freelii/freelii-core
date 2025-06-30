@@ -209,19 +209,6 @@ export const PaymentConfirmationPreview = forwardRef<HTMLDivElement, PaymentConf
                                     </p>
                                 </div>
 
-                                {/* Important Information */}
-                                <div className="mt-6 space-y-4">
-                                    <div className="bg-gray-50 rounded-lg p-4">
-                                        <h4 className="font-medium text-gray-700 mb-2">Important Information</h4>
-                                        <ul className="text-sm text-gray-600 space-y-1">
-                                            <li>• Payment has been processed and funds have been transferred</li>
-                                            <li>• Recipient will receive funds according to their payment method processing times</li>
-                                            <li>• Keep this confirmation for your records</li>
-                                            <li>• For support inquiries, reference the Payment ID above</li>
-                                        </ul>
-                                    </div>
-                                </div>
-
                                 {/* Footer */}
                                 <div className="absolute bottom-16 left-16 right-16 text-center text-sm text-gray-500 border-t border-gray-100 pt-8">
                                     <p className="font-medium">Thank you for using Freelii!</p>
