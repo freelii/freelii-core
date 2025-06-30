@@ -232,8 +232,9 @@ export default function PayoutDetailsPage() {
             }
 
             setIsProcessing(false)
-            setIsConfirmed(true)
             setTransferStep('idle')
+            // Redirect to success page
+            router.push(`/dashboard/${params?.slug}/payouts/${paymentId}/success`)
         } catch (error) {
             console.error(error)
             toast.error("Error processing payment")
@@ -568,14 +569,32 @@ export default function PayoutDetailsPage() {
                                     </Button>
                                     <Button disabled={isProcessing} onClick={handleTransfer}
                                         className={cn(
-                                            "gap-2 h-8",
-                                            isProcessing && "opacity-50 py-3 px-6 w-full"
+                                            "gap-2 h-8 relative overflow-hidden",
+                                            isProcessing && "opacity-90"
                                         )}
                                     >
-                                        {isProcessing ?
-                                            <LoadingDots className="size-4" color="white" /> :
-                                            "Confirm Payment"
-                                        }
+                                        {isProcessing && transferStep !== 'idle' && (
+                                            <motion.div
+                                                className="absolute inset-0 bg-blue-600/20"
+                                                initial={{ x: '-100%' }}
+                                                animate={{ x: '100%' }}
+                                                transition={{
+                                                    duration: 1.5,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                            />
+                                        )}
+                                        <span className="relative z-10 flex items-center gap-2">
+                                            {isProcessing && transferStep !== 'idle' ? (
+                                                <>
+                                                    <LoadingDots className="size-4" color="white" />
+                                                    {loadingStates[transferStep]?.title || "Processing..."}
+                                                </>
+                                            ) : (
+                                                "Confirm Payment"
+                                            )}
+                                        </span>
                                     </Button>
                                 </div>
                             </div>
@@ -583,101 +602,6 @@ export default function PayoutDetailsPage() {
                     </div>
 
 
-                    <AnimatePresence>
-                        {isConfirmed && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center"
-                            >
-                                <motion.div
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0.9, opacity: 0 }}
-                                    className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 space-y-6 text-center"
-                                >
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        transition={{ delay: 0.2, type: "spring" }}
-                                        className="size-16 rounded-full bg-green-100 mx-auto flex items-center justify-center"
-                                    >
-                                        <Check className="size-8 text-green-600" />
-                                    </motion.div>
-
-                                    <div className="space-y-2">
-                                        <h2 className="text-2xl font-semibold">Payment Confirmed!</h2>
-                                        <p className="text-gray-500">
-                                            Your payment of ${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2 })} has been processed.
-                                            We&apos;ve sent you a confirmation email.
-                                        </p>
-                                    </div>
-
-                                    <div className="pt-4 space-y-3">
-                                        <Button
-                                            variant="outline"
-                                            className="w-full gap-2"
-                                            onClick={() => {
-                                                // Add download logic here
-                                            }}
-                                        >
-                                            <Download className="size-4" />
-                                            Download Confirmation
-                                        </Button>
-
-                                        <Button
-                                            className="w-full"
-                                            onClick={() => {
-                                                window.location.href = '/dashboard'
-                                            }}
-                                        >
-                                            Return to Dashboard
-                                        </Button>
-                                    </div>
-                                </motion.div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {isProcessing && transferStep !== 'idle' && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center"
-                        >
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 space-y-6 text-center"
-                            >
-                                <div className="size-16 rounded-full bg-blue-100 mx-auto flex items-center justify-center">
-                                    <LoadingSpinner className="size-8 text-blue-600" />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <h2 className="text-2xl font-semibold">{loadingStates[transferStep].title}</h2>
-                                    <p className="text-gray-500">
-                                        {loadingStates[transferStep].description}
-                                    </p>
-                                </div>
-
-                                <div className="w-full max-w-xs mx-auto space-y-2">
-                                    <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                                        <motion.div
-                                            className="h-full bg-blue-500"
-                                            initial={{ width: "0%" }}
-                                            animate={{ width: "100%" }}
-                                            transition={{ duration: 3 }}
-                                        />
-                                    </div>
-                                    <p className="text-sm text-gray-500">Please don&apos;t close this window</p>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    )}
                 </div>
             </MaxWidthWrapper>
         </PageContent>

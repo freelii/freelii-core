@@ -12,7 +12,7 @@ interface SorobanHook {
         ts: number; // 1751137259
         protocol: number; // 22
         body: {
-            tx: {
+            tx?: {
                 tx: {
                     source_account: string; // 'GDLS6OIZ3TOC7NXHB3OZKHXLUEZV4EUANOMOOMOHUZAZHLLGNN43IALX'
                     fee: number; // 115317
@@ -56,6 +56,64 @@ interface SorobanHook {
                 signatures: Array<{
                     hint: string; // '666b79b4'
                     signature: string; // hex signature
+                }>;
+            };
+            tx_fee_bump?: {
+                tx: {
+                    fee_source: string;
+                    fee: number;
+                    inner_tx: {
+                        tx: {
+                            tx: {
+                                source_account: string;
+                                fee: number;
+                                seq_num: number;
+                                cond: {
+                                    time?: {
+                                        min_time?: number;
+                                        max_time?: number;
+                                    };
+                                };
+                                memo: string;
+                                operations: Array<{
+                                    source_account?: string;
+                                    body: {
+                                        invoke_contract?: {
+                                            contract_address: string;
+                                            function_name: string;
+                                            args: Array<any>;
+                                        };
+                                        [key: string]: any;
+                                    };
+                                }>;
+                                ext: {
+                                    v1?: {
+                                        soroban_data?: {
+                                            ext: string;
+                                            resources: {
+                                                footprint: {
+                                                    read_only: Array<any>;
+                                                    read_write: Array<any>;
+                                                };
+                                                instructions: number;
+                                                read_bytes: number;
+                                                write_bytes: number;
+                                            };
+                                            resource_fee: number;
+                                        };
+                                    };
+                                };
+                            };
+                            signatures: Array<{
+                                hint: string;
+                                signature: string;
+                            }>;
+                        };
+                    };
+                };
+                signatures: Array<{
+                    hint: string;
+                    signature: string;
                 }>;
             };
         };
@@ -152,7 +210,25 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
     let amount = "0";
     let currency = "XLM"; // Default fallback
     let contractAddress: string | undefined;
-    const senderAddress = webhookData.data.body.tx.tx.source_account;
+
+    // Handle both regular transactions and fee bump transactions
+    let txData;
+    let senderAddress: string;
+
+    if (webhookData.data.body.tx) {
+        // Regular transaction
+        txData = webhookData.data.body.tx.tx;
+        senderAddress = txData.source_account;
+        console.log('🔍 DEBUG: Processing regular transaction');
+    } else if (webhookData.data.body.tx_fee_bump) {
+        // Fee bump transaction - get the inner transaction
+        txData = (webhookData.data.body as any).tx_fee_bump.inner_tx.tx.tx;
+        senderAddress = txData.source_account;
+        console.log('🔍 DEBUG: Processing fee bump transaction');
+    } else {
+        throw new Error('Unknown transaction structure - neither tx nor tx_fee_bump found');
+    }
+
     let recipientAddress: string | undefined;
     let transferType: string | undefined;
     let memo: string | undefined;
@@ -162,7 +238,7 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
 
     try {
         // 1. Try to extract from operations first
-        const operations = webhookData.data.body.tx.tx.operations;
+        const operations = txData.operations;
         console.log('🔍 DEBUG: Operations count:', operations?.length || 0);
 
         if (operations && operations.length > 0) {
@@ -434,7 +510,7 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
 
         // 4. If we still don't have an amount, try parsing the memo
         if (amount === "0") {
-            const memo = webhookData.data.body.tx.tx.memo;
+            const memo = txData.memo;
             console.log('🔍 DEBUG: Memo:', memo);
 
             if (memo && memo !== 'none') {
@@ -450,19 +526,18 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
         console.log('🔍 DEBUG: COMPREHENSIVE MEMO ANALYSIS - Searching all possible locations...');
 
         // 1. Check the main memo field (what we're currently using)
-        const mainMemo = webhookData.data.body.tx.tx.memo;
-        console.log('🔍 DEBUG: Main memo field (data.body.tx.tx.memo):', mainMemo);
+        const mainMemo = txData.memo;
+        console.log('🔍 DEBUG: Main memo field (txData.memo):', mainMemo);
 
         // 2. Check if memo is in the cond field (conditional memo)
-        const condMemo = webhookData.data.body.tx.tx.cond;
-        console.log('🔍 DEBUG: Conditional memo (data.body.tx.tx.cond):', JSON.stringify(condMemo, null, 2));
+        const condMemo = txData.cond;
+        console.log('🔍 DEBUG: Conditional memo (txData.cond):', JSON.stringify(condMemo, null, 2));
 
-        // 3. Check if memo is in the transaction envelope
-        const txEnvelope = webhookData.data.body.tx;
-        console.log('🔍 DEBUG: Transaction envelope structure:', Object.keys(txEnvelope));
+        // 3. Check if memo is in the transaction envelope structure
+        console.log('🔍 DEBUG: Transaction data structure available:', typeof txData);
 
         // 4. Check if memo is in the operations
-        const txOperations = webhookData.data.body.tx.tx.operations;
+        const txOperations = txData.operations;
         if (txOperations && Array.isArray(txOperations)) {
             txOperations.forEach((op, index) => {
                 console.log(`🔍 DEBUG: Operation ${index} memo check:`, {
@@ -554,7 +629,7 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
                 console.log('🔍 DEBUG: Memo is object, checking for different memo types:', mainMemo);
 
                 // Type assertion for memo object since webhook data might vary from interface
-                const memoObj = mainMemo as any;
+                const memoObj = mainMemo;
 
                 // Check for different Stellar memo types
                 if (memoObj.text) {

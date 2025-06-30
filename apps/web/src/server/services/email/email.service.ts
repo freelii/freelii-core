@@ -254,9 +254,9 @@ export class EmailService {
 
     return this.sendEmail({
       to: data.to,
-      subject: `New Sub Account Created - ${data.accountAlias}`,
+      subject: `New Account Created - ${data.accountAlias}`,
       html,
-      text: `Your new sub account "${data.accountAlias}" has been successfully created and is ready to use.`,
+      text: `Your new account "${data.accountAlias}" has been successfully created and is ready to use.`,
     });
   }
 
@@ -642,7 +642,7 @@ export class EmailService {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>New Sub Account Created</title>
+          <title>New Account Created</title>
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -662,7 +662,7 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>✅ New Sub Account Created</h1>
+              <h1>✅ New Account Created</h1>
             </div>
             <div class="content">
               <h2>Hello ${data.userName}!</h2>
