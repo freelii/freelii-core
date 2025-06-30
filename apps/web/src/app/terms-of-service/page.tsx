@@ -363,8 +363,8 @@ export default function TermsOfService() {
                             <span className="hidden sm:inline">All rights reserved.</span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <a href="/" className="hover:text-blue-500 transition-colors">Back to Home</a>
-                            <a href="/privacy" className="hover:text-blue-500 transition-colors">Privacy</a>
+                            <Link href="/" className="hover:text-blue-500 transition-colors">Back to Home</Link>
+                            <Link href="/privacy" className="hover:text-blue-500 transition-colors">Privacy</Link>
                         </div>
                     </div>
                 </div>
