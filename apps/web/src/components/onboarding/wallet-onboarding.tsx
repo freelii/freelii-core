@@ -6,7 +6,7 @@ import { FlagIcon } from "@/ui/shared/flag-icon";
 import { useWallet } from "@/wallet/useWallet";
 import { Button, ExpandingArrow, Input, LoadingDots } from "@freelii/ui";
 import { cn } from "@freelii/utils";
-import { Globe, FileText, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Globe } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -55,7 +55,6 @@ export function WalletOnboarding() {
                         <div className="flex items-center gap-3 mb-6">
                             <Button
                                 variant="ghost"
-                                size="sm"
                                 onClick={handleBackToForm}
                                 className="p-2 hover:bg-gray-100"
                             >
@@ -209,7 +208,7 @@ export function WalletOnboarding() {
                                 </span>
                             )}
                         </Button>
-                        
+
                         {wallets.length > 0 && (
                             <p className="text-xs text-gray-500 text-center mt-3">
                                 By creating a wallet you agree to our{" "}
