@@ -6,18 +6,29 @@ import { FlagIcon } from "@/ui/shared/flag-icon";
 import { useWallet } from "@/wallet/useWallet";
 import { Button, ExpandingArrow, Input, LoadingDots } from "@freelii/ui";
 import { cn } from "@freelii/utils";
-import { Globe } from "lucide-react";
+import { Globe, FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function WalletOnboarding() {
     const [loading, setLoading] = useState(false);
+    const [showTermsStep, setShowTermsStep] = useState(false);
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [betaRisksAccepted, setBetaRisksAccepted] = useState(false);
     const { create } = useWallet();
     const { setSelectedWalletId, wallets } = useWalletStore();
     const [walletName, setWalletName] = useState("");
     const router = useRouter();
     const trpcUtils = api.useUtils();
+
+    const handleProceedToTerms = () => {
+        if (wallets.length === 0) {
+            setShowTermsStep(true);
+        } else {
+            handleCreateWallet();
+        }
+    };
 
     const handleCreateWallet = async () => {
         setLoading(true);
@@ -29,6 +40,126 @@ export function WalletOnboarding() {
         setLoading(false);
         router.push("/dashboard");
     };
+
+    const handleBackToForm = () => {
+        setShowTermsStep(false);
+        setTermsAccepted(false);
+        setBetaRisksAccepted(false);
+    };
+
+    if (showTermsStep) {
+        return (
+            <div className="min-h-screen flex bg-transparent text-black">
+                <div className="flex-1 flex items-center justify-center p-8 bg-transparent z-10">
+                    <div className="w-full max-w-lg space-y-6 relative z-30">
+                        <div className="flex items-center gap-3 mb-6">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleBackToForm}
+                                className="p-2 hover:bg-gray-100"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                            </Button>
+                            <div>
+                                <h2 className="text-2xl font-semibold">Terms of Service</h2>
+                                <p className="text-sm text-gray-500">Please review and accept before creating your first wallet</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-lg p-6 max-h-[60vh] overflow-y-auto">
+                            <div className="space-y-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="text-blue-700 font-medium text-xs">Beta Service Agreement</span>
+                                </div>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                    <p className="text-xs text-blue-700 font-medium mb-1">Beta Notice:</p>
+                                    <p className="text-xs text-blue-600">
+                                        Freelii is currently in public beta. While we're working hard to make it reliable, please be aware that some features are still being refined.
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        <h3 className="font-medium text-gray-900 mb-2">What to Keep in Mind</h3>
+                                        <ul className="text-xs space-y-1 text-gray-600 list-disc list-inside">
+                                            <li>Our smart contracts are still being refined and tested</li>
+                                            <li>As with all crypto, there's always a risk of fund loss</li>
+                                            <li>Your account access is linked to our domain</li>
+                                            <li>Some features like fiat transfers are still in development</li>
+                                            <li>We can't help recover lost PassKeys or reverse transactions</li>
+                                        </ul>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="font-medium text-gray-900 mb-2">How It Works</h3>
+                                        <ul className="text-xs space-y-1 text-gray-600 list-disc list-inside">
+                                            <li>You have full control of your wallet and private keys</li>
+                                            <li>Transactions are permanent once confirmed on the blockchain</li>
+                                            <li>Please use the service lawfully and responsibly</li>
+                                            <li>We recommend starting with small amounts or using testnet</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div className="pt-3 border-t border-gray-200">
+                                    <p className="text-xs text-gray-500">
+                                        For complete terms, visit our full{" "}
+                                        <Link href="/terms-of-service" target="_blank" className="text-primary hover:underline">
+                                            Terms of Service
+                                        </Link>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                    className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                />
+                                <span className="text-sm text-gray-700">
+                                    I have read and agree to the Terms of Service and understand this is beta software
+                                </span>
+                            </label>
+
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={betaRisksAccepted}
+                                    onChange={(e) => setBetaRisksAccepted(e.target.checked)}
+                                    className="mt-1 w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+                                />
+                                <span className="text-sm text-gray-700">
+                                    I understand the nature of cryptocurrency and will use this service responsibly
+                                </span>
+                            </label>
+                        </div>
+
+                        <Button
+                            className="w-full"
+                            onClick={handleCreateWallet}
+                            disabled={!termsAccepted || !betaRisksAccepted || loading}
+                        >
+                            {loading ? (
+                                <LoadingDots className="w-4 h-full" color="white" />
+                            ) : (
+                                <span className="flex items-center justify-center gap-2">
+                                    Accept & Create Account
+                                    <ExpandingArrow className="w-4 h-4" />
+                                </span>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex bg-transparent text-black">
@@ -66,7 +197,7 @@ export function WalletOnboarding() {
 
                         <Button
                             className={cn("w-full group", loading && "py-3")}
-                            onClick={handleCreateWallet}
+                            onClick={handleProceedToTerms}
                             disabled={loading}
                         >
                             {loading ? (
@@ -78,6 +209,15 @@ export function WalletOnboarding() {
                                 </span>
                             )}
                         </Button>
+                        
+                        {wallets.length > 0 && (
+                            <p className="text-xs text-gray-500 text-center mt-3">
+                                By creating a wallet you agree to our{" "}
+                                <Link href="/terms-of-service" className="text-primary hover:underline">
+                                    Terms of Service
+                                </Link>
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
