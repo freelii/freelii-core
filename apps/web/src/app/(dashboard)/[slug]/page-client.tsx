@@ -499,7 +499,7 @@ export default function PageClient() {
                           account created</p>
                         <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
                       </div>
-                      <div className="absolute right-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
+                      <div className="absolute right-0 bottom-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
                         <p className="text-xs text-gray-400">{dayjs(activity.raw.created_at).format('MMM D, YYYY hh:mm')}</p>
                       </div>
                     </div>
@@ -531,7 +531,7 @@ export default function PageClient() {
                         </p>
                         <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
                       </div>
-                      <div className="absolute right-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
+                      <div className="absolute right-0 bottom-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
                         <p className="text-xs text-gray-400">{dayjs(activity.raw.created_at).format('MMM D, YYYY hh:mm')}</p>
                       </div>
                     </div>
@@ -557,7 +557,7 @@ export default function PageClient() {
                         </p>
                         <p className="text-xs text-gray-500">{dayjs(activity.raw.created_at).fromNow()}</p>
                       </div>
-                      <div className="absolute right-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
+                      <div className="absolute right-0 bottom-0 opacity-0 -translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
                         <p className="text-xs text-gray-400">{dayjs(activity.raw.created_at).format('MMM D, YYYY hh:mm')}</p>
                       </div>
                     </div>
