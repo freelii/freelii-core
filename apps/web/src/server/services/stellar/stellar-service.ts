@@ -1,7 +1,8 @@
 import { env } from "@/env";
 import { addressToSac, getAsset } from "@/lib/get-asset";
 import { type Wallet, type WalletBalance } from "@prisma/client";
-import { Asset, Horizon, StrKey, rpc } from "@stellar/stellar-sdk";
+import { Address, Asset, Horizon, Keypair, StrKey, nativeToScVal, rpc, xdr } from "@stellar/stellar-sdk";
+
 
 interface StellarServiceOptions {
     wallet: Wallet & { balances?: WalletBalance[], main_balance?: WalletBalance | null };
@@ -35,26 +36,51 @@ export class StellarService {
     async getAccount() {
         // Get contract Balance
         const nonRepeatedSAC = new Set(this.wallet.balances?.map(b => b.address) ?? []);
+        console.log('nonRepeatedSAC', nonRepeatedSAC);
         const indexedSAC = Array.from(nonRepeatedSAC).map(b => getAsset(b));
-        indexedSAC.push(Asset.native());
-
         console.log('indexedSAC', indexedSAC);
 
         if (this.wallet.address) {
             const balancePromises = indexedSAC.map(async sac => {
+                console.log('this.wallet.address', this.wallet.address);
                 console.log('sac', sac);
-                const balance = await this.rpc.getSACBalance(
-                    String(this.wallet.address),
-                    sac,
-                    this.networkPassphrase
-                );
-                console.log('balance', balance);
-                const key = `${sac.code}-${sac.issuer ?? ''}`;
-                console.log('key', key);
-                return {
-                    key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
-                    balance: balance?.balanceEntry?.amount ?? "0"
-                };
+                console.log('this.networkPassphrase', this.networkPassphrase);
+
+                try {
+                    const balance = await this.rpc.getSACBalance(
+                        String(this.wallet.address),
+                        sac,
+                        this.networkPassphrase
+                    );
+                    console.log('balance response:', JSON.stringify(balance, null, 2));
+
+                    // Check if balance has the expected structure
+                    if (!balance?.balanceEntry) {
+                        console.warn(`No balance entry found for asset ${sac.code}-${sac.issuer} on account ${this.wallet.address}`);
+
+                        // Use getLedgerEntries for more detailed diagnosis
+                        const diagnosis = await this.diagnoseBalanceIssue(String(this.wallet.address), sac);
+                        console.log('Diagnosis:', diagnosis);
+
+                        return {
+                            key: sac.code === 'XLM' ? 'XLM' : `${sac.code}-${sac.issuer}`,
+                            balance: "0"
+                        };
+                    }
+
+                    const key = `${sac.code}-${sac.issuer ?? ''}`;
+                    console.log('key', key);
+                    return {
+                        key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
+                        balance: balance.balanceEntry.amount ?? "0"
+                    };
+                } catch (error) {
+                    console.error(`Error getting balance for asset ${sac.code}-${sac.issuer}:`, error);
+                    return {
+                        key: sac.code === 'XLM' ? 'XLM' : `${sac.code}-${sac.issuer}`,
+                        balance: "0"
+                    };
+                }
             });
 
             const stellarBalances = await Promise.all(balancePromises);
@@ -93,9 +119,6 @@ export class StellarService {
         };
     }
 
-
-
-
     validateAddress() {
         if (!this.wallet.address) {
             return false;
@@ -108,5 +131,167 @@ export class StellarService {
             return StrKey.isValidContract(this.wallet.address);
         }
         return false;
+    }
+
+    /**
+     * Diagnose why a balance query failed using direct ledger queries
+     * @param accountAddress - The account address to check
+     * @param asset - The asset to check
+     * @returns Diagnosis information
+     */
+    async diagnoseBalanceIssue(accountAddress: string, asset: Asset) {
+        try {
+            // Check if this is a contract address or regular account
+            const isContract = accountAddress.startsWith('C');
+            const isAccount = accountAddress.startsWith('G');
+
+            if (!isContract && !isAccount) {
+                return {
+                    issue: 'INVALID_ADDRESS_FORMAT',
+                    message: `Invalid address format: ${accountAddress}`,
+                    error: 'Address must start with G (account) or C (contract)'
+                };
+            }
+
+            if (isContract) {
+                // For contracts, we need to query the asset's contract for balance data
+                try {
+                    // Get the asset contract address (the contract that manages this asset)
+                    const assetContractAddress = asset.contractId(this.networkPassphrase);
+                    console.log('Asset contract address:', assetContractAddress);
+                    console.log('Holder contract address:', accountAddress);
+
+                    // Create the balance key according to SAC specification
+                    // Balance storage format: Balance(holder_address)
+                    const balanceKey = nativeToScVal({
+                        tag: "Balance",
+                        values: [new Address(accountAddress)]
+                    }, { type: "instance" });
+
+                    console.log('Querying balance key:', balanceKey);
+
+                    // Query the asset contract for this balance
+                    const balanceData = await this.rpc.getContractData(
+                        assetContractAddress,
+                        balanceKey
+                    );
+
+                    console.log('Found balance data:', balanceData);
+
+                    return {
+                        issue: 'CONTRACT_BALANCE_FOUND_VIA_DIRECT_QUERY',
+                        message: `Found balance data for contract ${accountAddress} in asset ${asset.code}`,
+                        balanceData: balanceData,
+                        explanation: 'getSACBalance failed but direct contract query succeeded'
+                    };
+
+                } catch (directQueryError) {
+                    console.log('Direct query error:', directQueryError);
+
+                    // Try alternative balance key format
+                    try {
+                        const alternativeKey = xdr.ScVal.scvVec([
+                            nativeToScVal("Balance", { type: "symbol" }),
+                            new Address(accountAddress).toScVal()
+                        ]);
+
+                        const assetContractAddress = asset.contractId(this.networkPassphrase);
+                        const balanceData = await this.rpc.getContractData(
+                            assetContractAddress,
+                            alternativeKey
+                        );
+
+                        console.log('Found balance with alternative key:', balanceData);
+
+                        return {
+                            issue: 'CONTRACT_BALANCE_FOUND_WITH_ALT_KEY',
+                            message: `Found balance using alternative key format`,
+                            balanceData: balanceData
+                        };
+
+                    } catch (altError) {
+                        console.log('Alternative key also failed:', altError);
+
+                        return {
+                            issue: 'CONTRACT_BALANCE_QUERY_FAILED',
+                            message: `Could not find balance data for contract ${accountAddress}`,
+                            explanation: 'Both getSACBalance and direct contract queries failed',
+                            errors: {
+                                getSACBalance: 'returned only latestLedger',
+                                directQuery: directQueryError instanceof Error ? directQueryError.message : String(directQueryError),
+                                alternativeQuery: altError instanceof Error ? altError.message : String(altError)
+                            },
+                            suggestion: 'Contract may not have this asset balance or storage format is different'
+                        };
+                    }
+                }
+            }
+
+            // 1. Check if the account exists (only for regular accounts)
+            const accountLedgerKey = xdr.LedgerKey.account(
+                new xdr.LedgerKeyAccount({
+                    accountId: Keypair.fromPublicKey(accountAddress).xdrAccountId(),
+                })
+            );
+
+            const accountResponse = await this.rpc.getLedgerEntries(accountLedgerKey);
+
+            if (!accountResponse.entries || accountResponse.entries.length === 0) {
+                return {
+                    issue: 'ACCOUNT_NOT_FOUND',
+                    message: `Account ${accountAddress} does not exist on the network`,
+                    latestLedger: accountResponse.latestLedger
+                };
+            }
+
+            console.log('✓ Account exists');
+
+            // 2. For native XLM, account should have balance
+            if (asset.isNative()) {
+                const accountData = accountResponse.entries[0];
+                // Parse the account entry to get native balance
+                return {
+                    issue: 'NATIVE_BALANCE_FOUND',
+                    message: 'Account exists but getSACBalance failed for native asset',
+                    accountData: accountData,
+                    latestLedger: accountResponse.latestLedger
+                };
+            }
+
+            // 3. For non-native assets, check if trustline exists
+            const trustlineLedgerKey = xdr.LedgerKey.trustline(
+                new xdr.LedgerKeyTrustLine({
+                    accountId: Keypair.fromPublicKey(accountAddress).xdrAccountId(),
+                    asset: asset.toTrustLineXDRObject(),
+                })
+            );
+
+            const trustlineResponse = await this.rpc.getLedgerEntries(trustlineLedgerKey);
+
+            if (!trustlineResponse.entries || trustlineResponse.entries.length === 0) {
+                return {
+                    issue: 'TRUSTLINE_NOT_FOUND',
+                    message: `Account ${accountAddress} has no trustline for asset ${asset.code}:${asset.issuer}`,
+                    suggestion: 'The account needs to establish a trustline for this asset first',
+                    latestLedger: trustlineResponse.latestLedger
+                };
+            }
+
+            // 4. Trustline exists, check its details
+            const trustlineData = trustlineResponse.entries[0];
+            return {
+                issue: 'TRUSTLINE_EXISTS_BUT_SAC_FAILED',
+                message: 'Trustline exists but getSACBalance failed - possible RPC or network issue',
+                trustlineData: trustlineData,
+                latestLedger: trustlineResponse.latestLedger
+            };
+
+        } catch (error) {
+            return {
+                issue: 'DIAGNOSIS_ERROR',
+                message: 'Error during diagnosis',
+                error: error instanceof Error ? error.message : String(error)
+            };
+        }
     }
 }

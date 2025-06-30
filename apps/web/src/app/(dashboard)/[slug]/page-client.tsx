@@ -67,7 +67,7 @@ const QuickActionButton = ({ icon, label, href, onClick }: { icon: JSX.Element, 
  */
 const extractSorobanPaymentAmount = (transaction: any): { amount: string; currency: string } => {
   let amount = "0";
-  let currency = "XLM"; // Default fallback
+  let currency = "USD"; // Default fallback
   let contractAddress: string | undefined;
 
   try {
@@ -177,6 +177,7 @@ const extractSorobanPaymentAmount = (transaction: any): { amount: string; curren
       const contractToCurrency: Record<string, string> = {
         'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC': 'USDC', // Testnet main balance contract
         'CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA': 'USDC', // Mainnet main balance contract
+        'CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75': 'USDC', // Mainnet main balance contract
         // Add more mappings as needed
       };
 

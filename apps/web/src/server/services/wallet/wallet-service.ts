@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { BaseService } from "../base-service";
-import { StellarService } from "../stellar/stellar-service";
 import { EmailService } from "../email/email.service";
+import { StellarService } from "../stellar/stellar-service";
 
 interface CreateWalletInput {
     alias: string;
@@ -123,6 +123,7 @@ export class WalletService extends BaseService {
                 main_balance: true,
             },
         });
+        console.log('wallet', wallet);
         if (wallet.network === "stellar") {
             const stellar = new StellarService({ wallet });
             const { wallet: stellarWallet, balancesToUpdate } = await stellar.getAccount();
