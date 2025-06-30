@@ -131,11 +131,14 @@ export class WalletService extends BaseService {
             console.log('balancesToUpdate', balancesToUpdate);
             if (balancesToUpdate.length > 0) {
                 await Promise.all(
-                    balancesToUpdate.map(balance =>
-                        this.db.walletBalance.update({
-                            where: { id: balance.id },
-                            data: { amount: balance.amount }
-                        })
+                    balancesToUpdate.map(balance => {
+                        if (balance) {
+                            this.db.walletBalance.update({
+                                where: { id: balance.id },
+                                data: { amount: balance.amount }
+                            })
+                        }
+                    }
                     )
                 );
             }

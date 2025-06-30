@@ -59,27 +59,23 @@ export class StellarService {
                         console.warn(`No balance entry found for asset ${sac.code}-${sac.issuer} on account ${this.wallet.address}`);
 
                         // Use getLedgerEntries for more detailed diagnosis
-                        const diagnosis = await this.diagnoseBalanceIssue(String(this.wallet.address), sac);
-                        console.log('Diagnosis:', diagnosis);
+                        // const diagnosis = await this.diagnoseBalanceIssue(String(this.wallet.address), sac);
+                        // console.log('Diagnosis:', diagnosis);
 
+                        // return {
+                        //     key: sac.code === 'XLM' ? 'XLM' : `${sac.code}-${sac.issuer}`,
+                        //     balance: "0"
+                        // };
+                    } else {
+                        const key = `${sac.code}-${sac.issuer ?? ''}`;
+                        console.log('key', key);
                         return {
-                            key: sac.code === 'XLM' ? 'XLM' : `${sac.code}-${sac.issuer}`,
-                            balance: "0"
+                            key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
+                            balance: balance.balanceEntry.amount ?? "0"
                         };
                     }
-
-                    const key = `${sac.code}-${sac.issuer ?? ''}`;
-                    console.log('key', key);
-                    return {
-                        key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
-                        balance: balance.balanceEntry.amount ?? "0"
-                    };
                 } catch (error) {
                     console.error(`Error getting balance for asset ${sac.code}-${sac.issuer}:`, error);
-                    return {
-                        key: sac.code === 'XLM' ? 'XLM' : `${sac.code}-${sac.issuer}`,
-                        balance: "0"
-                    };
                 }
             });
 
@@ -87,9 +83,11 @@ export class StellarService {
             console.log('stellarBalances', stellarBalances);
             const balancesToUpdate: WalletBalance[] = [];
 
+            const filteredBalances = stellarBalances.filter(b => b);
+
             this.wallet.balances?.forEach(walletBalance => {
-                const newBalance = stellarBalances.find(
-                    stellarBalance => addressToSac(stellarBalance.key) === walletBalance.address
+                const newBalance = filteredBalances.find(
+                    stellarBalance => addressToSac(stellarBalance?.key ?? '') === walletBalance.address
                 );
                 const newAmount = BigInt(newBalance?.balance ?? 0);
 
