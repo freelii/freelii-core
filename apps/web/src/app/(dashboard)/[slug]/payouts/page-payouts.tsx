@@ -280,7 +280,7 @@ export default function PayoutsTable() {
     if (txs) {
       setPayouts(txs.map(tx => {
         console.log('payout', tx)
-        const amount = fromStroops(BigInt(tx.amount))
+        const amount = fromStroops(tx.amount * BigInt(1_000_000))
         console.log('amount', amount)
         return {
           createdAt: tx.created_at,
