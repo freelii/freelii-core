@@ -154,21 +154,6 @@ export class OrchestratorService extends BaseService {
             where: { id: stateId },
             include: {
                 destination: {
-                    select: {
-                        id: true,
-                        created_at: true,
-                        updated_at: true,
-                        payment_rail: true,
-                        currency: true,
-                        client_id: true,
-                        blockchain_account_id: true,
-                        ewallet_account_id: true,
-                        fiat_account_id: true,
-                        is_default: true,
-                        blockchain_account: true,
-                        ewallet_account: true,
-                        fiat_account: true,
-                    },
                     include: {
                         blockchain_account: true,
                         ewallet_account: true,

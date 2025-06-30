@@ -7,13 +7,12 @@ import {
   Skeleton,
   useScrollProgress
 } from "@freelii/ui";
-import { cn, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils";
+import { DICEBEAR_SOLID_AVATAR_URL, cn } from "@freelii/utils";
 import { fromStroops } from '@freelii/utils/functions';
 import { type Wallet, type WalletBalance } from '@prisma/client';
 import { ChevronsUpDown, Plus, Wallet as WalletIcon } from "lucide-react";
 import Link from "next/link";
 import {
-  useEffect,
   useRef,
   useState
 } from "react";
@@ -81,7 +80,7 @@ export function WalletDropdown() {
               </div>
             </div>
           ) : (
-            <div className="text-sm text-gray-500">No account selected</div>
+            <div className="text-xs text-gray-500">No account selected</div>
           )}
           <ChevronsUpDown
             className="size-4 shrink-0 text-gray-400"

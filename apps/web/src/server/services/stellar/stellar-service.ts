@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { getAsset } from "@/lib/get-asset";
+import { addressToSac, getAsset } from "@/lib/get-asset";
 import { type Wallet, type WalletBalance } from "@prisma/client";
 import { Asset, Horizon, StrKey, rpc } from "@stellar/stellar-sdk";
 
@@ -34,20 +34,23 @@ export class StellarService {
      */
     async getAccount() {
         // Get contract Balance
-
-        const indexedSAC = this.wallet.balances?.map(b => getAsset(b.address)) ?? [];
+        const nonRepeatedSAC = new Set(this.wallet.balances?.map(b => b.address) ?? []);
+        const indexedSAC = Array.from(nonRepeatedSAC).map(b => getAsset(b));
         indexedSAC.push(Asset.native());
 
         console.log('indexedSAC', indexedSAC);
 
         if (this.wallet.address) {
             const balancePromises = indexedSAC.map(async sac => {
+                console.log('sac', sac);
                 const balance = await this.rpc.getSACBalance(
                     String(this.wallet.address),
                     sac,
                     this.networkPassphrase
                 );
+                console.log('balance', balance);
                 const key = `${sac.code}-${sac.issuer ?? ''}`;
+                console.log('key', key);
                 return {
                     key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
                     balance: balance?.balanceEntry?.amount ?? "0"
@@ -55,11 +58,12 @@ export class StellarService {
             });
 
             const stellarBalances = await Promise.all(balancePromises);
+            console.log('stellarBalances', stellarBalances);
             const balancesToUpdate: WalletBalance[] = [];
 
             this.wallet.balances?.forEach(walletBalance => {
                 const newBalance = stellarBalances.find(
-                    stellarBalance => stellarBalance.key === walletBalance.address
+                    stellarBalance => addressToSac(stellarBalance.key) === walletBalance.address
                 );
                 const newAmount = BigInt(newBalance?.balance ?? 0);
 
