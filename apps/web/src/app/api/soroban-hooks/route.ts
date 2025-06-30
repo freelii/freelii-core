@@ -899,16 +899,10 @@ async function processPaymentReceivedEmails(
 ): Promise<void> {
     const emailService = new EmailService({ db });
     const paymentDetails = await extractPaymentDetails(webhookData);
-    await updateWalletBalance(walletMappings[0].walletId, paymentDetails.amount, paymentDetails.contractAddress!);
-    console.log('💳 Extracted payment details:', paymentDetails);
+    await updateWalletBalance(walletMappings[0]?.walletId, paymentDetails.amount, paymentDetails.contractAddress);
 
     // Enhanced wallet mapping analysis
-    console.log('🔗 WALLET MAPPING ANALYSIS:');
-    console.log(`  📊 Total mappings found: ${walletMappings.length}`);
-
     for (const mapping of walletMappings) {
-        console.log(`  🏦 Mapping - WalletId: ${mapping.walletId}, Address: ${mapping.address}, UserId: ${mapping.userId}`);
-        console.log(`    📍 Confidence: ${mapping.confidence}, Reason: ${mapping.reason}`);
 
         // Check if this wallet belongs to sender or recipient
         const isOwnerOfSenderAddress = mapping.address === paymentDetails.senderAddress;
