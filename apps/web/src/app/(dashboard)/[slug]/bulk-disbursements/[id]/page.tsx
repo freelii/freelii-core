@@ -9,7 +9,7 @@ import {
     Button,
     useRouterStuff
 } from "@freelii/ui"
-import { cn, CURRENCIES, DICEBEAR_SOLID_AVATAR_URL } from "@freelii/utils"
+import { CURRENCIES, DICEBEAR_SOLID_AVATAR_URL, cn } from "@freelii/utils"
 import {
     AlertCircle,
     ArrowLeft,
@@ -224,7 +224,7 @@ export default function BulkDisbursementDetailPage() {
                                     <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
                                         Bulk disbursement
                                     </h1>
-                                    <p className="text-sm text-gray-500 mt-0.5">
+                                    <p className="text-xs text-gray-500 mt-0.5">
                                         Created {new Date(disbursementData.created_at).toLocaleDateString('en-US', {
                                             year: 'numeric',
                                             month: 'long',

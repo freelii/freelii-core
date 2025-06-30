@@ -131,6 +131,14 @@ export default function PayoutDetailsPage() {
         return <PayoutNotFound />
     }
 
+    if (isLoadingPayment) {
+        return (
+            <div className="w-full h-[600px] flex items-center justify-center">
+                <LoadingSpinner />
+            </div>
+        )
+    }
+
     // Show error state if required data is missing
     if (!hasRequiredData) {
         return (
