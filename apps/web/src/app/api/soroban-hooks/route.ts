@@ -863,11 +863,11 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
     };
 }
 
-async function updateWalletBalance(walletId: string, amount: string, assetSac?: string) {
+async function increaseWalletBalance(walletId: string, amount: string, assetSac?: string) {
     if (!assetSac) {
         return;
     }
-    console.log('Attempting to update wallet balance for walletId:', walletId, 'with amount:', amount, 'and assetSac:', assetSac);
+    console.log('Attempting to increase wallet balance for walletId:', walletId, 'with amount:', amount, 'and assetSac:', assetSac);
     const wallet = await db.wallet.findUnique({
         where: { id: walletId },
         include: { main_balance: true }
@@ -877,11 +877,35 @@ async function updateWalletBalance(walletId: string, amount: string, assetSac?: 
             where: { id: wallet.main_balance.id }
         });
         if (balance && balance.address === assetSac) {
-            balance.amount = BigInt(amount);
             await db.walletBalance.update({
                 where: { id: balance.id }, data: {
                     amount: {
                         increment: BigInt(amount),
+                    }
+                }
+            });
+        }
+    }
+}
+
+async function decreaseWalletBalance(walletId: string, amount: string, assetSac?: string) {
+    if (!assetSac) {
+        return;
+    }
+    console.log('Attempting to decrease wallet balance for walletId:', walletId, 'with amount:', amount, 'and assetSac:', assetSac);
+    const wallet = await db.wallet.findUnique({
+        where: { id: walletId },
+        include: { main_balance: true }
+    });
+    if (wallet?.main_balance) {
+        const balance = await db.walletBalance.findUnique({
+            where: { id: wallet.main_balance.id }
+        });
+        if (balance && balance.address === assetSac) {
+            await db.walletBalance.update({
+                where: { id: balance.id }, data: {
+                    amount: {
+                        decrement: BigInt(amount),
                     }
                 }
             });
@@ -899,7 +923,6 @@ async function processPaymentReceivedEmails(
 ): Promise<void> {
     const emailService = new EmailService({ db });
     const paymentDetails = await extractPaymentDetails(webhookData);
-    await updateWalletBalance(walletMappings[0]?.walletId, paymentDetails.amount, paymentDetails.contractAddress);
 
     // Enhanced wallet mapping analysis
     for (const mapping of walletMappings) {
@@ -913,8 +936,10 @@ async function processPaymentReceivedEmails(
         console.log(`      📥 Is Recipient Wallet: ${isOwnerOfRecipientAddress}`);
 
         if (isOwnerOfRecipientAddress) {
+            await increaseWalletBalance(mapping.walletId, paymentDetails.amount, paymentDetails.contractAddress);
             console.log(`    🎯 RECIPIENT IDENTIFIED! This wallet belongs to the payment recipient.`);
         } else if (isOwnerOfSenderAddress) {
+            await decreaseWalletBalance(mapping.walletId, paymentDetails.amount, paymentDetails.contractAddress);
             console.log(`    📤 SENDER IDENTIFIED! This wallet belongs to the payment sender.`);
         } else {
             console.log(`    ❓ UNKNOWN ROLE - Wallet not directly sender or recipient, might be related address.`);
