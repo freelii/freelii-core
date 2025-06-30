@@ -254,7 +254,7 @@ export default function NetworkDetails() {
                                 <div className="flex items-center gap-3">
                                     {/* Stellar Explorer Link */}
                                     <Link
-                                        href={`https://stellar.expert/explorer/${network === 'mainnet' ? 'public' : 'testnet'}/contract/${config.mainBalance}`}
+                                        href={`https://stellar.expert/explorer/${network === 'mainnet' ? 'public' : 'testnet'}/contract/${account?.address}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
@@ -265,13 +265,13 @@ export default function NetworkDetails() {
                                     </Link>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                                 {/* Network Info */}
                                 <div className="space-y-2">
                                     <NetworkWalletInfo className="text-xs" />
                                 </div>
-                                
+
                                 {/* Technical Details */}
                                 <div className="space-y-2">
                                     <div className="text-xs text-gray-500 space-y-1">
