@@ -70,7 +70,6 @@ export const env = createEnv({
     NEXT_PUBLIC_MAINNET_MERCURY_JWT: z.string(),
     NEXT_PUBLIC_MAINNET_MAIN_BALANCE_CONTRACT_ID: z.string(),
     NEXT_PUBLIC_MAINNET_HORIZON_URL: z.string(),
-    NEXT_PUBLIC_TESTNET_ONE_TIME_POLICY_CONTRACT_ID: z.string(),
   },
 
   /**
@@ -125,7 +124,6 @@ export const env = createEnv({
     USE_COINS_PH_PROXY: process.env.USE_COINS_PH_PROXY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-    NEXT_PUBLIC_TESTNET_ONE_TIME_POLICY_CONTRACT_ID: process.env.NEXT_PUBLIC_TESTNET_ONE_TIME_POLICY_CONTRACT_ID,
   },
 
   /**
