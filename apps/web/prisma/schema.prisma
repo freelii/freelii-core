@@ -301,7 +301,7 @@ model Wallet {
   main_balance                WalletBalance?              @relation("MainBalance", fields: [main_balance_id], references: [id])
   user                        User                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, alias])
+  @@unique([user_id, alias, network, network_environment])
   @@unique([address, network])
   @@index([user_id])
   @@index([address, network, network_environment])
