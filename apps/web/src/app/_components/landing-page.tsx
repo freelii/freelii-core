@@ -32,7 +32,7 @@ export default function LandingPage() {
     try {
       await addToWaitlist({ name, contact, useCase: 'send' });
       (e.target as HTMLFormElement).reset();
-    } catch (error) {
+    } catch (_e) {
       // Error handled by mutation
     } finally {
       setIsLoading(false);

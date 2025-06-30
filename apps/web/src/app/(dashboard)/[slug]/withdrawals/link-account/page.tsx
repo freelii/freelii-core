@@ -52,7 +52,7 @@ export default function LinkWithdrawalMethodPage() {
             setTimeout(() => {
                 void router.push(`./`)
             }, 1000)
-        } catch (error) {
+        } catch (_e) {
             setIsSuccess(false)
         }
     }

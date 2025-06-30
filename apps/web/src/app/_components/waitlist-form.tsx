@@ -4,6 +4,7 @@ import { api } from '@/trpc/react'
 import { Button, ExpandingArrow, Input } from '@freelii/ui'
 import { cn } from '@freelii/utils/functions'
 import { Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 
@@ -42,7 +43,7 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
       });
       // Success is handled by the mutation's onSuccess callback
       (e.target as HTMLFormElement).reset(); // Reset form after successful submission
-    } catch (error) {
+    } catch {
       // Error is handled by the mutation's onError callback
     } finally {
       setIsLoading(false);
@@ -131,9 +132,9 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
         </Button>
         <p className="text-xs text-gray-500 text-center mt-3">
           By joining, you agree to our{' '}
-          <a href="/terms-of-service" className="text-blue-600 hover:text-blue-700 underline transition-colors">
+          <Link href="/terms-of-service" className="text-blue-600 hover:text-blue-700 underline transition-colors">
             Terms of Service
-          </a>
+          </Link>
         </p>
       </div>
     </form>
