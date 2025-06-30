@@ -255,7 +255,7 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
 function AccountDetails() {
   const [, copyToClipboard] = useCopyToClipboard()
   const { account } = useWallet();
-  const [activeSection, setActiveSection] = useState<'wire' | 'ach' | 'blockchain' | null>(null)
+  const [activeSection, setActiveSection] = useState<'wire' | 'ach' | 'blockchain' | null>("blockchain")
 
   // Fetch Soroban transactions for the current wallet
   const { data: sorobanTransactions, isLoading: isLoadingSoroban } = api.soroban.getWalletTransactions.useQuery(
@@ -320,85 +320,8 @@ function AccountDetails() {
         <div className="space-y-6">
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Receive Money to Your Account</h3>
-
-            {/* Wire Transfer Section */}
-            <div className="border-b border-gray-200 pb-4">
-              <button
-                onClick={() => setActiveSection(activeSection === 'wire' ? null : 'wire')}
-                className="flex w-full justify-between items-center text-sm font-medium py-3 hover:bg-gray-50 px-2 rounded-md transition-colors"
-              >
-                <span>Wire Transfers (Domestic & International)</span>
-                <ChevronDown className={`size-4 transition-transform ${activeSection === 'wire' ? 'rotate-180' : ''}`} />
-              </button>
-
-              {activeSection === 'wire' && (
-                <div className="mt-4 px-2">
-                  <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-blue-50 rounded-lg">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-gray-900">Wire Transfer Account Coming Soon</h4>
-                      <p className="text-xs text-gray-600 max-w-xs">
-                        We're finalizing regulatory approvals to provide dedicated wire transfer accounts.
-                      </p>
-                    </div>
-                    <Button
-                      className="text-xs px-4 py-2"
-                      onClick={() => {
-                        // Add your request logic here
-                        console.log('Request wire transfer account');
-                      }}
-                    >
-                      Request Wire Transfer Account
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ACH Section */}
-            <div className="border-b border-gray-200 pb-4">
-              <button
-                onClick={() => setActiveSection(activeSection === 'ach' ? null : 'ach')}
-                className="flex w-full justify-between items-center text-sm font-medium py-3 hover:bg-gray-50 px-2 rounded-md transition-colors"
-              >
-                <span>ACH Deposits</span>
-                <ChevronDown className={`size-4 transition-transform ${activeSection === 'ach' ? 'rotate-180' : ''}`} />
-              </button>
-
-              {activeSection === 'ach' && (
-                <div className="mt-4 px-2">
-                  <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-green-50 rounded-lg">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                      </svg>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-semibold text-gray-900">ACH Account Coming Soon</h4>
-                      <p className="text-xs text-gray-600 max-w-xs">
-                        ACH deposit accounts will be available once our banking partnerships are finalized.
-                      </p>
-                    </div>
-                    <Button
-                      className="text-xs px-4 py-2"
-                      onClick={() => {
-                        // Add your request logic here
-                        console.log('Request ACH account');
-                      }}
-                    >
-                      Request Your ACH Account
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* Blockchain Section */}
-            <div className="pb-4">
+            <div className="pb-4 border-b border-gray-200">
               <button
                 onClick={() => setActiveSection(activeSection === 'blockchain' ? null : 'blockchain')}
                 className="flex w-full justify-between items-center text-sm font-medium py-3 hover:bg-gray-50 px-2 rounded-md transition-colors"
@@ -425,6 +348,83 @@ function AccountDetails() {
                 </div>
               )}
             </div>
+            {/* Wire Transfer Section */}
+            <div className="border-b border-gray-200 pb-4">
+              <button
+                onClick={() => setActiveSection(activeSection === 'wire' ? null : 'wire')}
+                className="flex w-full justify-between items-center text-sm font-medium py-3 hover:bg-gray-50 px-2 rounded-md transition-colors"
+              >
+                <span>Wire Transfers (Domestic & International)</span>
+                <ChevronDown className={`size-4 transition-transform ${activeSection === 'wire' ? 'rotate-180' : ''}`} />
+              </button>
+
+              {activeSection === 'wire' && (
+                <div className="mt-4 px-2">
+                  <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-blue-50 rounded-lg">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-gray-900">Wire Transfer Account Coming Soon</h4>
+                      <p className="text-xs text-gray-600 max-w-xs">
+                        We're finalizing regulatory approvals to provide dedicated wire transfer accounts.
+                      </p>
+                    </div>
+                    {/* <Button
+                      className="text-xs px-4 py-2"
+                      onClick={() => {
+                        // Add your request logic here
+                        console.log('Request wire transfer account');
+                      }}
+                    >
+                      Request Wire Transfer Account
+                    </Button> */}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ACH Section */}
+            <div className="">
+              <button
+                onClick={() => setActiveSection(activeSection === 'ach' ? null : 'ach')}
+                className="flex w-full justify-between items-center text-sm font-medium py-3 hover:bg-gray-50 px-2 rounded-md transition-colors"
+              >
+                <span>ACH Deposits</span>
+                <ChevronDown className={`size-4 transition-transform ${activeSection === 'ach' ? 'rotate-180' : ''}`} />
+              </button>
+
+              {activeSection === 'ach' && (
+                <div className="mt-4 px-2">
+                  <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-green-50 rounded-lg">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-semibold text-gray-900">ACH Account Coming Soon</h4>
+                      <p className="text-xs text-gray-600 max-w-xs">
+                        ACH deposit accounts will be available once our banking partnerships are finalized.
+                      </p>
+                    </div>
+                    {/* <Button
+                      className="text-xs px-4 py-2"
+                      onClick={() => {
+                        // Add your request logic here
+                        console.log('Request ACH account');
+                      }}
+                    >
+                      Request Your ACH Account
+                    </Button> */}
+                  </div>
+                </div>
+              )}
+            </div>
+
+
           </div>
         </div>
         <div className="space-y-4">

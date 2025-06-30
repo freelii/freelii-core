@@ -231,7 +231,7 @@ export function useWallet() {
                 await smartWallet.connectWallet({ keyId: account.key_id });
             } catch (error) {
                 console.error('Connect error:', error);
-                toast.error((error as Error)?.message ?? "Unknown error");
+                // toast.error((error as Error)?.message ?? "Unknown error");
             }
         }
     }

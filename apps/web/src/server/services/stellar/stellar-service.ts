@@ -69,10 +69,12 @@ export class StellarService {
                     } else {
                         const key = `${sac.code}-${sac.issuer ?? ''}`;
                         console.log('key', key);
-                        return {
-                            key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
-                            balance: balance.balanceEntry.amount ?? "0"
-                        };
+                        if ('amount' in balance.balanceEntry) {
+                            return {
+                                key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
+                                balance: balance.balanceEntry.amount ?? "0"
+                            };
+                        }
                     }
                 } catch (error) {
                     console.error(`Error getting balance for asset ${sac.code}-${sac.issuer}:`, error);
@@ -84,7 +86,7 @@ export class StellarService {
             const balancesToUpdate: WalletBalance[] = [];
 
             const filteredBalances = stellarBalances.filter(b => b);
-
+            console.log('filteredBalances', filteredBalances);
             this.wallet.balances?.forEach(walletBalance => {
                 const newBalance = filteredBalances.find(
                     stellarBalance => addressToSac(stellarBalance?.key ?? '') === walletBalance.address
@@ -92,7 +94,7 @@ export class StellarService {
                 const newAmount = BigInt(newBalance?.balance ?? 0);
 
                 // Track balances that need updating
-                if (walletBalance.amount !== newAmount) {
+                if (newBalance && walletBalance.amount !== newAmount) {
                     walletBalance.amount = newAmount;
                     balancesToUpdate.push(walletBalance);
                 }
@@ -100,7 +102,7 @@ export class StellarService {
                 if (walletBalance.id === this.wallet.main_balance_id) {
                     this.wallet.main_balance = {
                         ...this.wallet.main_balance,
-                        amount: newAmount
+                        amount: walletBalance.amount,
                     } as WalletBalance;
                 }
             });

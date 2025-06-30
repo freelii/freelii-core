@@ -233,9 +233,9 @@ const SorobanTransactionCard = ({ transaction }: { transaction: any }) => {
           }
 
           if (isOutbound) {
-            return { type: 'Money Sent', icon: <ArrowUpRight className="h-4 w-4" />, color: 'text-red-600' };
+            return { type: 'Transfer Sent', icon: <ArrowUpRight className="h-4 w-4" />, color: 'text-red-600' };
           } else {
-            return { type: 'Money Received', icon: <ArrowDownLeft className="h-4 w-4" />, color: 'text-green-600' };
+            return { type: 'USD Transfer Received', icon: <ArrowDownLeft className="h-4 w-4" />, color: 'text-green-600' };
           }
         case 'swap':
           return { type: 'Currency Exchange', icon: <ArrowUpRight className="h-4 w-4" />, color: 'text-purple-600' };

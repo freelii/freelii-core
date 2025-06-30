@@ -1,7 +1,6 @@
 "use client";
 
 import { NetworkSwitcher } from "@/components/network-switcher";
-import { NetworkWalletInfo } from "@/components/network-wallet-info";
 import { useStellar } from "@/contexts/stellar-context";
 import { XLMIcon } from "@/ui/icons/xlm-icon";
 import {
@@ -14,7 +13,7 @@ import {
   Users6,
   useRouterStuff,
 } from "@freelii/ui";
-import { shortAddress } from "@freelii/utils/functions";
+import { Banknote } from 'lucide-react';
 import { useParams } from "next/navigation";
 import { type ReactNode } from "react";
 import { SidebarNav, type SidebarNavAreas } from "./sidebar-nav";
@@ -83,7 +82,7 @@ const NAV_AREAS: SidebarNavAreas<{
           },
           {
             name: "Deposits",
-            icon: CreditCard,
+            icon: Banknote,
             href: `/${slug}/deposits${queryString}`,
           },
           // {
