@@ -47,7 +47,8 @@ const config = {
     "@typescript-eslint/no-unsafe-enum-comparison": "warn",
     "@typescript-eslint/no-unsafe-function-type": "warn",
     "react/no-unescaped-entities": "warn",
-    "@typescript-eslint/no-floating-promises": "warn"
+    "@typescript-eslint/no-floating-promises": "warn",
+    "@typescript-eslint/prefer-for-of": "off"
   }
 }
 module.exports = config;
