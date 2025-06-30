@@ -129,6 +129,12 @@ export function WaitlistForm({ onSuccess }: WaitlistFormProps) {
             </>
           )}
         </Button>
+        <p className="text-xs text-gray-500 text-center mt-3">
+          By joining, you agree to our{' '}
+          <a href="/terms-of-service" className="text-blue-600 hover:text-blue-700 underline transition-colors">
+            Terms of Service
+          </a>
+        </p>
       </div>
     </form>
   )

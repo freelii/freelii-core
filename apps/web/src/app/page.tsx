@@ -273,7 +273,7 @@ export default function Home() {
             {/* Dashboard button for existing users */}
             <div className="flex items-center gap-4 pt-4">
               <Link
-                href="/login"
+                href="/dashboard"
                 className="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-lg transition-colors duration-200"
               >
                 <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -381,8 +381,8 @@ export default function Home() {
               <span className="hidden sm:inline">All rights reserved.</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/terms" className="hover:text-blue-500 transition-colors">Terms</Link>
-              <Link href="/privacy" className="hover:text-blue-500 transition-colors">Privacy</Link>
+              <Link href="/terms-of-service" className="hover:text-blue-500 transition-colors">Terms</Link>
+              <Link href="#" className="hover:text-blue-500 transition-colors">Privacy</Link>
             </div>
           </div>
         </div>
