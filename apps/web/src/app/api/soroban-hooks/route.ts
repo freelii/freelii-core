@@ -863,6 +863,32 @@ async function extractPaymentDetails(webhookData: SorobanHook): Promise<{
     };
 }
 
+async function updateWalletBalance(walletId: string, amount: string, assetSac?: string) {
+    if (!assetSac) {
+        return;
+    }
+    console.log('Attempting to update wallet balance for walletId:', walletId, 'with amount:', amount, 'and assetSac:', assetSac);
+    const wallet = await db.wallet.findUnique({
+        where: { id: walletId },
+        include: { main_balance: true }
+    });
+    if (wallet?.main_balance) {
+        const balance = await db.walletBalance.findUnique({
+            where: { id: wallet.main_balance.id }
+        });
+        if (balance && balance.address === assetSac) {
+            balance.amount = BigInt(amount);
+            await db.walletBalance.update({
+                where: { id: balance.id }, data: {
+                    amount: {
+                        increment: BigInt(amount),
+                    }
+                }
+            });
+        }
+    }
+}
+
 /**
  * Process payment received email notifications for wallet mappings
  */
@@ -873,7 +899,7 @@ async function processPaymentReceivedEmails(
 ): Promise<void> {
     const emailService = new EmailService({ db });
     const paymentDetails = await extractPaymentDetails(webhookData);
-
+    await updateWalletBalance(walletMappings[0].walletId, paymentDetails.amount, paymentDetails.contractAddress!);
     console.log('💳 Extracted payment details:', paymentDetails);
 
     // Enhanced wallet mapping analysis
