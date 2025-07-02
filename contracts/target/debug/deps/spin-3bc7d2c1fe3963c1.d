@@ -1,0 +1,11 @@
+/Users/josetoscano/Projects/freelii-core/contracts/target/debug/deps/libspin-3bc7d2c1fe3963c1.rmeta: /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/lib.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex/spin.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/relax.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/rwlock.rs
+
+/Users/josetoscano/Projects/freelii-core/contracts/target/debug/deps/libspin-3bc7d2c1fe3963c1.rlib: /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/lib.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex/spin.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/relax.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/rwlock.rs
+
+/Users/josetoscano/Projects/freelii-core/contracts/target/debug/deps/spin-3bc7d2c1fe3963c1.d: /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/lib.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex/spin.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/relax.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/rwlock.rs
+
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/lib.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/mutex/spin.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/relax.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.8/src/rwlock.rs:

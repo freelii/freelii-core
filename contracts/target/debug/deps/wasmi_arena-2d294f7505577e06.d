@@ -1,0 +1,10 @@
+/Users/josetoscano/Projects/freelii-core/contracts/target/debug/deps/libwasmi_arena-2d294f7505577e06.rmeta: /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/lib.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/component_vec.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/dedup.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/guarded.rs
+
+/Users/josetoscano/Projects/freelii-core/contracts/target/debug/deps/libwasmi_arena-2d294f7505577e06.rlib: /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/lib.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/component_vec.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/dedup.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/guarded.rs
+
+/Users/josetoscano/Projects/freelii-core/contracts/target/debug/deps/wasmi_arena-2d294f7505577e06.d: /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/lib.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/component_vec.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/dedup.rs /Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/guarded.rs
+
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/lib.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/component_vec.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/dedup.rs:
+/Users/josetoscano/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/wasmi_arena-0.4.1/src/guarded.rs:

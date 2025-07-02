@@ -1,0 +1,1 @@
+/Users/josetoscano/Projects/freelii-core/contracts/target/release/libwallet_transfer_policy.rlib: /Users/josetoscano/Projects/freelii-core/contracts/wallet-transfer-policy/src/lib.rs /Users/josetoscano/Projects/freelii-core/contracts/wallet-transfer-policy/src/test.rs

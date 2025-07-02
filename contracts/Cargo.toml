@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = ["zafegard-policy", "one-time-policy"]
+members = ["zafegard-policy", "wallet_transfer_policy"]
 
 [workspace.dependencies]
 soroban-sdk = { version = "22.0.0" }

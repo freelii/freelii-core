@@ -799,15 +799,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
 
 [[package]]
-name = "one-time-policy"
-version = "0.0.0"
-dependencies = [
- "smart-wallet",
- "smart-wallet-interface",
- "soroban-sdk",
-]
-
-[[package]]
 name = "p256"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1435,6 +1426,15 @@ name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
+
+[[package]]
+name = "wallet_transfer_policy"
+version = "0.0.0"
+dependencies = [
+ "smart-wallet",
+ "smart-wallet-interface",
+ "soroban-sdk",
+]
 
 [[package]]
 name = "wasi"

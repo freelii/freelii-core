@@ -1,6 +1,7 @@
 import { useWalletStore } from "@/hooks/stores/wallet-store";
 import { useNetworkWalletSync } from "@/hooks/use-network-wallet-sync";
 import { useStellarClients } from "@/hooks/use-stellar-clients";
+import { useWalletTransferPolicy } from "@/hooks/use-wallet-transfer-policy";
 import { ClientTRPCErrorHandler } from "@/lib/client-trpc-error-handler";
 import { api } from "@/trpc/react";
 import { useParams, useRouter } from "next/navigation";
@@ -31,6 +32,14 @@ export function useWallet() {
         native
     } = useStellarClients();
 
+    // Wallet transfer policy hook
+    const {
+        isLoading: isPolicyLoading,
+        policyAddress,
+        initializePolicy,
+        addAuthorizedWallet,
+        checkPolicyStatus
+    } = useWalletTransferPolicy();
 
     // tRPC procedures
     const trpcUtils = api.useUtils();
@@ -51,8 +60,6 @@ export function useWallet() {
         enabled: !!selectedWalletId,
     });
 
-
-
     const { mutateAsync: createWallet } = api.wallet.create.useMutation({
         onError: ClientTRPCErrorHandler,
         onSuccess: () => {
@@ -60,7 +67,6 @@ export function useWallet() {
             void trpcUtils.wallet.getAccount.invalidate();
         }
     });
-
 
     // Update store when wallets change (including network filtering)
     useEffect(() => {
@@ -123,8 +129,6 @@ export function useWallet() {
             } = result;
 
             await server.send(signedTx);
-            // setKeyId(keyIdBase64);
-            // setContractId(cid);
             const walletRes = await createWallet({
                 alias,
                 isDefault: wallets?.length === 0,
@@ -133,12 +137,7 @@ export function useWallet() {
                 keyId: keyIdBase64,
             })
             setSelectedWalletId(walletRes.id);
-            // await initZafeguardPolicy(cid, keyIdBase64);
-            // await getWalletSigners(cid, keyIdBase64);
             return walletRes;
-            // await fundWallet(cid),
-            //     await getWalletSigners(),
-            //     console.log('initWallet done', cid);
 
         } catch (error) {
             console.error('Detailed error:', {
@@ -149,7 +148,6 @@ export function useWallet() {
         }
     }
 
-
     async function transfer({ to, amount }: { to: string, amount: bigint }) {
         if (!account) {
             throw new Error('No account found');
@@ -159,14 +157,12 @@ export function useWallet() {
             throw new Error('No address or keyId found');
         }
 
-
         if (!smartWallet.wallet) await connect();
         const at = await mainBalance.transfer({
             from: address,
             to,
             amount: BigInt(amount),
         });
-
 
         const signedTx = await smartWallet.sign(at.built!, { keyId: key_id })
 
@@ -194,7 +190,6 @@ export function useWallet() {
 
             toast.error(errorMessage);
         }
-
     }
 
     const fundWallet = async (id?: string | null): Promise<void> => {
@@ -229,14 +224,66 @@ export function useWallet() {
         if (account && account.key_id) {
             try {
                 await smartWallet.connectWallet({ keyId: account.key_id });
+
+                // Wait for wallet to be available (give it time to connect)
+                let retries = 0;
+                const maxRetries = 10;
+                while (!smartWallet.wallet && retries < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    retries++;
+                }
+
+                if (!smartWallet.wallet) {
+                    throw new Error('Wallet connection timed out');
+                }
+
+                console.log('Wallet connected successfully:', smartWallet.wallet.options.contractId);
             } catch (error) {
                 console.error('Connect error:', error);
-                // toast.error((error as Error)?.message ?? "Unknown error");
+                throw error;
             }
         }
     }
 
+    // Wallet Transfer Policy Functions - now using the hook
+    const initPolicy = async () => {
+        if (!account?.address || !account?.key_id) {
+            throw new Error('No wallet account found');
+        }
 
+        try {
+            // Ensure wallet is connected before calling policy functions
+            await connect();
+
+            // Additional wait to ensure the hook has the updated wallet state
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            console.log('Initializing policy for account:', account.address);
+            await initializePolicy({ address: account.address, key_id: account.key_id });
+        } catch (error) {
+            console.error('Error initializing policy:', error);
+            throw error;
+        }
+    }
+
+    const addPolicyAuthorizedWallet = async (recipientAddress: string) => {
+        if (!account?.address || !account?.key_id) {
+            throw new Error('No wallet account found');
+        }
+
+        try {
+            // Ensure wallet is connected before calling policy functions
+            await connect();
+
+            // Additional wait to ensure the hook has the updated wallet state
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            await addAuthorizedWallet(recipientAddress, { address: account.address, key_id: account.key_id });
+        } catch (error) {
+            console.error('Error adding authorized wallet:', error);
+            throw error;
+        }
+    }
 
     return {
         create,
@@ -245,6 +292,11 @@ export function useWallet() {
         isFunding,
         fundWallet,
         connect,
+        initPolicy,
+        addAuthorizedWallet: addPolicyAuthorizedWallet,
+        policyAddress,
+        isPolicyLoading,
+        checkPolicyStatus,
         isLoadingAccount: isLoadingAccount || accountStatus === 'pending'
     }
 }

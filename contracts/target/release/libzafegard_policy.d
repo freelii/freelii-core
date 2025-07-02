@@ -1,0 +1,1 @@
+/Users/josetoscano/Projects/freelii-core/contracts/target/release/libzafegard_policy.rlib: /Users/josetoscano/Projects/freelii-core/contracts/zafegard-policy/src/lib.rs /Users/josetoscano/Projects/freelii-core/contracts/zafegard-policy/src/test.rs /Users/josetoscano/Projects/freelii-core/contracts/zafegard-policy/src/types.rs
