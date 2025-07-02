@@ -46,7 +46,7 @@ export function PageContent({
                         <ChevronLeft className="size-5" />
                       </Link>
                     )}
-                    <h1 className="text-lg font-semibold leading-7 text-neutral-900 ">
+                    <h1 className="text-lg font-medium tracking-tight text-gray-900 leading-7">
                       {title}
                     </h1>
                   </div>

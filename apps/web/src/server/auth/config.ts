@@ -5,6 +5,41 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 
 import { db } from "@/server/db";
+import { EmailService } from "@/server/services/email/email.service";
+
+// Custom adapter to work with Integer user IDs
+function customPrismaAdapter(prisma: typeof db) {
+  const baseAdapter = PrismaAdapter(prisma);
+  
+  return {
+    ...baseAdapter,
+    createVerificationToken: async ({ identifier, expires, token }) => {
+      return await prisma.verificationToken.create({
+        data: {
+          identifier,
+          token,
+          expires,
+        },
+      });
+    },
+    useVerificationToken: async ({ identifier, token }) => {
+      try {
+        const verificationToken = await prisma.verificationToken.delete({
+          where: {
+            identifier_token: {
+              identifier,
+              token,
+            },
+          },
+        });
+        return verificationToken;
+      } catch (error) {
+        // If the token doesn't exist, return null
+        return null;
+      }
+    },
+  };
+}
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -34,6 +69,22 @@ declare module "next-auth" {
  */
 export const authConfig = {
     providers: [
+        {
+            id: "email",
+            type: "email" as const,
+            name: "Email",
+            server: "",
+            from: "Freelii <jose@freelii.app>",
+            async sendVerificationRequest({ identifier: email, url }: { identifier: string; url: string }) {
+                const emailService = new EmailService({ db });
+                
+                await emailService.sendSignInLinkEmail({
+                    to: email,
+                    name: email.split('@')[0] || 'User',
+                    signInLink: url,
+                });
+            },
+        } as any,
         GoogleProvider({
 
             authorization: {
@@ -69,7 +120,7 @@ export const authConfig = {
          * @see https://next-auth.js.org/providers/github
          */
     ],
-    adapter: PrismaAdapter(db),
+    adapter: customPrismaAdapter(db),
     callbacks: {
         async signIn({ account, profile }: { account: Account | null; profile?: object | undefined; }) {
             console.log("signIn", account, profile);

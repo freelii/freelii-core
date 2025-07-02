@@ -60,6 +60,11 @@ export interface SubAccountCreatedData {
   createdDate: string;
 }
 
+export interface SignInLinkData {
+  name: string;
+  signInLink: string;
+}
+
 // Email options interface
 export interface EmailOptions {
   to: string | string[];
@@ -257,6 +262,20 @@ export class EmailService {
       subject: `New Account Created - ${data.accountAlias}`,
       html,
       text: `Your new account "${data.accountAlias}" has been successfully created and is ready to use.`,
+    });
+  }
+
+  /**
+   * Send sign-in link email
+   */
+  async sendSignInLinkEmail(data: SignInLinkData & { to: string }) {
+    const html = this.generateSignInLinkTemplate(data);
+
+    return this.sendEmail({
+      to: data.to,
+      subject: 'Sign in to Freelii',
+      html,
+      text: `Sign in to your Freelii account by clicking this link: ${data.signInLink}`,
     });
   }
 
@@ -696,6 +715,51 @@ export class EmailService {
             <div class="footer">
               <p>© 2024 Freelii. All rights reserved.</p>
               <p>This email was sent because a new sub account was created for your Freelii account.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
+
+  private generateSignInLinkTemplate(data: SignInLinkData): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Sign in to Freelii</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9fafb; }
+            .button { background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; font-weight: bold; }
+            .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0; }
+            .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Sign in to Freelii</h1>
+            </div>
+            <div class="content">
+              <h2>Hello ${data.name}!</h2>
+              <p>Click the button below to sign in to your Freelii account. This link will expire in 24 hours for security.</p>
+              
+              <a href="${data.signInLink}" class="button">Sign In to Freelii</a>
+              
+              <div class="warning">
+                <p><strong>⚠️ Security Notice:</strong> This link will expire in 24 hours and can only be used once. If you didn't request this sign-in link, please ignore this email.</p>
+              </div>
+              
+              <p>If you're having trouble clicking the button, copy and paste the URL below into your web browser:</p>
+              <p style="word-break: break-all; color: #6b7280; font-size: 12px;">${data.signInLink}</p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Freelii. All rights reserved.</p>
+              <p>If you didn't request this sign-in link, please ignore this email.</p>
             </div>
           </div>
         </body>

@@ -63,6 +63,15 @@ model User {
   @@map("users")
 }
 
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
 model Client {
   id                           Int                         @id @default(autoincrement())
   name                         String

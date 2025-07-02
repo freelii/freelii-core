@@ -379,7 +379,7 @@ export default function PageClient() {
                 className="animate-slide-in"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-xl font-semibold">{account?.alias}</h2>
+                  <h2 className="text-xl font-medium text-gray-900 tracking-tight">{account?.alias}</h2>
                 </div>
                 <p className="text-sm text-gray-500">Available Balance</p>
                 <div className="flex items-center gap-2">

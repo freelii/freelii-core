@@ -13,6 +13,30 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+    const [message, setMessage] = useState('')
+
+    const handleEmailSignIn = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!email) return
+
+        setIsLoading(true)
+        setMessage('')
+
+        try {
+            await signIn('email', {
+                email,
+                redirect: false,
+                callbackUrl: '/dashboard'
+            })
+
+            setMessage('Check your email for a sign-in link!')
+        } catch (error) {
+            setMessage('Failed to send sign-in link. Please try again.')
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     return (
         <div className="min-h-screen flex bg-white text-black">
@@ -96,7 +120,7 @@ export default function LoginPage() {
                     </div>
 
                     {/* Email Form */}
-                    <form className="space-y-3">
+                    <form onSubmit={handleEmailSignIn} className="space-y-3">
                         <div>
                             <label className="text-xs text-muted-foreground">Email</label>
                             <Input
@@ -104,11 +128,18 @@ export default function LoginPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="mt-1 bg-transparent border-gray-400 ring-0 focus:ring-0 focus:border-gray-400 focus:outline-none focus:border-[1px] focus:border-gray-400 text-sm"
+                                required
+                                disabled={isLoading}
                             />
                         </div>
-                        <Button className="w-full text-xs">
-                            Request sign-in link
+                        <Button type="submit" className="w-full text-xs" disabled={isLoading || !email}>
+                            {isLoading ? 'Sending...' : 'Request sign-in link'}
                         </Button>
+                        {message && (
+                            <p className={`text-xs text-center ${message.includes('Check your email') ? 'text-green-600' : 'text-red-600'}`}>
+                                {message}
+                            </p>
+                        )}
                     </form>
 
                     <p className="text-center text-xs text-gray-400">
