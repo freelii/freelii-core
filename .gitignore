@@ -40,3 +40,5 @@ yarn-error.log*
 # Soroban
 contracts/target
 contracts/target/*
+
+implementation-ref/
