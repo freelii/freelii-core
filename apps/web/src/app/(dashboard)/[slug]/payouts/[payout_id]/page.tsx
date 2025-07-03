@@ -200,10 +200,11 @@ export default function PayoutDetailsPage() {
                 return;
             }
 
-            if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(payment.source_amount))) {
-                toast.error("Insufficient balance")
-                return;
-            } else if (Number(payment.source_amount) <= 0) {
+            // if (!hasEnoughBalance(account?.main_balance?.amount ?? 0, Number(payment.source_amount))) {
+            //     toast.error("Insufficient balance")
+            //     return;
+            // } else
+            if (Number(payment.source_amount) <= 0) {
                 toast.error("Invalid amount for payment")
                 return;
             }
