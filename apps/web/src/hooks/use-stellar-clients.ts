@@ -28,8 +28,3 @@ export const useStellarAccount = () => {
   const { account } = useStellarClients();
   return account;
 };
-
-export const useStellarServer = () => {
-  const { server } = useStellarClients();
-  return server;
-};

@@ -38,6 +38,14 @@ export const env = createEnv({
     USE_COINS_PH_PROXY: z.string(),
     OPENAI_API_KEY: z.string(),
     RESEND_API_KEY: z.string(),
+    TELEMETRY_ENABLED: z.string(),
+    TELEMETRY_SERVICE_NAME: z.string(),
+    TELEMETRY_EXPORTER_TYPE: z.string(),
+    DATADOG_API_KEY: z.string(),
+    TELEMETRY_OTLP_ENDPOINT: z.string(),
+    OTEL_EXPORTER_OTLP_HEADERS: z.string(),
+    OTEL_SERVICE_NAME: z.string(),
+    NEXT_OTEL_VERBOSE: z.string(),
   },
 
   /**
@@ -70,6 +78,7 @@ export const env = createEnv({
     NEXT_PUBLIC_MAINNET_MERCURY_JWT: z.string(),
     NEXT_PUBLIC_MAINNET_MAIN_BALANCE_CONTRACT_ID: z.string(),
     NEXT_PUBLIC_MAINNET_HORIZON_URL: z.string(),
+    NEXT_PUBLIC_TELEMETRY_ENABLED: z.string(),
   },
 
   /**
@@ -124,6 +133,15 @@ export const env = createEnv({
     USE_COINS_PH_PROXY: process.env.USE_COINS_PH_PROXY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    TELEMETRY_ENABLED: process.env.TELEMETRY_ENABLED,
+    TELEMETRY_SERVICE_NAME: process.env.TELEMETRY_SERVICE_NAME,
+    TELEMETRY_EXPORTER_TYPE: process.env.TELEMETRY_EXPORTER_TYPE,
+    DATADOG_API_KEY: process.env.DATADOG_API_KEY,
+    TELEMETRY_OTLP_ENDPOINT: process.env.TELEMETRY_OTLP_ENDPOINT,
+    OTEL_EXPORTER_OTLP_HEADERS: process.env.OTEL_EXPORTER_OTLP_HEADERS,
+    OTEL_SERVICE_NAME: process.env.OTEL_SERVICE_NAME,
+    NEXT_OTEL_VERBOSE: process.env.NEXT_OTEL_VERBOSE,
+    NEXT_PUBLIC_TELEMETRY_ENABLED: process.env.TELEMETRY_ENABLED,
   },
 
   /**

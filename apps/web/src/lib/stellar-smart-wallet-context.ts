@@ -3,7 +3,7 @@ import { Account, Keypair, StrKey } from "@stellar/stellar-sdk/minimal";
 import { basicNodeSigner } from "@stellar/stellar-sdk/minimal/contract";
 import { Server } from "@stellar/stellar-sdk/minimal/rpc";
 import { noop } from "@tanstack/react-table";
-import { PasskeyKit, PasskeyServer, SACClient } from "passkey-kit";
+import { PasskeyKit, SACClient } from "freelii-passkey-kit";
 
 // Factory function to create Stellar clients based on network configuration
 export const createStellarClients = (config: StellarNetworkConfig) => {
@@ -13,15 +13,6 @@ export const createStellarClients = (config: StellarNetworkConfig) => {
     rpcUrl: config.rpcUrl,
     networkPassphrase: config.networkPassphrase,
     walletWasmHash: config.walletWasmHash,
-  });
-
-  const server = new PasskeyServer({
-    rpcUrl: config.rpcUrl,
-    launchtubeUrl: config.launchtubeUrl,
-    launchtubeJwt: config.launchtubeJwt,
-    mercuryProjectName: config.mercuryProjectName,
-    mercuryUrl: config.mercuryUrl,
-    mercuryJwt: config.mercuryJwt,
   });
 
   const mockPubkey = StrKey.encodeEd25519PublicKey(Buffer.alloc(32));
@@ -57,7 +48,6 @@ export const createStellarClients = (config: StellarNetworkConfig) => {
   return {
     rpc,
     account,
-    server,
     mockPubkey,
     mockSource,
     fundKeypair,

@@ -6,6 +6,9 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
+    experimental: {
+        esmExternals: 'loose',
+    },
     images: {
         remotePatterns: [
             {
@@ -20,11 +23,42 @@ const config = {
     },
     pageExtensions: ['ts', 'tsx'],
     transpilePackages: [
-        'passkey-kit',
+        'freelii-passkey-kit',
         'passkey-factory-sdk',
         'passkey-kit-sdk',
         'sac-sdk',
-    ]
+    ],
+    webpack: (config, { isServer, webpack }) => {
+        if (!isServer) {
+            // Set fallbacks for Node.js modules
+            config.resolve.fallback = {
+                ...config.resolve.fallback,
+                fs: false,
+                worker_threads: false,
+                child_process: false,
+                net: false,
+                tls: false,
+                crypto: false,
+                stream: false,
+                util: false,
+                url: false,
+                zlib: false,
+                http: false,
+                https: false,
+                assert: false,
+                os: false,
+                path: false,
+            };
+        }
+
+        // Handle ESM/CommonJS compatibility issues
+        config.resolve.extensionAlias = {
+            '.js': ['.js', '.ts', '.tsx'],
+            '.mjs': ['.mjs', '.ts', '.tsx'],
+        };
+
+        return config;
+    },
 };
 
 export default config;

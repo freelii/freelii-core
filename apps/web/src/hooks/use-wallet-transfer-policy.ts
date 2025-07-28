@@ -1,5 +1,6 @@
 import { useStellar } from "@/contexts/stellar-context";
 import { useStellarClients } from "@/hooks/use-stellar-clients";
+import { api } from "@/trpc/react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { Client as WalletTransferPolicyClient } from 'wallet_transfer_policy';
@@ -18,7 +19,8 @@ export interface WalletTransferPolicyHook {
 export function useWalletTransferPolicy(): WalletTransferPolicyHook {
     const [isLoading, setIsLoading] = useState(false);
     const { config, network } = useStellar();
-    const { account: smartWallet, server } = useStellarClients();
+    const { account: smartWallet } = useStellarClients();
+    const { mutateAsync: submit } = api.stellarServer.submit.useMutation();
 
     // Helper function to wait for wallet connection
     const waitForWalletConnection = async (maxRetries = 20): Promise<void> => {
@@ -80,7 +82,15 @@ export function useWalletTransferPolicy(): WalletTransferPolicyHook {
                 keyId: smartWallet.keyId
             });
             console.log("result", result)
-            const sent = await server.send(initTx.built!);
+            const sent = await submit({
+                xdr: initTx.built!.toXDR(),
+                rpcUrl: config.rpcUrl,
+                launchtubeUrl: config.launchtubeUrl,
+                launchtubeJwt: config.launchtubeJwt,
+                mercuryProjectName: config.mercuryProjectName,
+                mercuryUrl: config.mercuryUrl,
+                mercuryJwt: config.mercuryJwt,
+            });
             console.log("sent", sent)
 
             console.log('Policy initialization transaction result:', result);
@@ -152,7 +162,15 @@ export function useWalletTransferPolicy(): WalletTransferPolicyHook {
             });
             console.log("Signed transaction:", result);
 
-            const sent = await server.send(addTx.built!);
+            const sent = await submit({
+                xdr: addTx.built!.toXDR(),
+                rpcUrl: config.rpcUrl,
+                launchtubeUrl: config.launchtubeUrl,
+                launchtubeJwt: config.launchtubeJwt,
+                mercuryProjectName: config.mercuryProjectName,
+                mercuryUrl: config.mercuryUrl,
+                mercuryJwt: config.mercuryJwt,
+            });
             console.log('Add authorized wallet result:', sent);
             toast.success('Authorized wallet added successfully!');
         } catch (error) {

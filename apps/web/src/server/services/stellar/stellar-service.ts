@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { addressToSac, getAsset } from "@/lib/get-asset";
 import { type Wallet, type WalletBalance } from "@prisma/client";
-import { Address, Asset, Horizon, Keypair, StrKey, nativeToScVal, rpc, xdr } from "@stellar/stellar-sdk";
+import { Address, Horizon, Keypair, StrKey, nativeToScVal, rpc, xdr, type Asset } from "@stellar/stellar-sdk";
 
 
 interface StellarServiceOptions {
@@ -36,15 +36,10 @@ export class StellarService {
     async getAccount() {
         // Get contract Balance
         const nonRepeatedSAC = new Set(this.wallet.balances?.map(b => b.address) ?? []);
-        console.log('nonRepeatedSAC', nonRepeatedSAC);
         const indexedSAC = Array.from(nonRepeatedSAC).map(b => getAsset(b));
-        console.log('indexedSAC', indexedSAC);
 
         if (this.wallet.address) {
             const balancePromises = indexedSAC.map(async sac => {
-                console.log('this.wallet.address', this.wallet.address);
-                console.log('sac', sac);
-                console.log('this.networkPassphrase', this.networkPassphrase);
 
                 try {
                     const balance = await this.rpc.getSACBalance(
@@ -52,11 +47,9 @@ export class StellarService {
                         sac,
                         this.networkPassphrase
                     );
-                    console.log('balance response:', JSON.stringify(balance, null, 2));
 
                     // Check if balance has the expected structure
                     if (!balance?.balanceEntry) {
-                        console.warn(`No balance entry found for asset ${sac.code}-${sac.issuer} on account ${this.wallet.address}`);
 
                         // Use getLedgerEntries for more detailed diagnosis
                         // const diagnosis = await this.diagnoseBalanceIssue(String(this.wallet.address), sac);
@@ -68,7 +61,6 @@ export class StellarService {
                         // };
                     } else {
                         const key = `${sac.code}-${sac.issuer ?? ''}`;
-                        console.log('key', key);
                         if ('amount' in balance.balanceEntry) {
                             return {
                                 key: key === 'XLM-' ? 'XLM' : `${sac.code}-${sac.issuer}`,
@@ -82,11 +74,9 @@ export class StellarService {
             });
 
             const stellarBalances = await Promise.all(balancePromises);
-            console.log('stellarBalances', stellarBalances);
             const balancesToUpdate: WalletBalance[] = [];
 
             const filteredBalances = stellarBalances.filter(b => b);
-            console.log('filteredBalances', filteredBalances);
             this.wallet.balances?.forEach(walletBalance => {
                 const newBalance = filteredBalances.find(
                     stellarBalance => addressToSac(stellarBalance?.key ?? '') === walletBalance.address
@@ -158,8 +148,6 @@ export class StellarService {
                 try {
                     // Get the asset contract address (the contract that manages this asset)
                     const assetContractAddress = asset.contractId(this.networkPassphrase);
-                    console.log('Asset contract address:', assetContractAddress);
-                    console.log('Holder contract address:', accountAddress);
 
                     // Create the balance key according to SAC specification
                     // Balance storage format: Balance(holder_address)
@@ -168,7 +156,6 @@ export class StellarService {
                         values: [new Address(accountAddress)]
                     }, { type: "instance" });
 
-                    console.log('Querying balance key:', balanceKey);
 
                     // Query the asset contract for this balance
                     const balanceData = await this.rpc.getContractData(
@@ -176,7 +163,6 @@ export class StellarService {
                         balanceKey
                     );
 
-                    console.log('Found balance data:', balanceData);
 
                     return {
                         issue: 'CONTRACT_BALANCE_FOUND_VIA_DIRECT_QUERY',
@@ -186,7 +172,6 @@ export class StellarService {
                     };
 
                 } catch (directQueryError) {
-                    console.log('Direct query error:', directQueryError);
 
                     // Try alternative balance key format
                     try {
@@ -201,7 +186,6 @@ export class StellarService {
                             alternativeKey
                         );
 
-                        console.log('Found balance with alternative key:', balanceData);
 
                         return {
                             issue: 'CONTRACT_BALANCE_FOUND_WITH_ALT_KEY',
@@ -210,7 +194,6 @@ export class StellarService {
                         };
 
                     } catch (altError) {
-                        console.log('Alternative key also failed:', altError);
 
                         return {
                             issue: 'CONTRACT_BALANCE_QUERY_FAILED',
@@ -243,8 +226,6 @@ export class StellarService {
                     latestLedger: accountResponse.latestLedger
                 };
             }
-
-            console.log('✓ Account exists');
 
             // 2. For native XLM, account should have balance
             if (asset.isNative()) {

@@ -194,7 +194,6 @@ export class SorobanWebhookService {
         if (hookData?.data?.body?.tx) {
             return hookData.data?.body?.tx?.tx?.source_account ?? '';
         } else if (hookData?.data?.body?.tx_fee_bump) {
-            console.log('🔍 DEBUG: Processing fee bump transaction:', hookData.data?.body?.tx_fee_bump);
             const fallback = hookData.data?.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx?.source_account;
             const sourceAccount = hookData?.data?.body?.tx_fee_bump?.tx?.inner_tx?.tx?.tx?.operations[0]?.body?.invoke_host_function?.auth[0]?.credentials?.address?.address;
             return sourceAccount ?? fallback ?? '';
@@ -220,7 +219,6 @@ export class SorobanWebhookService {
         walletMappings: WalletMapping[];
         isNewTransaction: boolean;
     }> {
-        console.log('🔄 Processing Soroban webhook for transaction:', hookData.data.hash);
 
         // Check for idempotency - have we already processed this transaction?
         const existingTransaction = await this.checkExistingTransaction(hookData.data.hash);
@@ -932,7 +930,6 @@ export class SorobanWebhookService {
      * Get transaction by hash
      */
     static async getTransactionByHash(hash: string) {
-        console.log('🔍 Getting transaction by hash:', hash);
 
         try {
             return await db.sorobanTransaction.findUnique({

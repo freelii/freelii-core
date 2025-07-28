@@ -24,12 +24,12 @@ export function useWallet() {
     // Get network-aware Stellar clients
     const {
         account: smartWallet,
-        server,
         getFundPubkey,
         getFundSigner,
         network,
         mainBalance,
-        native
+        native,
+        config
     } = useStellarClients();
 
     // Wallet transfer policy hook
@@ -44,6 +44,7 @@ export function useWallet() {
     // tRPC procedures
     const trpcUtils = api.useUtils();
     const { data: allWallets } = api.wallet.getAll.useQuery();
+    const { mutateAsync: submit } = api.stellarServer.submit.useMutation();
 
     // Filter wallets by current network environment
     const wallets = useMemo(() => {
@@ -128,7 +129,16 @@ export function useWallet() {
                 keyIdBase64
             } = result;
 
-            await server.send(signedTx);
+            const res = await submit({
+                xdr: signedTx.toXDR(),
+                rpcUrl: config.rpcUrl,
+                launchtubeUrl: config.launchtubeUrl,
+                launchtubeJwt: config.launchtubeJwt,
+                mercuryProjectName: config.mercuryProjectName,
+                mercuryUrl: config.mercuryUrl,
+                mercuryJwt: config.mercuryJwt,
+            });
+            console.log('Create wallet successful:', res);
             const walletRes = await createWallet({
                 alias,
                 isDefault: wallets?.length === 0,
@@ -164,10 +174,20 @@ export function useWallet() {
             amount: BigInt(amount),
         });
 
-        const signedTx = await smartWallet.sign(at.built!, { keyId: key_id })
+        const signedTx = await smartWallet.sign(at.built!.toXDR(), { keyId: key_id })
 
         try {
-            const res = await server.send(signedTx) as SignedTx;
+            const res = await submit({
+                xdr: signedTx.toXDR(),
+                rpcUrl: config.rpcUrl,
+                launchtubeUrl: config.launchtubeUrl,
+                launchtubeJwt: config.launchtubeJwt,
+                mercuryProjectName: config.mercuryProjectName,
+                mercuryUrl: config.mercuryUrl,
+                mercuryJwt: config.mercuryJwt,
+            });
+
+
             void trpcUtils.wallet.getAccount.invalidate();
             return res;
         } catch (error) {
@@ -211,7 +231,16 @@ export function useWallet() {
                 signAuthEntry: fundSigner.signAuthEntry,
             });
 
-            await server.send(built!);
+            const res = await submit({
+                xdr: built!.toXDR(),
+                rpcUrl: config.rpcUrl,
+                launchtubeUrl: config.launchtubeUrl,
+                launchtubeJwt: config.launchtubeJwt,
+                mercuryProjectName: config.mercuryProjectName,
+                mercuryUrl: config.mercuryUrl,
+                mercuryJwt: config.mercuryJwt,
+            });
+            console.log('Funding successful:', res);
         } catch (error) {
             console.error(error);
             toast.error((error as Error)?.message ?? "Unknown error");

@@ -7,6 +7,7 @@ import { invoicingRouter } from "./routers/invoicing";
 import { ledgerRouter } from "./routers/ledger";
 import { orchestratorRouter } from "./routers/orchestrator";
 import { sorobanRouter } from "./routers/soroban";
+import { stellarServerRouter } from "./routers/stellar-server";
 import { walletRouter } from "./routers/wallet";
 import { webhookRouter } from "./routers/webhook";
 /**
@@ -25,6 +26,7 @@ export const appRouter = createTRPCRouter({
   activity: activityRouter,
   orchestrator: orchestratorRouter,
   bulkDisbursement: bulkDisbursementRouter,
+  stellarServer: stellarServerRouter,
 });
 
 // export type definition of API

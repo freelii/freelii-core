@@ -1,10 +1,8 @@
 import { Asset } from "@stellar/stellar-sdk/minimal";
 
 export function getAsset(sac: string): Asset {
-    console.log('getAsset.sac', sac);
     if (sac === "XLM") return Asset.native();
     const address = sacToAddress(sac);
-    console.log('getAsset.address', address);
     if (address === "native") return Asset.native();
     const [code, issuer] = address.split('-') as [string, string];
     if (!code || !issuer) {
