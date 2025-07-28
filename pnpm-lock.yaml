@@ -234,8 +234,8 @@ importers:
         specifier: ^12.0.3
         version: 12.19.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       freelii-passkey-kit:
-        specifier: 0.10.46
-        version: 0.10.46(pino@9.7.0)
+        specifier: 0.10.47
+        version: 0.10.47(pino@9.7.0)
       geist:
         specifier: ^1.3.0
         version: 1.4.2(next@15.3.4(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
@@ -4368,8 +4368,8 @@ packages:
       react-dom:
         optional: true
 
-  freelii-passkey-kit@0.10.46:
-    resolution: {integrity: sha512-lNZdkWJANLFIno2Eaaslcta8RZWic0LmJfWDoLxe6xmKEI1f9VDrdX95fZbPzmhoU/+XKbfbxLWFAsY94fdivA==}
+  freelii-passkey-kit@0.10.47:
+    resolution: {integrity: sha512-3cG3+ZMpANKz8bx3k0Cbiy1/hZ5CCOvFEUBAb0JSDj1WRfZJAUZpcb4TZTZJPMLiYq5Gp5LDUm9lO0RrbDnR5A==}
     peerDependencies:
       pino: ^8.19.0
       pino-pretty: ^10.3.0
@@ -11213,7 +11213,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  freelii-passkey-kit@0.10.46(pino@9.7.0):
+  freelii-passkey-kit@0.10.47(pino@9.7.0):
     dependencies:
       '@simplewebauthn/browser': 13.1.0
       '@stellar/stellar-sdk': 13.3.0
