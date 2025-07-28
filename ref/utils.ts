@@ -1,19 +1,17 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import {
   Address,
-  Contract,
-  Networks,
-  TransactionBuilder,
-  xdr,
-  nativeToScVal,
-  rpc as SorobanRpc,
   BASE_FEE,
+  Contract,
   Horizon,
-  Keypair,
+  rpc as SorobanRpc,
   StrKey,
+  TransactionBuilder,
+  nativeToScVal,
+  xdr
 } from '@stellar/stellar-sdk';
+import { clsx, type ClassValue } from 'clsx';
 import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
