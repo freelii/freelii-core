@@ -128,7 +128,6 @@ export function useWallet() {
                 signedTx,
                 keyIdBase64
             } = result;
-
             const res = await submit({
                 xdr: signedTx.toXDR(),
                 rpcUrl: config.rpcUrl,
@@ -177,6 +176,7 @@ export function useWallet() {
         const signedTx = await smartWallet.sign(at.built!.toXDR(), { keyId: key_id })
 
         try {
+            console.log('transfer submit', signedTx.toXDR());
             const res = await submit({
                 xdr: signedTx.toXDR(),
                 rpcUrl: config.rpcUrl,

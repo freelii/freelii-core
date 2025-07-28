@@ -237,14 +237,14 @@ export default function PayoutDetailsPage() {
                     txId: at?.txHash,
                     txHash: at?.txHash,
                 });
+                // Redirect to success page
+                const slug = String(params && Array.isArray(params.slug) ? params.slug[0] : params?.slug || '');
+                const id = String(Array.isArray(paymentId) ? paymentId[0] : (paymentId || ''));
+                router.push(`/${slug}/payouts/${id}/success`)
             }
 
             setIsProcessing(false)
             setTransferStep('idle')
-            // Redirect to success page
-            const slug = String(params && Array.isArray(params.slug) ? params.slug[0] : params?.slug || '');
-            const id = String(Array.isArray(paymentId) ? paymentId[0] : (paymentId || ''));
-            router.push(`/${slug}/payouts/${id}/success`)
         } catch (error) {
             console.error(error)
             toast.error("Error processing payment")

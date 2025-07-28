@@ -41,6 +41,10 @@ export const stellarServerRouter = createTRPCRouter({
                 logging: logger,
             });
 
-            return server.send(input.xdr) as Promise<{ txHash: string }>;
+            const result = await server.send(input.xdr).catch((error) => {
+                console.error('error', error);
+                throw error;
+            });
+            return result;
         }),
 });

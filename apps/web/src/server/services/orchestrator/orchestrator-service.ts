@@ -298,7 +298,6 @@ export class OrchestratorService extends BaseService {
      * Get the current state of a payment
      */
     async getPaymentState(paymentId: string): Promise<PaymentOrchestrationStateWithRelations | null> {
-        console.log('getPaymentState', paymentId, this.session.user.id)
         const state = await this.db.paymentOrchestrationState.findUnique({
             where: {
                 id: paymentId,
@@ -315,7 +314,6 @@ export class OrchestratorService extends BaseService {
                 }
             }
         });
-        console.log('getPaymentState state', this.session.user.id, state)
         return state ?? null;
     }
 
